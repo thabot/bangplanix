@@ -115,7 +115,7 @@ const SAMPLES = {
       "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
       "version": "1.0.0",
       "metadata": { "title": "POS Thermal Receipt 80mm", "standard": "ESC/POS" },
-      "pageSetup": { "paperKind": "Custom", "width": 80, "height": 180, "margins": { "top": 5, "bottom": 5, "left": 5, "right": 5 } },
+      "pageSetup": { "paperKind": "Custom", "width": 280, "height": 480, "margins": { "top": 15, "bottom": 15, "left": 15, "right": 15 } },
       "parameters": [
         { "name": "Store", "type": "string", "defaultValue": "BANGPLANIX COFFEE" },
         { "name": "OrderNo", "type": "string", "defaultValue": "ORD-9402" }
@@ -123,29 +123,29 @@ const SAMPLES = {
       "datasets": [{ "name": "items", "source": "json" }],
       "bands": {
         "title": {
-          "height": 45,
+          "height": 48,
           "elements": [
-            { "type": "text", "bounds": { "x": 0, "y": 0, "width": 70, "height": 16 }, "expression": "=Parameters!Store.Value", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Center" },
-            { "type": "text", "bounds": { "x": 0, "y": 16, "width": 70, "height": 12 }, "expression": "=\"Order: \" + Parameters!OrderNo.Value", "fontSize": 8, "textAlign": "Center", "textColor": "#64748b" },
-            { "type": "line", "bounds": { "x": 0, "y": 36, "width": 70, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 }
+            { "type": "text", "bounds": { "x": 0, "y": 0, "width": 250, "height": 18 }, "expression": "=Parameters!Store.Value", "fontSize": 13, "fontWeight": "Bold", "textAlign": "Center" },
+            { "type": "text", "bounds": { "x": 0, "y": 20, "width": 250, "height": 14 }, "expression": "=\"Order: \" + Parameters!OrderNo.Value", "fontSize": 9, "textAlign": "Center", "textColor": "#64748b" },
+            { "type": "line", "bounds": { "x": 0, "y": 40, "width": 250, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 }
           ]
         },
         "detail": {
           "dataset": "items",
-          "height": 16,
+          "height": 20,
           "elements": [
-            { "type": "text", "bounds": { "x": 0, "y": 2, "width": 45, "height": 12 }, "expression": "=Fields!name.Value", "fontSize": 7.5 },
-            { "type": "text", "bounds": { "x": 45, "y": 2, "width": 10, "height": 12 }, "expression": "=\"x\" + Fields!qty.Value", "fontSize": 7.5, "textAlign": "Center" },
-            { "type": "text", "bounds": { "x": 55, "y": 2, "width": 15, "height": 12 }, "expression": "=Fields!price.Value", "fontSize": 7.5, "textAlign": "Right" }
+            { "type": "text", "bounds": { "x": 0, "y": 3, "width": 150, "height": 14 }, "expression": "=Fields!name.Value", "fontSize": 8.5 },
+            { "type": "text", "bounds": { "x": 150, "y": 3, "width": 35, "height": 14 }, "expression": "=\"x\" + Fields!qty.Value", "fontSize": 8.5, "textAlign": "Center" },
+            { "type": "text", "bounds": { "x": 185, "y": 3, "width": 65, "height": 14 }, "expression": "=Fields!price.Value", "fontSize": 8.5, "textAlign": "Right" }
           ]
         },
         "pageFooter": {
-          "height": 40,
+          "height": 65,
           "elements": [
-            { "type": "line", "bounds": { "x": 0, "y": 2, "width": 70, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 },
-            { "type": "text", "bounds": { "x": 0, "y": 6, "width": 40, "height": 14 }, "content": "TOTAL:", "fontSize": 9, "fontWeight": "Bold" },
-            { "type": "text", "bounds": { "x": 40, "y": 6, "width": 30, "height": 14 }, "content": "345.00", "fontSize": 9, "fontWeight": "Bold", "textAlign": "Right" },
-            { "type": "barcode", "bounds": { "x": 10, "y": 22, "width": 50, "height": 16 }, "expression": "=Parameters!OrderNo.Value", "symbology": "Code128" }
+            { "type": "line", "bounds": { "x": 0, "y": 2, "width": 250, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 },
+            { "type": "text", "bounds": { "x": 0, "y": 8, "width": 100, "height": 16 }, "content": "TOTAL:", "fontSize": 11, "fontWeight": "Bold" },
+            { "type": "text", "bounds": { "x": 110, "y": 8, "width": 140, "height": 16 }, "content": "345.00", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right" },
+            { "type": "barcode", "bounds": { "x": 25, "y": 30, "width": 200, "height": 26 }, "expression": "=Parameters!OrderNo.Value", "symbology": "Code128" }
           ]
         }
       }
@@ -163,24 +163,24 @@ const SAMPLES = {
       "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
       "version": "1.0.0",
       "metadata": { "title": "Logistics & Shipping Label 4x6", "standard": "GS1 / Zebra ZPL II" },
-      "pageSetup": { "paperKind": "Custom", "width": 101.6, "height": 152.4, "margins": { "top": 5, "bottom": 5, "left": 5, "right": 5 } },
+      "pageSetup": { "paperKind": "Custom", "width": 288, "height": 432, "margins": { "top": 15, "bottom": 15, "left": 15, "right": 15 } },
       "parameters": [
         { "name": "TrackingNo", "type": "string", "defaultValue": "BPX-TH-882910482" },
         { "name": "Recipient", "type": "string", "defaultValue": "Somchai Tech Solutions Co., Ltd." }
       ],
       "bands": {
         "title": {
-          "height": 130,
+          "height": 200,
           "elements": [
-            { "type": "rectangle", "bounds": { "x": 0, "y": 0, "width": 91.6, "height": 20 }, "fillColor": "#0f172a" },
-            { "type": "text", "bounds": { "x": 4, "y": 3, "width": 50, "height": 14 }, "content": "EXPRESS NEXT-DAY", "fontSize": 10, "fontWeight": "Bold", "textColor": "#ffffff" },
-            { "type": "text", "bounds": { "x": 55, "y": 3, "width": 32, "height": 14 }, "content": "BKK-01", "fontSize": 9, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#38bdf8" },
-            { "type": "text", "bounds": { "x": 2, "y": 26, "width": 88, "height": 12 }, "content": "SHIP TO:", "fontSize": 8, "fontWeight": "Bold" },
-            { "type": "text", "bounds": { "x": 2, "y": 38, "width": 88, "height": 14 }, "expression": "=Parameters!Recipient.Value", "fontSize": 9, "fontWeight": "Bold" },
-            { "type": "text", "bounds": { "x": 2, "y": 52, "width": 88, "height": 12 }, "content": "88/12 Sukhumvit 71 Road, Phra Khanong, Bangkok 10110", "fontSize": 7.5 },
-            { "type": "line", "bounds": { "x": 0, "y": 70, "width": 91.6, "height": 1.5 }, "strokeColor": "#000000", "strokeWidth": 1.5 },
-            { "type": "barcode", "bounds": { "x": 10, "y": 78, "width": 71.6, "height": 30 }, "expression": "=Parameters!TrackingNo.Value", "symbology": "Code128" },
-            { "type": "text", "bounds": { "x": 0, "y": 112, "width": 91.6, "height": 12 }, "expression": "=Parameters!TrackingNo.Value", "fontSize": 8.5, "textAlign": "Center", "fontWeight": "Bold" }
+            { "type": "rectangle", "bounds": { "x": 0, "y": 0, "width": 258, "height": 28 }, "fillColor": "#0f172a" },
+            { "type": "text", "bounds": { "x": 10, "y": 6, "width": 140, "height": 16 }, "content": "EXPRESS NEXT-DAY", "fontSize": 11, "fontWeight": "Bold", "textColor": "#ffffff" },
+            { "type": "text", "bounds": { "x": 155, "y": 6, "width": 93, "height": 16 }, "content": "BKK-01", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#38bdf8" },
+            { "type": "text", "bounds": { "x": 5, "y": 36, "width": 248, "height": 14 }, "content": "SHIP TO:", "fontSize": 9, "fontWeight": "Bold", "textColor": "#64748b" },
+            { "type": "text", "bounds": { "x": 5, "y": 52, "width": 248, "height": 18 }, "expression": "=Parameters!Recipient.Value", "fontSize": 11, "fontWeight": "Bold" },
+            { "type": "text", "bounds": { "x": 5, "y": 72, "width": 248, "height": 16 }, "content": "88/12 Sukhumvit 71 Road, Phra Khanong, Bangkok 10110", "fontSize": 9.5 },
+            { "type": "line", "bounds": { "x": 0, "y": 98, "width": 258, "height": 1.5 }, "strokeColor": "#000000", "strokeWidth": 1.5 },
+            { "type": "barcode", "bounds": { "x": 14, "y": 110, "width": 230, "height": 55 }, "expression": "=Parameters!TrackingNo.Value", "symbology": "Code128" },
+            { "type": "text", "bounds": { "x": 0, "y": 172, "width": 258, "height": 16 }, "expression": "=Parameters!TrackingNo.Value", "fontSize": 11, "textAlign": "Center", "fontWeight": "Bold" }
           ]
         }
       }
@@ -192,24 +192,25 @@ const SAMPLES = {
       "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
       "version": "1.0.0",
       "metadata": { "title": "ใบจ่ายเงินเดือนพนักงาน (Payslip)", "standard": "HR-PAYSLIP" },
-      "pageSetup": { "paperKind": "A5", "orientation": "Landscape", "margins": { "top": 15, "bottom": 15, "left": 15, "right": 15 } },
+      "pageSetup": { "paperKind": "A5", "orientation": "Landscape", "margins": { "top": 25, "bottom": 25, "left": 25, "right": 25 } },
       "parameters": [
         { "name": "Company", "type": "string", "defaultValue": "บริษัท บางพลานิกซ์ เทคโนโลยี จำกัด" },
         { "name": "EmpName", "type": "string", "defaultValue": "นายสมศักดิ์ นวัตกรรม" }
       ],
       "bands": {
         "title": {
-          "height": 90,
+          "height": 170,
           "elements": [
-            { "type": "text", "bounds": { "x": 0, "y": 0, "width": 100, "height": 18 }, "expression": "=Parameters!Company.Value", "fontSize": 12, "fontWeight": "Bold" },
-            { "type": "text", "bounds": { "x": 110, "y": 0, "width": 70, "height": 18 }, "content": "PAYSLIP (กันยายน 2569)", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#1e3a8a" },
-            { "type": "line", "bounds": { "x": 0, "y": 24, "width": 180, "height": 1 }, "strokeColor": "#cbd5e1", "strokeWidth": 1 },
-            { "type": "text", "bounds": { "x": 0, "y": 30, "width": 180, "height": 12 }, "expression": "=\"พนักงาน: \" + Parameters!EmpName.Value + \" (Senior Systems Architect)\"", "fontSize": 9, "fontWeight": "Bold" },
-            { "type": "text", "bounds": { "x": 0, "y": 50, "width": 80, "height": 14 }, "content": "เงินเดือนพื้นฐาน: 95,000.00", "fontSize": 8.5 },
-            { "type": "text", "bounds": { "x": 90, "y": 50, "width": 90, "height": 14 }, "content": "หักภาษี + ปกส.: 9,200.00", "fontSize": 8.5 },
-            { "type": "line", "bounds": { "x": 0, "y": 70, "width": 180, "height": 1 }, "strokeColor": "#0f172a", "strokeWidth": 1.5 },
-            { "type": "text", "bounds": { "x": 0, "y": 74, "width": 90, "height": 14 }, "content": "ยอดเงินรับสุทธิ (NET):", "fontSize": 9.5, "fontWeight": "Bold", "textColor": "#1e3a8a" },
-            { "type": "text", "bounds": { "x": 90, "y": 74, "width": 90, "height": 14 }, "content": "85,800.00 บาท", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#16a34a" }
+            { "type": "text", "bounds": { "x": 0, "y": 0, "width": 320, "height": 24 }, "expression": "=Parameters!Company.Value", "fontSize": 14, "fontWeight": "Bold" },
+            { "type": "text", "bounds": { "x": 320, "y": 0, "width": 225, "height": 24 }, "content": "PAYSLIP (กันยายน 2569)", "fontSize": 12, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#1e3a8a" },
+            { "type": "line", "bounds": { "x": 0, "y": 30, "width": 545, "height": 1 }, "strokeColor": "#cbd5e1", "strokeWidth": 1 },
+            { "type": "text", "bounds": { "x": 0, "y": 38, "width": 545, "height": 18 }, "expression": "=\"พนักงาน: \" + Parameters!EmpName.Value + \" (Senior Systems Architect)\"", "fontSize": 11, "fontWeight": "Bold" },
+            { "type": "rectangle", "bounds": { "x": 0, "y": 64, "width": 545, "height": 42 }, "fillColor": "#f8fafc", "borderColor": "#e2e8f0" },
+            { "type": "text", "bounds": { "x": 15, "y": 76, "width": 240, "height": 18 }, "content": "เงินเดือนพื้นฐาน: 95,000.00 บาท", "fontSize": 10 },
+            { "type": "text", "bounds": { "x": 275, "y": 76, "width": 255, "height": 18 }, "content": "หักภาษี + ปกส.: 9,200.00 บาท", "fontSize": 10, "textAlign": "Right", "textColor": "#dc2626" },
+            { "type": "line", "bounds": { "x": 0, "y": 118, "width": 545, "height": 1.5 }, "strokeColor": "#0f172a", "strokeWidth": 1.5 },
+            { "type": "text", "bounds": { "x": 0, "y": 130, "width": 250, "height": 20 }, "content": "ยอดเงินรับสุทธิ (NET):", "fontSize": 13, "fontWeight": "Bold", "textColor": "#1e3a8a" },
+            { "type": "text", "bounds": { "x": 275, "y": 130, "width": 270, "height": 20 }, "content": "85,800.00 บาท", "fontSize": 13, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#16a34a" }
           ]
         }
       }

@@ -29,9 +29,24 @@ export class BangplanixWasmEngine {
    */
   renderSvg(template, data = {}, parameters = {}) {
     const bpx = this.parseTemplate(template);
-    const paperWidth = bpx.pageSetup?.orientation === 'Landscape' ? 842 : 595;
-    const paperHeight = bpx.pageSetup?.orientation === 'Landscape' ? 595 : 842;
-    const margins = bpx.pageSetup?.margins || { top: 28, bottom: 28, left: 28, right: 28 };
+    let paperWidth = 595;
+    let paperHeight = 842;
+    const setup = bpx.pageSetup || {};
+
+    if (setup.width && setup.height) {
+      paperWidth = setup.width;
+      paperHeight = setup.height;
+    } else if (setup.paperKind === 'A5') {
+      paperWidth = setup.orientation === 'Landscape' ? 595 : 420;
+      paperHeight = setup.orientation === 'Landscape' ? 420 : 595;
+    } else if (setup.paperKind === 'A4') {
+      paperWidth = setup.orientation === 'Landscape' ? 842 : 595;
+      paperHeight = setup.orientation === 'Landscape' ? 595 : 842;
+    } else if (setup.orientation === 'Landscape') {
+      paperWidth = 842;
+      paperHeight = 595;
+    }
+    const margins = setup.margins || { top: 28, bottom: 28, left: 28, right: 28 };
 
     const mergedParams = { ...(bpx.parameters?.reduce((acc, p) => ({ ...acc, [p.name]: p.defaultValue }), {})), ...parameters };
     const context = {
@@ -154,10 +169,12 @@ export class BangplanixWasmEngine {
         svg += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="${elem.fillColor || '#F7FAFC'}" stroke="${elem.borderColor || '#CBD5E0'}" rx="${elem.cornerRadius || 0}" />`;
       } else if (elem.type === 'barcode') {
         const val = elem.expression ? this.evaluateExpression(elem.expression, context) : (elem.content || '');
+        const label = `||| [${elem.symbology || 'Code128'}: ${this._escapeXml(String(val))}] |||`;
+        const fontSize = Math.min(10, Math.max(7, (bw - 8) / (label.length * 0.65)));
         svg += `
           <g transform="translate(${bx}, ${by})">
-            <rect width="${bw}" height="${bh}" fill="#F8FAFC" stroke="#E2E8F0" rx="4" />
-            <text x="${bw/2}" y="${bh/2 + 4}" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">||| [${elem.symbology || 'BARCODE'}: ${this._escapeXml(String(val))}] |||</text>
+            <rect width="${bw}" height="${bh}" fill="#F8FAFC" stroke="#CBD5E1" rx="4" />
+            <text x="${bw/2}" y="${bh/2 + fontSize/2.5}" font-size="${fontSize.toFixed(1)}" font-family="monospace, monospace" font-weight="600" fill="#334155" text-anchor="middle">${label}</text>
           </g>
         `;
       }
