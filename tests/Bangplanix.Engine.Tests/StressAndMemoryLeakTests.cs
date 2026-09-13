@@ -41,7 +41,7 @@ public class StressAndMemoryLeakTests
         }
 
         stopwatch.Stop();
-        var finalMemory = GC.GetTotalMemory(false);
+        var finalMemory = GC.GetTotalMemory(true);
         var memoryDeltaBytes = finalMemory - initialMemory;
 
         // Assert
