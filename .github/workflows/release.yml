@@ -149,16 +149,19 @@ jobs:
         run: dotnet pack Bangplanix.slnx -c Release -o ./nupkgs
 
       - name: NuGet login (OIDC Trusted Publishing)
+        id: nuget-login
         uses: NuGet/login@v1
         with:
           user: ${{ github.repository_owner }}
 
-      - name: Push to NuGet.org (API Key or OIDC)
+      - name: Push to NuGet.org (OIDC Trusted Publishing or Secret API Key)
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          OIDC_NUGET_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          SECRET_NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          if [ -n "$NUGET_API_KEY" ]; then
-            dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate || true
+          API_KEY="${OIDC_NUGET_KEY:-$SECRET_NUGET_KEY}"
+          if [ -n "$API_KEY" ]; then
+            dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --api-key "$API_KEY" --skip-duplicate || true
           else
             dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate || true
           fi
