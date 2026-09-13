@@ -2,7 +2,7 @@
 # Optimized for Ultra-Fast Cold Start and Low Memory Footprint
 
 # Stage 1: Build & Restore
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS builder
 WORKDIR /src
 
 # Copy CPM and Solution files
@@ -12,7 +12,7 @@ COPY proto/ proto/
 COPY tools/ tools/
 
 # Build and Publish Bangplanix.Server
-RUN dotnet publish src/Bangplanix.Server/Bangplanix.Server.csproj -c Release -o /app/publish /p:UseAppHost=true
+RUN dotnet publish src/Bangplanix.Server/Bangplanix.Server.csproj -c Release -o /app/publish
 
 # Stage 2: Production Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-alpine AS runtime

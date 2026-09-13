@@ -150,6 +150,8 @@ jobs:
 
       - name: NuGet login (OIDC Trusted Publishing)
         uses: NuGet/login@v1
+        with:
+          user: ${{ github.repository_owner }}
 
       - name: Push to NuGet.org
         run: dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate || true
