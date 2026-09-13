@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangplanix Report Web Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      color: #38bdf8;
+    }
+    bangplanix-viewer {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bangplanix Embedded Report Viewer Demo</h1>
+    <bangplanix-viewer serverUrl="http://localhost:9545" template="schema/v1/samples/invoice.bpx"></bangplanix-viewer>
+  </div>
+  <script type="module" src="./bangplanix-viewer.ts"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Server</RootNamespace>
+    <AssemblyName>Bangplanix.Server</AssemblyName>
+    <Description>Bangplanix Native AOT Daemon, gRPC, and REST Microservice</Description>
+    <PublishAot>false</PublishAot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Google.Protobuf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\proto\bangplanix.proto" GrpcServices="Server" Link="Protos\bangplanix.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
+    <ProjectReference Include="..\Bangplanix.Engine\Bangplanix.Engine.csproj" />
+    <ProjectReference Include="..\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
+    <ProjectReference Include="..\Bangplanix.Connectors\Bangplanix.Connectors.csproj" />
+  </ItemGroup>
+</Project>

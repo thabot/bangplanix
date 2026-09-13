@@ -1,0 +1,228 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Commercial Tax Invoice",
+    "author": "Bangplanix Sample System",
+    "description": "Standard Thai & Global Commercial Invoice Template"
+  },
+  "pageSetup": {
+    "paperKind": "A4",
+    "orientation": "Portrait",
+    "width": 210.0,
+    "height": 297.0,
+    "unit": "mm",
+    "margins": {
+      "top": 15.0,
+      "bottom": 15.0,
+      "left": 15.0,
+      "right": 15.0
+    }
+  },
+  "parameters": [
+    {
+      "name": "InvoiceNo",
+      "label": "Invoice Number",
+      "type": "String",
+      "defaultValue": "INV-2026-0001",
+      "isRequired": true
+    }
+  ],
+  "datasets": [
+    {
+      "name": "InvoiceItems",
+      "type": "Static",
+      "staticData": [
+        { "itemNo": 1, "description": "Cloud Hosting Enterprise", "qty": 1, "unitPrice": 12000.00, "amount": 12000.00 },
+        { "itemNo": 2, "description": "Bangplanix Server OEM License", "qty": 1, "unitPrice": 45000.00, "amount": 45000.00 },
+        { "itemNo": 3, "description": "24/7 Technical Support SLA", "qty": 12, "unitPrice": 2500.00, "amount": 30000.00 }
+      ]
+    }
+  ],
+  "styles": {
+    "TitleStyle": {
+      "fontFamily": "Prompt",
+      "fontSize": 18.0,
+      "fontWeight": "Bold",
+      "color": "#1E293B",
+      "align": "Left"
+    },
+    "HeaderLabel": {
+      "fontFamily": "Sarabun",
+      "fontSize": 10.0,
+      "fontWeight": "Bold",
+      "color": "#475569"
+    },
+    "DetailText": {
+      "fontFamily": "Sarabun",
+      "fontSize": 10.0,
+      "fontWeight": "Normal",
+      "color": "#0F172A"
+    }
+  },
+  "bands": {
+    "reportHeader": {
+      "height": 45.0,
+      "elements": [
+        {
+          "type": "Text",
+          "id": "txtHeaderTitle",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 120.0,
+          "height": 10.0,
+          "text": "ใบกำกับภาษี / TAX INVOICE",
+          "styleRef": "TitleStyle"
+        },
+        {
+          "type": "Barcode",
+          "id": "bcInvoiceNo",
+          "x": 130.0,
+          "y": 0.0,
+          "width": 50.0,
+          "height": 15.0,
+          "barcodeType": "Code128",
+          "expression": "@Parameters.InvoiceNo"
+        }
+      ]
+    },
+    "pageHeader": {
+      "height": 10.0,
+      "elements": [
+        {
+          "type": "Shape",
+          "id": "tableHeaderBg",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 180.0,
+          "height": 8.0,
+          "shapeType": "Rectangle"
+        },
+        {
+          "type": "Text",
+          "id": "thItemNo",
+          "x": 2.0,
+          "y": 1.5,
+          "width": 15.0,
+          "height": 6.0,
+          "text": "ลำดับ",
+          "styleRef": "HeaderLabel"
+        },
+        {
+          "type": "Text",
+          "id": "thDescription",
+          "x": 20.0,
+          "y": 1.5,
+          "width": 80.0,
+          "height": 6.0,
+          "text": "รายการสินค้า / บริการ",
+          "styleRef": "HeaderLabel"
+        },
+        {
+          "type": "Text",
+          "id": "thAmount",
+          "x": 140.0,
+          "y": 1.5,
+          "width": 38.0,
+          "height": 6.0,
+          "text": "จำนวนเงิน (บาท)",
+          "styleRef": "HeaderLabel"
+        }
+      ]
+    },
+    "detail": {
+      "height": 8.0,
+      "elements": [
+        {
+          "type": "Text",
+          "id": "tdItemNo",
+          "x": 2.0,
+          "y": 1.0,
+          "width": 15.0,
+          "height": 6.0,
+          "expression": "@Row.itemNo",
+          "styleRef": "DetailText"
+        },
+        {
+          "type": "Text",
+          "id": "tdDesc",
+          "x": 20.0,
+          "y": 1.0,
+          "width": 80.0,
+          "height": 6.0,
+          "expression": "@Row.description",
+          "styleRef": "DetailText"
+        },
+        {
+          "type": "Text",
+          "id": "tdAmount",
+          "x": 140.0,
+          "y": 1.0,
+          "width": 38.0,
+          "height": 6.0,
+          "expression": "Format(@Row.amount, 'N2')",
+          "styleRef": "DetailText"
+        }
+      ]
+    },
+    "reportFooter": {
+      "height": 35.0,
+      "elements": [
+        {
+          "type": "Text",
+          "id": "lblBahtText",
+          "x": 2.0,
+          "y": 2.0,
+          "width": 176.0,
+          "height": 6.0,
+          "expression": "'(ตัวอักษร: ' + BahtText(87000.00) + ')'",
+          "styleRef": "HeaderLabel"
+        },
+        {
+          "type": "Text",
+          "id": "lblDateThai",
+          "x": 2.0,
+          "y": 9.0,
+          "width": 120.0,
+          "height": 6.0,
+          "expression": "'ออก ณ วันที่ ' + ThaiDate()",
+          "styleRef": "DetailText"
+        },
+        {
+          "type": "QrCode",
+          "id": "qrPromptPay",
+          "x": 140.0,
+          "y": 8.0,
+          "width": 25.0,
+          "height": 25.0,
+          "qrEccLevel": "M",
+          "expression": "PromptPayQr('0812345678', 87000.00)"
+        },
+        {
+          "type": "Text",
+          "id": "lblPromptPayHint",
+          "x": 130.0,
+          "y": 33.0,
+          "width": 45.0,
+          "height": 4.0,
+          "text": "สแกนจ่ายผ่าน PromptPay",
+          "styleRef": "DetailText"
+        }
+      ]
+    },
+    "pageFooter": {
+      "height": 12.0,
+      "elements": [
+        {
+          "type": "Text",
+          "id": "txtPageNumber",
+          "x": 120.0,
+          "y": 4.0,
+          "width": 60.0,
+          "height": 6.0,
+          "expression": "'หน้า ' + @Globals.PageNumber + ' จาก ' + @Globals.TotalPages",
+          "styleRef": "DetailText"
+        }
+      ]
+    }
+  }
+}

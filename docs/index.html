@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangplanix — WASM In-Browser Engine & Interactive Live Playground</title>
+  <link rel="stylesheet" href="src/playground.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span>🚀 Bangplanix</span>
+      <span class="brand-badge">WASM PLAYGROUND</span>
+    </div>
+    <div class="header-actions">
+      <label for="sample-select" style="font-size: 13px; color: var(--text-muted);">Template:</label>
+      <select id="sample-select" class="btn">
+        <option value="invoice">1. Commercial Tax Invoice (Standard)</option>
+        <option value="thai_etax">2. ใบกำกับภาษี e-Tax (มธอ. 3-2560)</option>
+        <option value="pos_receipt">3. สลิปใบเสร็จ POS 80mm (ESC/POS)</option>
+        <option value="shipping_label">4. ฉลากขนส่ง Logistics 4x6 (Zebra ZPL)</option>
+        <option value="payslip">5. สลิปเงินเดือนพนักงาน (HR Payslip)</option>
+      </select>
+      <button id="export-svg-btn" class="btn">📥 Export SVG</button>
+      <button id="theme-toggle-btn" class="btn">☀️ Light</button>
+      <a href="pricing.html" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">💎 Get License</a>
+    </div>
+  </header>
+
+  <div id="error-banner" class="error-banner"></div>
+
+  <div class="playground-layout">
+    <!-- Editor Pane -->
+    <div class="pane">
+      <div class="pane-header">
+        <span>📄 .bpx Template Definition (JSON Schema v1)</span>
+      </div>
+      <div class="editor-wrapper">
+        <textarea id="bpx-editor" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <!-- Live Preview Pane -->
+    <div class="pane preview-pane">
+      <div class="preview-canvas-wrapper" id="preview-canvas-wrapper">
+        <!-- Live SVG Render Output -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { BangplanixPlayground } from './src/playground.js';
+    window.addEventListener('DOMContentLoaded', () => {
+      new BangplanixPlayground();
+    });
+  </script>
+</body>
+</html>

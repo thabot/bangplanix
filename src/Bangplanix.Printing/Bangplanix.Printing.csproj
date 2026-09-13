@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Printing</RootNamespace>
+    <Description>Bangplanix Direct Hardware Printing Subsystem (Raw TCP, IPP, LPR, ESC/POS Thermal, Zebra ZPL II)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,58 @@
+# ==============================================================================
+# Bangplanix Ultra-Slim Crystal Reports Converter Worker (~90-110MB)
+# Multi-Stage Alpine + Minimal Wine Engine
+# ==============================================================================
+
+# --- Stage 1: Build .NET Worker ---
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+WORKDIR /src
+
+COPY Directory.Build.props Directory.Packages.props ./
+COPY src/Bangplanix.Core/Bangplanix.Core.csproj src/Bangplanix.Core/
+COPY src/Bangplanix.Adapters/Bangplanix.Adapters.csproj src/Bangplanix.Adapters/
+COPY tools/crystal-worker/CrystalWorker.csproj tools/crystal-worker/
+
+RUN dotnet restore tools/crystal-worker/CrystalWorker.csproj
+
+COPY src/Bangplanix.Core/ src/Bangplanix.Core/
+COPY src/Bangplanix.Adapters/ src/Bangplanix.Adapters/
+COPY tools/crystal-worker/ tools/crystal-worker/
+
+RUN dotnet publish tools/crystal-worker/CrystalWorker.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# --- Stage 2: Ultra-Slim Runtime with Minimal Wine Subsystem ---
+FROM alpine:3.20 AS final
+
+# Install minimal Wine and dependencies, prune unused 3D/audio subsystems (~200MB pruned)
+RUN apk add --no-cache \
+        wine \
+        freetype \
+        icu-libs \
+        libgcc \
+        libstdc++ \
+        ca-certificates && \
+    rm -rf /usr/lib/wine/x86_64-unix/d3d* \
+           /usr/lib/wine/x86_64-unix/winevulkan* \
+           /usr/lib/wine/x86_64-unix/opengl* \
+           /usr/lib/wine/x86_64-unix/*sound* \
+           /usr/share/wine/fonts \
+           /var/cache/apk/*
+
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_ENVIRONMENT=Production \
+    PORT=8080 \
+    WINEDEBUG=-all \
+    WINEPREFIX=/tmp/wine \
+    WINEDLLOVERRIDES="mscoree,mshtml="
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["dotnet", "CrystalWorker.dll"]

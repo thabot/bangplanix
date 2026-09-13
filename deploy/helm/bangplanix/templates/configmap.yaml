@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bangplanix.fullname" . }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "bangplanix.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  {{- range $key, $val := .Values.env }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "bangplanix.fullname" . }}-secrets
+  labels:
+    app.kubernetes.io/name: {{ include "bangplanix.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+type: Opaque
+stringData:
+  {{- range $key, $val := .Values.secrets }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}

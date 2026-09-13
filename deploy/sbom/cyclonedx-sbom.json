@@ -1,0 +1,86 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:6c986c7b-3df7-4ad3-9b62-67b140682b14",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-12T00:00:00Z",
+    "tools": [
+      {
+        "vendor": "Bangplanix",
+        "name": "Bangplanix SBOM Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "Bangplanix Enterprise Engine",
+      "version": "1.0.0",
+      "description": "Enterprise High-Performance Document & Reporting Engine in .NET 10 / Native AOT",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        },
+        {
+          "license": {
+            "name": "Bangplanix Commercial OEM & Sovereign Enterprise License"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "SkiaSharp",
+      "version": "3.116.1",
+      "purl": "pkg:nuget/SkiaSharp@3.116.1",
+      "licenses": [{ "license": { "id": "MIT" } }]
+    },
+    {
+      "type": "library",
+      "name": "HarfBuzzSharp",
+      "version": "7.3.0.3",
+      "purl": "pkg:nuget/HarfBuzzSharp@7.3.0.3",
+      "licenses": [{ "license": { "id": "MIT" } }]
+    },
+    {
+      "type": "library",
+      "name": "MiniExcel",
+      "version": "1.35.0",
+      "purl": "pkg:nuget/MiniExcel@1.35.0",
+      "licenses": [{ "license": { "id": "Apache-2.0" } }]
+    },
+    {
+      "type": "library",
+      "name": "Microsoft.Data.SqlClient",
+      "version": "6.0.1",
+      "purl": "pkg:nuget/Microsoft.Data.SqlClient@6.0.1",
+      "licenses": [{ "license": { "id": "MIT" } }]
+    },
+    {
+      "type": "library",
+      "name": "Npgsql",
+      "version": "9.0.2",
+      "purl": "pkg:nuget/Npgsql@9.0.2",
+      "licenses": [{ "license": { "id": "PostgreSQL" } }]
+    },
+    {
+      "type": "library",
+      "name": "MySqlConnector",
+      "version": "2.4.0",
+      "purl": "pkg:nuget/MySqlConnector@2.4.0",
+      "licenses": [{ "license": { "id": "MIT" } }]
+    },
+    {
+      "type": "library",
+      "name": "Lit",
+      "version": "3.2.1",
+      "purl": "pkg:npm/lit@3.2.1",
+      "licenses": [{ "license": { "id": "BSD-3-Clause" } }]
+    }
+  ]
+}

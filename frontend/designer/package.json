@@ -1,0 +1,18 @@
+{
+  "name": "@bangplanix/designer",
+  "version": "1.0.0",
+  "description": "Lit-based Web Visual Designer Component (<bangplanix-designer>) for Bangplanix",
+  "type": "module",
+  "main": "bangplanix-designer.js",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "lit": "^3.1.2",
+    "monaco-editor": "^0.49.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

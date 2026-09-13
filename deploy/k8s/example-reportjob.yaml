@@ -1,0 +1,28 @@
+apiVersion: bangplanix.io/v1alpha1
+kind: BangplanixReportJob
+metadata:
+  name: monthly-billing-invoices
+  namespace: reporting
+  labels:
+    app.kubernetes.io/managed-by: argocd
+    environment: production
+spec:
+  templateRef: "s3://bangplanix-templates/finance/monthly_tax_invoice.bpx"
+  outputFormat: "pdf"
+  cronSchedule: "0 8 1 * *" # 1st of every month at 08:00 AM UTC
+  concurrencyPolicy: "Forbid"
+  splitKeyField: "CustomerId"
+  parameters:
+    FiscalYear: "2026"
+    Currency: "THB"
+    AutoMaskTaxId: "true"
+  deliveryTargets:
+    - channel: "smtp"
+      destination: "{CustomerEmail}"
+      credentialsSecretRef: "smtp-credentials"
+    - channel: "s3"
+      destination: "s3://finance-archive-2026/invoices/{Period}/"
+      credentialsSecretRef: "aws-s3-credentials"
+    - channel: "webhook"
+      destination: "https://billing-webhook.internal/events/invoice-generated"
+      credentialsSecretRef: "webhook-signing-secret"

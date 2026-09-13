@@ -1,0 +1,48 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Vector Graphics & Text Shaping -->
+    <PackageVersion Include="SkiaSharp" Version="2.88.9" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.9" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.9" />
+    <PackageVersion Include="HarfBuzzSharp" Version="7.3.0.3" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.3" />
+
+    <!-- Roslyn Dynamic Compilation & Sandboxing -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+
+    <!-- Barcodes & QR Codes -->
+    <PackageVersion Include="ZXing.Net" Version="0.16.10" />
+    <PackageVersion Include="QRCoder" Version="1.6.0" />
+
+    <!-- Excel Export -->
+    <PackageVersion Include="MiniExcel" Version="1.38.0" />
+
+    <!-- Database Connectors -->
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageVersion Include="Npgsql" Version="8.0.6" />
+    <PackageVersion Include="MySqlConnector" Version="2.4.0" />
+
+    <!-- Command Line & Hosting -->
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.1.25080.5" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0-preview.1.25080.5" />
+
+    <!-- gRPC & Protocol Buffers -->
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.67.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.29.3" />
+    <PackageVersion Include="Grpc.Tools" Version="2.69.0" />
+
+    <!-- Testing & Benchmarks -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
+    <PackageVersion Include="FluentAssertions" Version="8.0.1" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+</Project>

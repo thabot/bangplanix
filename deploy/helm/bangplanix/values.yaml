@@ -1,0 +1,98 @@
+# Default values for Bangplanix Helm Chart
+replicaCount: 3
+
+image:
+  repository: ghcr.io/thabot/bangplanix
+  pullPolicy: IfNotPresent
+  tag: "v1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  httpPort: 8080
+  grpcPort: 50051
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
+  hosts:
+    - host: report.enterprise.internal
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 8080
+  tls:
+    - secretName: bangplanix-tls-cert
+      hosts:
+        - report.enterprise.internal
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 1024Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+env:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  DOTNET_EnableDiagnostics: "0"
+  BANGPLANIX_PORT: "8080"
+  BANGPLANIX_GRPC_PORT: "50051"
+  BANGPLANIX_LOG_LEVEL: "Information"
+  BANGPLANIX_STORAGE_PROVIDER: "S3"
+
+secrets:
+  KMS_MASTER_KEY: ""
+  LICENSE_KEY: ""
+  REDIS_CONNECTION_STRING: ""
+  S3_ACCESS_KEY: ""
+  S3_SECRET_KEY: ""
+
+persistence:
+  enabled: true
+  storageClassName: "standard"
+  accessMode: ReadWriteMany
+  size: 10Gi
+  mountPath: /app/custom_fonts

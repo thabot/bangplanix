@@ -1,0 +1,256 @@
+name: Bangplanix Polyglot Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Release Version Tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  # =========================================================================
+  # 1. Cross-Platform Native Binary Builds (.NET 10 CLI)
+  # =========================================================================
+  build-binaries:
+    name: Build CLI Binaries (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            archive_name: bangplanix-cli-linux-x64.tar.gz
+          - os: ubuntu-latest
+            target: linux-arm64
+            archive_name: bangplanix-cli-linux-arm64.tar.gz
+          - os: windows-latest
+            target: win-x64
+            archive_name: bangplanix-cli-win-x64.zip
+          - os: macos-latest
+            target: osx-arm64
+            archive_name: bangplanix-cli-osx-arm64.tar.gz
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Publish CLI Native Executable
+        run: >
+          dotnet publish tools/Bangplanix.Cli/Bangplanix.Cli.csproj
+          -c Release
+          -r ${{ matrix.target }}
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./dist-cli
+
+      - name: Archive Binaries (Linux / macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd dist-cli
+          tar -czvf ../${{ matrix.archive_name }} *
+
+      - name: Archive Binaries (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ./dist-cli/* -DestinationPath ./${{ matrix.archive_name }}
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive_name }}
+          path: ./${{ matrix.archive_name }}
+
+  # =========================================================================
+  # 2. Docker Container Image Release (GHCR & Docker Hub)
+  # =========================================================================
+  docker-publish:
+    name: Build & Push Docker Image (GHCR & Docker Hub)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (if secret provided)
+        if: env.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v3
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/bangplanix', secrets.DOCKERHUB_USERNAME) || '' }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # =========================================================================
+  # 3. .NET NuGet Packages Release
+  # =========================================================================
+  publish-nuget:
+    name: Publish .NET NuGet Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Pack NuGet Packages
+        run: dotnet pack Bangplanix.slnx -c Release -o ./nupkgs
+
+      - name: Push to NuGet.org (if secret provided)
+        if: env.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./nupkgs/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Push to GitHub Packages NuGet
+        run: |
+          dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" || true
+          dotnet nuget push ./nupkgs/*.nupkg --source github --skip-duplicate || true
+
+  # =========================================================================
+  # 4. Node.js / TypeScript npm Packages Release
+  # =========================================================================
+  publish-npm:
+    name: Publish npm Packages (Node SDK & Web Components)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Publish @bangplanix/client (if NPM_TOKEN provided)
+        if: env.NODE_AUTH_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd sdk/node
+          npm publish --access public || true
+
+      - name: Publish @bangplanix/viewer (if NPM_TOKEN provided)
+        if: env.NODE_AUTH_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd frontend/viewer
+          npm publish --access public || true
+
+      - name: Publish @bangplanix/designer (if NPM_TOKEN provided)
+        if: env.NODE_AUTH_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd frontend/designer
+          npm publish --access public || true
+
+  # =========================================================================
+  # 5. Python Package Release (PyPI)
+  # =========================================================================
+  publish-pypi:
+    name: Publish Python Package (PyPI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build Wheel & Source Distribution
+        run: |
+          python -m pip install --upgrade pip build twine
+          cd sdk/python
+          python -m build
+
+      - name: Upload to PyPI (if secret provided)
+        if: env.TWINE_PASSWORD != ''
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          cd sdk/python
+          twine upload dist/* --skip-existing || true
+
+  # =========================================================================
+  # 6. GitHub Release & Assets Publication
+  # =========================================================================
+  create-github-release:
+    name: Create GitHub Release & Attach Binaries
+    needs: [build-binaries, docker-publish, publish-nuget]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download all Binary Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./release-assets/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true

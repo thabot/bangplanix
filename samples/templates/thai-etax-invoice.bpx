@@ -1,0 +1,78 @@
+{
+  "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "ใบกำกับภาษีเต็มรูป / ใบเสร็จรับเงิน (e-Tax Invoice by Time Stamp / XML)",
+    "standard": "ETDA ER3-2560",
+    "author": "Bangplanix Enterprise"
+  },
+  "pageSetup": {
+    "paperKind": "A4",
+    "orientation": "Portrait",
+    "margins": { "top": 20, "bottom": 20, "left": 20, "right": 20 }
+  },
+  "parameters": [
+    { "name": "SellerName", "type": "string", "defaultValue": "บริษัท บางพลานิกซ์ เทคโนโลยี จำกัด (สำนักงานใหญ่)" },
+    { "name": "SellerTaxId", "type": "string", "defaultValue": "0105567012345" },
+    { "name": "BuyerName", "type": "string", "defaultValue": "บริษัท สยาม คอร์ปอเรชั่น จำกัด (มหาชน)" },
+    { "name": "BuyerTaxId", "type": "string", "defaultValue": "0107537000888" },
+    { "name": "DocNo", "type": "string", "defaultValue": "TAX-202609-0088" },
+    { "name": "DocDate", "type": "string", "defaultValue": "13/09/2569" }
+  ],
+  "datasets": [
+    { "name": "items", "source": "json" }
+  ],
+  "bands": {
+    "title": {
+      "height": 95,
+      "elements": [
+        { "type": "text", "bounds": { "x": 0, "y": 0, "width": 320, "height": 24 }, "expression": "=Parameters!SellerName.Value", "fontSize": 14, "fontWeight": "Bold", "textColor": "#0f172a" },
+        { "type": "text", "bounds": { "x": 0, "y": 24, "width": 320, "height": 18 }, "expression": "=\"เลขประจำตัวผู้เสียภาษี: \" + Parameters!SellerTaxId.Value", "fontSize": 10, "textColor": "#475569" },
+        { "type": "text", "bounds": { "x": 0, "y": 42, "width": 320, "height": 18 }, "content": "123 อาคารสาทรซิตี้ทาวเวอร์ ชั้น 24 ถนนสาทรใต้ แขวงทุ่งมหาเมฆ เขตสาทร กรุงเทพฯ 10120", "fontSize": 9, "textColor": "#64748b" },
+        { "type": "text", "bounds": { "x": 330, "y": 0, "width": 225, "height": 26 }, "content": "ใบกำกับภาษี / ใบเสร็จรับเงิน", "fontSize": 15, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#1e3a8a" },
+        { "type": "text", "bounds": { "x": 330, "y": 26, "width": 225, "height": 18 }, "content": "(เอกสารออกเป็นชุด / e-Tax Invoice)", "fontSize": 9, "textAlign": "Right", "textColor": "#3b82f6" },
+        { "type": "text", "bounds": { "x": 330, "y": 46, "width": 225, "height": 18 }, "expression": "=\"เลขที่: \" + Parameters!DocNo.Value", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 330, "y": 64, "width": 225, "height": 18 }, "expression": "=\"วันที่: \" + Parameters!DocDate.Value", "fontSize": 10, "textAlign": "Right" },
+        { "type": "line", "bounds": { "x": 0, "y": 88, "width": 555, "height": 1 }, "strokeColor": "#cbd5e1", "strokeWidth": 1.5 }
+      ]
+    },
+    "pageHeader": {
+      "height": 28,
+      "elements": [
+        { "type": "rectangle", "bounds": { "x": 0, "y": 0, "width": 555, "height": 24 }, "fillColor": "#f1f5f9", "borderColor": "#cbd5e1" },
+        { "type": "text", "bounds": { "x": 8, "y": 5, "width": 35, "height": 16 }, "content": "ลำดับ", "fontSize": 10, "fontWeight": "Bold", "textColor": "#334155" },
+        { "type": "text", "bounds": { "x": 48, "y": 5, "width": 240, "height": 16 }, "content": "รายการสินค้า / บริการ", "fontSize": 10, "fontWeight": "Bold", "textColor": "#334155" },
+        { "type": "text", "bounds": { "x": 295, "y": 5, "width": 50, "height": 16 }, "content": "จำนวน", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#334155" },
+        { "type": "text", "bounds": { "x": 355, "y": 5, "width": 90, "height": 16 }, "content": "ราคา/หน่วย", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#334155" },
+        { "type": "text", "bounds": { "x": 455, "y": 5, "width": 90, "height": 16 }, "content": "จำนวนเงิน (บาท)", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#334155" }
+      ]
+    },
+    "detail": {
+      "dataset": "items",
+      "height": 24,
+      "elements": [
+        { "type": "text", "bounds": { "x": 8, "y": 4, "width": 35, "height": 16 }, "expression": "=RowNumber()", "fontSize": 9.5, "textColor": "#475569" },
+        { "type": "text", "bounds": { "x": 48, "y": 4, "width": 240, "height": 16 }, "expression": "=Fields!name.Value", "fontSize": 9.5, "textColor": "#0f172a" },
+        { "type": "text", "bounds": { "x": 295, "y": 4, "width": 50, "height": 16 }, "expression": "=Fields!qty.Value", "fontSize": 9.5, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 355, "y": 4, "width": 90, "height": 16 }, "expression": "=Fields!unitPrice.Value", "fontSize": 9.5, "textAlign": "Right", "format": "N2" },
+        { "type": "text", "bounds": { "x": 455, "y": 4, "width": 90, "height": 16 }, "expression": "=Fields!amount.Value", "fontSize": 9.5, "textAlign": "Right", "fontWeight": "Bold", "format": "N2" },
+        { "type": "line", "bounds": { "x": 0, "y": 23, "width": 555, "height": 1 }, "strokeColor": "#f1f5f9", "strokeWidth": 1 }
+      ]
+    },
+    "pageFooter": {
+      "height": 100,
+      "elements": [
+        { "type": "line", "bounds": { "x": 0, "y": 5, "width": 555, "height": 1 }, "strokeColor": "#94a3b8", "strokeWidth": 1.5 },
+        { "type": "text", "bounds": { "x": 0, "y": 14, "width": 320, "height": 20 }, "expression": "=\"(ตัวอักษร) \" + BahtText(128400.00)", "fontSize": 10, "fontWeight": "Bold", "textColor": "#1e3a8a" },
+        { "type": "text", "bounds": { "x": 340, "y": 14, "width": 100, "height": 18 }, "content": "รวมมูลค่า:", "fontSize": 10, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 450, "y": 14, "width": 95, "height": 18 }, "content": "120,000.00", "fontSize": 10, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 340, "y": 32, "width": 100, "height": 18 }, "content": "ภาษีมูลค่าเพิ่ม 7%:", "fontSize": 10, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 450, "y": 32, "width": 95, "height": 18 }, "content": "8,400.00", "fontSize": 10, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 340, "y": 50, "width": 100, "height": 20 }, "content": "ยอดรวมทั้งสิ้น:", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#0f172a" },
+        { "type": "text", "bounds": { "x": 450, "y": 50, "width": 95, "height": 20 }, "content": "128,400.00", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#1e3a8a" },
+        { "type": "barcode", "bounds": { "x": 0, "y": 42, "width": 180, "height": 38 }, "expression": "=Parameters!DocNo.Value", "symbology": "QRCode" },
+        { "type": "text", "bounds": { "x": 0, "y": 84, "width": 555, "height": 14 }, "content": "เอกสารนี้ได้จัดทำและส่งมอบด้วยข้อมูลอิเล็กทรอนิกส์ตามข้อกำหนด มธอ. 3-2560", "fontSize": 8, "textAlign": "Center", "textColor": "#94a3b8" }
+      ]
+    }
+  }
+}

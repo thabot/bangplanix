@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Adapters</RootNamespace>
+    <AssemblyName>Bangplanix.Adapters</AssemblyName>
+    <Description>Bangplanix Direct Native Legacy Report Adapters (SSRS, Jaspersoft, FastReport, Stimulsoft, Telerik, DevExpress, Office, HTML)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MiniExcel" />
+  </ItemGroup>
+</Project>

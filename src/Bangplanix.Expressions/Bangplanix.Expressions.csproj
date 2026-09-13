@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Expressions</RootNamespace>
+    <AssemblyName>Bangplanix.Expressions</AssemblyName>
+    <Description>Bangplanix Roslyn Dynamic Expression Compiler and AST Security Sandbox</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+</Project>

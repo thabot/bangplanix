@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <RootNamespace>Bangplanix.Benchmarks</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bangplanix.Core\Bangplanix.Core.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Engine\Bangplanix.Engine.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+</Project>

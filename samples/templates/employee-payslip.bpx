@@ -1,0 +1,53 @@
+{
+  "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "ใบจ่ายเงินเดือนพนักงาน (Confidential Payslip)",
+    "standard": "HR-PAYSLIP-TH",
+    "author": "Bangplanix HRM"
+  },
+  "pageSetup": {
+    "paperKind": "A5",
+    "orientation": "Landscape",
+    "margins": { "top": 15, "bottom": 15, "left": 15, "right": 15 }
+  },
+  "parameters": [
+    { "name": "Company", "type": "string", "defaultValue": "บริษัท บางพลานิกซ์ เทคโนโลยี จำกัด" },
+    { "name": "Period", "type": "string", "defaultValue": "กันยายน 2569" },
+    { "name": "EmpCode", "type": "string", "defaultValue": "EMP-042" },
+    { "name": "EmpName", "type": "string", "defaultValue": "นายสมศักดิ์ นวัตกรรม" },
+    { "name": "Position", "type": "string", "defaultValue": "Senior Systems Architect" }
+  ],
+  "bands": {
+    "title": {
+      "height": 110,
+      "elements": [
+        { "type": "text", "bounds": { "x": 0, "y": 0, "width": 100, "height": 18 }, "expression": "=Parameters!Company.Value", "fontSize": 12, "fontWeight": "Bold" },
+        { "type": "text", "bounds": { "x": 110, "y": 0, "width": 70, "height": 18 }, "content": "ใบแจ้งยอดเงินเดือน (PAYSLIP)", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#1e3a8a" },
+        { "type": "text", "bounds": { "x": 110, "y": 18, "width": 70, "height": 12 }, "expression": "=\"งวดประจำ: \" + Parameters!Period.Value", "fontSize": 8.5, "textAlign": "Right", "textColor": "#64748b" },
+        { "type": "line", "bounds": { "x": 0, "y": 32, "width": 180, "height": 1 }, "strokeColor": "#cbd5e1", "strokeWidth": 1 },
+        { "type": "text", "bounds": { "x": 0, "y": 36, "width": 90, "height": 12 }, "expression": "=\"รหัสพนักงาน: \" + Parameters!EmpCode.Value", "fontSize": 8.5 },
+        { "type": "text", "bounds": { "x": 90, "y": 36, "width": 90, "height": 12 }, "expression": "=\"ชื่อ-สกุล: \" + Parameters!EmpName.Value", "fontSize": 8.5, "fontWeight": "Bold" },
+        { "type": "text", "bounds": { "x": 0, "y": 48, "width": 90, "height": 12 }, "expression": "=\"ตำแหน่ง: \" + Parameters!Position.Value", "fontSize": 8.5, "textColor": "#475569" },
+        { "type": "rectangle", "bounds": { "x": 0, "y": 62, "width": 88, "height": 16 }, "fillColor": "#f1f5f9" },
+        { "type": "text", "bounds": { "x": 4, "y": 65, "width": 80, "height": 12 }, "content": "รายการได้ (Earnings)", "fontSize": 8.5, "fontWeight": "Bold" },
+        { "type": "rectangle", "bounds": { "x": 92, "y": 62, "width": 88, "height": 16 }, "fillColor": "#f1f5f9" },
+        { "type": "text", "bounds": { "x": 96, "y": 65, "width": 80, "height": 12 }, "content": "รายการหัก (Deductions)", "fontSize": 8.5, "fontWeight": "Bold" },
+        { "type": "text", "bounds": { "x": 4, "y": 80, "width": 55, "height": 12 }, "content": "เงินเดือนพื้นฐาน", "fontSize": 8 },
+        { "type": "text", "bounds": { "x": 60, "y": 80, "width": 25, "height": 12 }, "content": "95,000.00", "fontSize": 8, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 96, "y": 80, "width": 55, "height": 12 }, "content": "ภาษีเงินได้หัก ณ ที่จ่าย", "fontSize": 8 },
+        { "type": "text", "bounds": { "x": 152, "y": 80, "width": 25, "height": 12 }, "content": "8,450.00", "fontSize": 8, "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 96, "y": 92, "width": 55, "height": 12 }, "content": "ประกันสังคม", "fontSize": 8 },
+        { "type": "text", "bounds": { "x": 152, "y": 92, "width": 25, "height": 12 }, "content": "750.00", "fontSize": 8, "textAlign": "Right" }
+      ]
+    },
+    "pageFooter": {
+      "height": 25,
+      "elements": [
+        { "type": "line", "bounds": { "x": 0, "y": 2, "width": 180, "height": 1 }, "strokeColor": "#0f172a", "strokeWidth": 1.5 },
+        { "type": "text", "bounds": { "x": 0, "y": 6, "width": 100, "height": 14 }, "content": "ยอดเงินรับสุทธิ (NET SALARY):", "fontSize": 9.5, "fontWeight": "Bold", "textColor": "#1e3a8a" },
+        { "type": "text", "bounds": { "x": 100, "y": 6, "width": 80, "height": 14 }, "content": "85,800.00 THB", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Right", "textColor": "#16a34a" }
+      ]
+    }
+  }
+}

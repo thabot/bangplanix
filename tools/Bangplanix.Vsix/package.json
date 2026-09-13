@@ -1,0 +1,105 @@
+{
+  "name": "bangplanix-vscode",
+  "displayName": "Bangplanix Report Designer & Live Preview",
+  "description": "Enterprise-grade report design, IntelliSense schema validation, and real-time live preview for Bangplanix (.bpx) templates.",
+  "version": "1.0.0",
+  "publisher": "bangplanix",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "bangplanix",
+    "bpx",
+    "report",
+    "pdf",
+    "preview",
+    "intellisense",
+    "schema"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:json",
+    "workspaceContains:**/*.bpx",
+    "onCommand:bangplanix.preview",
+    "onCommand:bangplanix.validate"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "bangplanix",
+        "aliases": ["Bangplanix Report Template", "bpx"],
+        "extensions": [".bpx"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": ["*.bpx", "**/*.bpx"],
+        "url": "./schema/bangplanix.schema.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "bangplanix",
+        "path": "./snippets/bpx.code-snippets"
+      },
+      {
+        "language": "json",
+        "path": "./snippets/bpx.code-snippets"
+      }
+    ],
+    "commands": [
+      {
+        "command": "bangplanix.preview",
+        "title": "Bangplanix: Open Live Side-by-Side Preview",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "bangplanix.validate",
+        "title": "Bangplanix: Validate Report Schema & Expressions",
+        "icon": "$(check)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceExtname == .bpx || resourceLangId == bangplanix",
+          "command": "bangplanix.preview",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bangplanix.preview",
+          "when": "resourceExtname == .bpx || resourceLangId == bangplanix"
+        },
+        {
+          "command": "bangplanix.validate",
+          "when": "resourceExtname == .bpx || resourceLangId == bangplanix"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Bangplanix",
+      "properties": {
+        "bangplanix.livePreview.debounceMs": {
+          "type": "number",
+          "default": 300,
+          "description": "Debounce time in milliseconds before updating live preview after typing."
+        },
+        "bangplanix.livePreview.theme": {
+          "type": "string",
+          "enum": ["system", "dark", "light"],
+          "default": "system",
+          "description": "Theme to use in the live report preview pane."
+        }
+      }
+    }
+  }
+}

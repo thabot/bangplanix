@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package bangplanix;
+
+option csharp_namespace = "Bangplanix.Server.Grpc";
+
+// The Bangplanix High-Performance Reporting Service
+service BangplanixReportService {
+  // Synchronous unary report rendering
+  rpc RenderReport (RenderReportRequest) returns (RenderReportResponse);
+
+  // Server-side streaming report rendering via zero-copy chunks
+  rpc RenderReportStream (RenderReportRequest) returns (stream StreamReportChunk);
+
+  // Validate a .bpx template schema and expressions
+  rpc ValidateTemplate (ValidateTemplateRequest) returns (ValidateTemplateResponse);
+
+  // Liveness & Readiness probe
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+enum OutputFormat {
+  PDF = 0;
+  XLSX = 1;
+  SVG = 2;
+  PNG = 3;
+}
+
+message RenderReportRequest {
+  // Raw .bpx JSON template content (or specify template_path)
+  string template_json = 1;
+  
+  // Template file name / path in ./volumes/templates/
+  string template_path = 2;
+
+  // Raw JSON data payload (or leave empty to use DB Connectors defined in .bpx)
+  string data_json = 3;
+
+  // Desired output format (PDF, XLSX, SVG, PNG)
+  OutputFormat format = 4;
+
+  // Dynamic parameters passed to the report expressions and datasets
+  map<string, string> parameters = 5;
+
+  // Optional multi-tenant isolation ID
+  string tenant_id = 6;
+}
+
+message RenderReportResponse {
+  // Rendered binary payload (PDF, XLSX, etc.)
+  bytes payload = 1;
+
+  // MIME content type (e.g. application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+  string content_type = 2;
+
+  // Total rendering duration in milliseconds
+  int64 duration_ms = 3;
+
+  // Total pages rendered (for PDF)
+  int32 page_count = 4;
+
+  // Suggested download filename
+  string filename = 5;
+}
+
+message StreamReportChunk {
+  // Binary slice of the rendered report
+  bytes chunk = 1;
+
+  // Sequential chunk index (0-indexed)
+  int64 sequence = 2;
+
+  // True if this is the last chunk in the stream
+  bool is_final = 3;
+}
+
+message ValidateTemplateRequest {
+  string template_json = 1;
+  string template_path = 2;
+}
+
+message ValidateTemplateResponse {
+  bool is_valid = 1;
+  string title = 2;
+  string version = 3;
+  repeated string errors = 4;
+}
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+  }
+  ServingStatus status = 1;
+  string version = 2;
+  int64 uptime_seconds = 3;
+}

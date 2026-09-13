@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bangplanix.Adapters/Bangplanix.Adapters.csproj" />
+    <Project Path="src/Bangplanix.Client/Bangplanix.Client.csproj" />
+    <Project Path="src/Bangplanix.Connectors/Bangplanix.Connectors.csproj" />
+    <Project Path="src/Bangplanix.Core/Bangplanix.Core.csproj" />
+    <Project Path="src/Bangplanix.Engine/Bangplanix.Engine.csproj" />
+    <Project Path="src/Bangplanix.Expressions/Bangplanix.Expressions.csproj" />
+    <Project Path="src/Bangplanix.Printing/Bangplanix.Printing.csproj" />
+    <Project Path="src/Bangplanix.Server/Bangplanix.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bangplanix.Adapters.Tests/Bangplanix.Adapters.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Benchmarks/Bangplanix.Benchmarks.csproj" />
+    <Project Path="tests/Bangplanix.Client.Tests/Bangplanix.Client.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Connectors.Tests/Bangplanix.Connectors.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Core.Tests/Bangplanix.Core.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Engine.Tests/Bangplanix.Engine.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Expressions.Tests/Bangplanix.Expressions.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Printing.Tests/Bangplanix.Printing.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Security.Tests/Bangplanix.Security.Tests.csproj" />
+    <Project Path="tests/Bangplanix.Seo.Tests/Bangplanix.Seo.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Bangplanix.Cli/Bangplanix.Cli.csproj" />
+    <Project Path="tools/crystal-worker/CrystalWorker.csproj" />
+  </Folder>
+</Solution>

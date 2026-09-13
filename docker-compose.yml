@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  bangplanix-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bangplanix-server
+    restart: unless-stopped
+    ports:
+      - "9545:9545" # HTTP REST / Web Viewer
+      - "9546:9546" # gRPC High-Speed Engine
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - BANGPLANIX_HTTP_PORT=9545
+      - BANGPLANIX_GRPC_PORT=9546
+      - THABOT_MASTER_KEY=Dev_Local_Master_Key_2026!
+      - CRYSTAL_WORKER_URL=http://crystal-worker:8080
+    volumes:
+      - ./volumes/data:/app/volumes/data
+      - ./volumes/templates:/app/volumes/templates
+      - ./volumes/fonts:/app/volumes/fonts
+      - ./volumes/logs:/app/volumes/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9545/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  crystal-worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.crystal-worker
+    container_name: bangplanix-crystal-worker
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - PORT=8080
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+

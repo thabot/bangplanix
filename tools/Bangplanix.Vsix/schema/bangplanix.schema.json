@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
+  "title": "Bangplanix Report Definition (.bpx)",
+  "description": "JSON Schema specification for Bangplanix high-performance report templates",
+  "type": "object",
+  "required": ["version", "pageSetup"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": ["1.0", "1.0.0"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "pageSetup": {
+      "$ref": "#/$defs/pageSetup"
+    },
+    "parameters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/parameter" }
+    },
+    "datasets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dataset" }
+    },
+    "styles": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/style" }
+    },
+    "bands": {
+      "$ref": "#/$defs/bands"
+    }
+  },
+  "$defs": {
+    "pageSetup": {
+      "type": "object",
+      "required": ["paperKind", "orientation"],
+      "properties": {
+        "paperKind": {
+          "type": "string",
+          "enum": ["A4", "A3", "A5", "Letter", "Legal", "Custom"]
+        },
+        "orientation": {
+          "type": "string",
+          "enum": ["Portrait", "Landscape"]
+        },
+        "width": { "type": "number", "default": 210.0 },
+        "height": { "type": "number", "default": 297.0 },
+        "unit": {
+          "type": "string",
+          "enum": ["mm", "cm", "in", "pt", "px"],
+          "default": "mm"
+        },
+        "margins": {
+          "type": "object",
+          "properties": {
+            "top": { "type": "number", "default": 10.0 },
+            "bottom": { "type": "number", "default": 10.0 },
+            "left": { "type": "number", "default": 10.0 },
+            "right": { "type": "number", "default": 10.0 }
+          }
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["String", "Number", "Boolean", "DateTime", "List"]
+        },
+        "defaultValue": {},
+        "isRequired": { "type": "boolean", "default": false },
+        "cascadingParent": { "type": "string" }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["Sql", "Rest", "Json", "Static"]
+        },
+        "connectionRef": { "type": "string" },
+        "queryOrUrl": { "type": "string" },
+        "staticData": {}
+      }
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "fontFamily": { "type": "string" },
+        "fontSize": { "type": "number" },
+        "fontWeight": { "type": "string", "enum": ["Normal", "Bold", "Thin", "ExtraBold"] },
+        "fontStyle": { "type": "string", "enum": ["Normal", "Italic"] },
+        "color": { "type": "string" },
+        "backgroundColor": { "type": "string" },
+        "align": { "type": "string", "enum": ["Left", "Center", "Right", "Justify"] },
+        "verticalAlign": { "type": "string", "enum": ["Top", "Middle", "Bottom"] },
+        "border": {
+          "type": "object",
+          "properties": {
+            "top": { "type": "string" },
+            "bottom": { "type": "string" },
+            "left": { "type": "string" },
+            "right": { "type": "string" },
+            "color": { "type": "string" },
+            "width": { "type": "number" }
+          }
+        },
+        "format": { "type": "string" }
+      }
+    },
+    "bands": {
+      "type": "object",
+      "properties": {
+        "reportHeader": { "$ref": "#/$defs/band" },
+        "pageHeader": { "$ref": "#/$defs/band" },
+        "groupHeaders": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/groupBand" }
+        },
+        "detail": { "$ref": "#/$defs/band" },
+        "groupFooters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/groupBand" }
+        },
+        "pageFooter": { "$ref": "#/$defs/band" },
+        "reportFooter": { "$ref": "#/$defs/band" }
+      }
+    },
+    "band": {
+      "type": "object",
+      "required": ["height"],
+      "properties": {
+        "height": { "type": "number" },
+        "keepTogether": { "type": "boolean", "default": false },
+        "visibleCondition": { "type": "string" },
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        }
+      }
+    },
+    "groupBand": {
+      "type": "object",
+      "required": ["groupBy", "height"],
+      "properties": {
+        "groupBy": { "type": "string" },
+        "height": { "type": "number" },
+        "repeatOnEveryPage": { "type": "boolean", "default": false },
+        "keepTogether": { "type": "boolean", "default": false },
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "required": ["type", "x", "y", "width", "height"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Text", "Image", "Barcode", "QrCode", "Shape", "Table", "Container"]
+        },
+        "id": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "style": { "$ref": "#/$defs/style" },
+        "styleRef": { "type": "string" },
+        "text": { "type": "string" },
+        "expression": { "type": "string" },
+        "imageSource": { "type": "string" },
+        "barcodeType": {
+          "type": "string",
+          "enum": ["Code128", "GS1_128", "Code39", "EAN13", "EAN8", "UPCA", "ITF14"]
+        },
+        "qrEccLevel": {
+          "type": "string",
+          "enum": ["L", "M", "Q", "H"]
+        },
+        "shapeType": {
+          "type": "string",
+          "enum": ["Rectangle", "RoundedRect", "Line", "Ellipse"]
+        },
+        "cornerRadius": { "type": "number" }
+      }
+    }
+  }
+}

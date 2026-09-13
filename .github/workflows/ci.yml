@@ -1,0 +1,83 @@
+name: Bangplanix CI
+
+on:
+  push:
+    branches: [ "main", "uat", "develop" ]
+  pull_request:
+    branches: [ "main", "uat" ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 10 & Node.js)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: JavaScript Syntax Verification
+        run: node -c frontend/playground/src/playground.js frontend/playground/src/wasm-engine.js frontend/viewer/viewer-core.js sdk/node/src/index.js
+
+      - name: Restore Dependencies
+        run: dotnet restore Bangplanix.slnx
+
+      - name: Build Solution (.NET 10)
+        run: dotnet build Bangplanix.slnx --configuration Release --no-restore
+
+      - name: Run Backend Automated Tests (xUnit)
+        run: |
+          dotnet test tests/Bangplanix.Core.Tests/Bangplanix.Core.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Expressions.Tests/Bangplanix.Expressions.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Connectors.Tests/Bangplanix.Connectors.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Adapters.Tests/Bangplanix.Adapters.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Printing.Tests/Bangplanix.Printing.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Security.Tests/Bangplanix.Security.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Seo.Tests/Bangplanix.Seo.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Client.Tests/Bangplanix.Client.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test tests/Bangplanix.Engine.Tests/Bangplanix.Engine.Tests.csproj --configuration Release --no-build --verbosity normal
+
+      - name: Run Frontend Web Viewer Unit Tests (Node --test)
+        run: node --test frontend/viewer/tests/*.test.js
+
+      - name: Run Frontend Playground Unit Tests (Node --test)
+        run: node --test frontend/playground/tests/*.test.js
+
+      - name: Run Node.js SDK Unit Tests
+        run: node --test sdk/node/tests/*.test.js
+
+      - name: Run Python SDK Unit Tests
+        working-directory: sdk/python
+        run: python -m unittest discover -s tests
+
+      - name: Verify CLI Functionality
+        run: dotnet run --project tools/Bangplanix.Cli -c Release --no-build -- validate -t schema/v1/samples/invoice.bpx

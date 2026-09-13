@@ -1,0 +1,7 @@
+{
+  "items": [
+    { "name": "Iced Caramel Macchiato", "qty": 1, "price": "125.00" },
+    { "name": "Hot Americano (Medium)", "qty": 1, "price": "95.00" },
+    { "name": "Almond Croissant", "qty": 1, "price": "125.00" }
+  ]
+}

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Bangplanix.Cli</RootNamespace>
+    <AssemblyName>bangplanix</AssemblyName>
+    <Description>Bangplanix Command Line Interface (CLI) Tool for report compilation, rendering, and validation</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bangplanix.Core\Bangplanix.Core.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Engine\Bangplanix.Engine.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Connectors\Bangplanix.Connectors.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Adapters\Bangplanix.Adapters.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Printing\Bangplanix.Printing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+</Project>

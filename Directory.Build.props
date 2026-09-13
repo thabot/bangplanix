@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    
+    <!-- Assembly Metadata -->
+    <Authors>Bangplanix Contributors</Authors>
+    <Company>Bangplanix</Company>
+    <Product>Bangplanix Enterprise Reporting Engine</Product>
+    <Copyright>Copyright © 2026 Bangplanix Project</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>1.0.0-preview.1</Version>
+    <RepositoryUrl>https://github.com/thabot/bangplanix</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    
+    <!-- Code Analysis & Performance Settings -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+</Project>

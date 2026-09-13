@@ -1,0 +1,104 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "🚀 Bangplanix Executive Cluster Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "reqps" }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "title": "Throughput (Renders / sec)",
+      "type": "stat",
+      "targets": [{ "expr": "rate(bangplanix_render_total[1m])", "legendFormat": "Throughput" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 5000 }] }, "unit": "short" }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "title": "Broker Queue Backlog Depth",
+      "type": "stat",
+      "targets": [{ "expr": "bangplanix_queue_depth", "legendFormat": "Pending Jobs" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }, "unit": "short" }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "title": "Dead-Letter Queue (DLQ)",
+      "type": "stat",
+      "targets": [{ "expr": "bangplanix_dlq_count", "legendFormat": "Failed Slices" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "bytes" }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "title": "Managed Heap RAM (vs 128MB Limit)",
+      "type": "gauge",
+      "targets": [{ "expr": "bangplanix_memory_allocated_bytes", "legendFormat": "RAM Usage" }]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 6,
+      "title": "⏱️ Latency & Performance Breakdown",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisLabel": "Latency (ms)", "drawStyle": "line" }, "unit": "ms" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 7,
+      "title": "Document Render Latency Percentiles (p50, p95, p99)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(bangplanix_render_duration_bucket[5m])) by (le))", "legendFormat": "p50 (Median)" },
+        { "expr": "histogram_quantile(0.95, sum(rate(bangplanix_render_duration_bucket[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(bangplanix_render_duration_bucket[5m])) by (le))", "legendFormat": "p99 (Microsecond Target)" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "bars" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 8,
+      "title": "Active Worker Nodes & Parallel Threads",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "bangplanix_worker_concurrency", "legendFormat": "{{node_id}} (Workers)" }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["bangplanix", "reporting", "kubernetes", "dotnet10", "telemetry"],
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Bangplanix — Production Observability & Telemetry",
+  "uid": "bangplanix-prod-dashboard",
+  "version": 1
+}

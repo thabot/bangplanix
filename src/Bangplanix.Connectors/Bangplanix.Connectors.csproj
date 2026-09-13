@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Connectors</RootNamespace>
+    <AssemblyName>Bangplanix.Connectors</AssemblyName>
+    <Description>Bangplanix Multi-Dataset Data Federation, SQL, REST API, JSON, and MiniExcel Connectors</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MiniExcel" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="MySqlConnector" />
+  </ItemGroup>
+</Project>

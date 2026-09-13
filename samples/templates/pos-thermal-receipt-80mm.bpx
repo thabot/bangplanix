@@ -1,0 +1,55 @@
+{
+  "$schema": "https://bangplanix.io/schemas/v1/bangplanix.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "POS Thermal Receipt 80mm",
+    "standard": "ESC/POS",
+    "author": "Bangplanix Retail POS"
+  },
+  "pageSetup": {
+    "paperKind": "Custom",
+    "width": 80,
+    "height": 200,
+    "orientation": "Portrait",
+    "margins": { "top": 5, "bottom": 5, "left": 5, "right": 5 }
+  },
+  "parameters": [
+    { "name": "StoreName", "type": "string", "defaultValue": "BANGPLANIX COFFEE & BAKERY" },
+    { "name": "ReceiptNo", "type": "string", "defaultValue": "RCP-2026-9042" },
+    { "name": "TableNo", "type": "string", "defaultValue": "Table 08" }
+  ],
+  "datasets": [
+    { "name": "items", "source": "json" }
+  ],
+  "bands": {
+    "title": {
+      "height": 55,
+      "elements": [
+        { "type": "text", "bounds": { "x": 0, "y": 0, "width": 70, "height": 18 }, "expression": "=Parameters!StoreName.Value", "fontSize": 10, "fontWeight": "Bold", "textAlign": "Center" },
+        { "type": "text", "bounds": { "x": 0, "y": 18, "width": 70, "height": 12 }, "content": "Branch: Central Rama 9 (001)", "fontSize": 7.5, "textAlign": "Center", "textColor": "#64748b" },
+        { "type": "text", "bounds": { "x": 0, "y": 30, "width": 70, "height": 12 }, "expression": "=\"Order: \" + Parameters!ReceiptNo.Value + \" | \" + Parameters!TableNo.Value", "fontSize": 7.5, "textAlign": "Center" },
+        { "type": "line", "bounds": { "x": 0, "y": 48, "width": 70, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 }
+      ]
+    },
+    "detail": {
+      "dataset": "items",
+      "height": 16,
+      "elements": [
+        { "type": "text", "bounds": { "x": 0, "y": 2, "width": 45, "height": 12 }, "expression": "=Fields!name.Value", "fontSize": 7.5 },
+        { "type": "text", "bounds": { "x": 45, "y": 2, "width": 10, "height": 12 }, "expression": "=\"x\" + Fields!qty.Value", "fontSize": 7.5, "textAlign": "Center" },
+        { "type": "text", "bounds": { "x": 55, "y": 2, "width": 15, "height": 12 }, "expression": "=Fields!price.Value", "fontSize": 7.5, "textAlign": "Right" }
+      ]
+    },
+    "pageFooter": {
+      "height": 70,
+      "elements": [
+        { "type": "line", "bounds": { "x": 0, "y": 4, "width": 70, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 },
+        { "type": "text", "bounds": { "x": 0, "y": 8, "width": 40, "height": 14 }, "content": "TOTAL AMOUNT:", "fontSize": 9, "fontWeight": "Bold" },
+        { "type": "text", "bounds": { "x": 40, "y": 8, "width": 30, "height": 14 }, "content": "345.00", "fontSize": 9, "fontWeight": "Bold", "textAlign": "Right" },
+        { "type": "text", "bounds": { "x": 0, "y": 24, "width": 40, "height": 12 }, "content": "Payment: PromptPay QR", "fontSize": 7 },
+        { "type": "barcode", "bounds": { "x": 10, "y": 38, "width": 50, "height": 20 }, "expression": "=Parameters!ReceiptNo.Value", "symbology": "Code128" },
+        { "type": "text", "bounds": { "x": 0, "y": 60, "width": 70, "height": 10 }, "content": "THANK YOU / PLEASE VISIT AGAIN", "fontSize": 6.5, "textAlign": "Center" }
+      ]
+    }
+  }
+}

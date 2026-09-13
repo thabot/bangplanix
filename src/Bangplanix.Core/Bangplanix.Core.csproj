@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Bangplanix.Core</RootNamespace>
+    <AssemblyName>Bangplanix.Core</AssemblyName>
+    <Description>Bangplanix Core AST Models, JSON Schema Parser, and Common Abstractions</Description>
+  </PropertyGroup>
+</Project>
