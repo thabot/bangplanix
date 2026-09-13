@@ -148,11 +148,11 @@ jobs:
       - name: Pack NuGet Packages
         run: dotnet pack Bangplanix.slnx -c Release -o ./nupkgs
 
-      - name: Push to NuGet.org (if secret provided)
-        if: env.NUGET_API_KEY != ''
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./nupkgs/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json --skip-duplicate
+      - name: NuGet login (OIDC Trusted Publishing)
+        uses: NuGet/login@v1
+
+      - name: Push to NuGet.org
+        run: dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate || true
 
       - name: Push to GitHub Packages NuGet
         run: |
