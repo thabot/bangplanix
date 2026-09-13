@@ -153,8 +153,15 @@ jobs:
         with:
           user: ${{ github.repository_owner }}
 
-      - name: Push to NuGet.org
-        run: dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate || true
+      - name: Push to NuGet.org (API Key or OIDC)
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -n "$NUGET_API_KEY" ]; then
+            dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate || true
+          else
+            dotnet nuget push ./nupkgs/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate || true
+          fi
 
       - name: Push to GitHub Packages NuGet
         run: |

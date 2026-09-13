@@ -7,10 +7,10 @@
 [![Zero Copyleft](https://img.shields.io/badge/Compliance-100%25%20Permissive-brightgreen)](LICENSE-AUDIT.md)
 
 [![Docker Image](https://img.shields.io/badge/Docker%20Hub-thabot%2Fbangplanix-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/thabot/bangplanix)
-[![NuGet](https://img.shields.io/badge/.NET%20SDK-src%2FBangplanix.Client-512BD4?logo=dotnet&logoColor=white)](src/Bangplanix.Client/)
+[![GitHub Packages](https://img.shields.io/badge/.NET%20NuGet-GitHub%20Packages-512BD4?logo=nuget&logoColor=white)](https://github.com/thabot/bangplanix/pkgs/nuget/Bangplanix.Client)
 [![npm](https://img.shields.io/badge/npm-%40bangplanix%2Fclient-CB3837?logo=npm)](https://www.npmjs.com/package/@bangplanix/client)
 [![PyPI](https://img.shields.io/badge/PyPI-bangplanix-3775A9?logo=pypi&logoColor=white)](https://pypi.org/project/bangplanix/)
-[![Go SDK](https://img.shields.io/badge/Go%20SDK-sdk%2Fgo-00ADD8?logo=go&logoColor=white)](sdk/go/)
+[![Go Reference](https://img.shields.io/badge/Go-pkg.go.dev-00ADD8?logo=go&logoColor=white)](https://pkg.go.dev/github.com/thabot/bangplanix/sdk/go)
 
 > **Bangplanix** is a high-performance, microsecond-level enterprise reporting engine and web middleware built on **.NET 10 (C# 14 / Native AOT)**. Designed as a modern, open-core replacement for legacy reporting suites (Crystal Reports, SSRS, Jaspersoft, FastReport, BIRT, DevExpress).
 
@@ -24,8 +24,8 @@
 | 🐙 **GitHub Container (GHCR)** | [`ghcr.io/thabot/bangplanix`](https://github.com/thabot/bangplanix/pkgs/container/bangplanix) | `docker pull ghcr.io/thabot/bangplanix:v1.0.0` |
 | 🟢 **npm (Node.js/TS)** | [`@bangplanix/client`](https://www.npmjs.com/package/@bangplanix/client) | `npm install @bangplanix/client` |
 | 🐍 **PyPI (Python)** | [`bangplanix`](https://pypi.org/project/bangplanix/) | `pip install bangplanix` |
-| 🔷 **.NET SDK** | [`src/Bangplanix.Client`](src/Bangplanix.Client/) | `dotnet add reference src/Bangplanix.Client` |
-| 🔵 **Go SDK** | [`sdk/go`](sdk/go/) | `go get github.com/thabot/bangplanix/sdk/go` |
+| 🔵 **Go Packages** | [`github.com/thabot/bangplanix/sdk/go`](https://pkg.go.dev/github.com/thabot/bangplanix/sdk/go) | `go get github.com/thabot/bangplanix/sdk/go` |
+| 🔷 **.NET NuGet (GH Packages)** | [`Bangplanix.Client`](https://github.com/thabot/bangplanix/pkgs/nuget/Bangplanix.Client) | `dotnet add package Bangplanix.Client` |
 
 ---
 
@@ -132,7 +132,7 @@ client.render_to_file("templates/invoice.bpx", data=[{"ItemName": "Cloud Node", 
 </details>
 
 <details>
-<summary><b>🔵 Go SDK (<a href="sdk/go/">sdk/go</a>)</b></summary>
+<summary><b>🔵 Go SDK (<a href="https://pkg.go.dev/github.com/thabot/bangplanix/sdk/go">pkg.go.dev</a>)</b></summary>
 
 ```bash
 go get github.com/thabot/bangplanix/sdk/go
