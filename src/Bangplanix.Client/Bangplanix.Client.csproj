@@ -3,7 +3,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>Bangplanix.Client</PackageId>
+    <Title>Bangplanix Client SDK (.NET)</Title>
     <Description>Official High-Performance .NET 10 Client SDK for Bangplanix Reporting Engine</Description>
+    <PackageTags>reporting;report;crystal-reports;ssrs;pdf;excel;bangplanix;wasm</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

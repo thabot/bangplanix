@@ -12,7 +12,9 @@
     <Product>Bangplanix Enterprise Reporting Engine</Product>
     <Copyright>Copyright © 2026 Bangplanix Project</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.0.0-preview.1</Version>
+    <Version>1.0.0</Version>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageProjectUrl>https://thabot.github.io/bangplanix/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thabot/bangplanix</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     
