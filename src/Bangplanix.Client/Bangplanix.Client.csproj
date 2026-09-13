@@ -7,7 +7,12 @@
     <Title>Bangplanix Client SDK (.NET)</Title>
     <Description>Official High-Performance .NET 10 Client SDK for Bangplanix Reporting Engine</Description>
     <PackageTags>reporting;report;crystal-reports;ssrs;pdf;excel;bangplanix;wasm</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bangplanix.Core\Bangplanix.Core.csproj" />
