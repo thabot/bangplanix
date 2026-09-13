@@ -84,45 +84,58 @@ function getCodebaseFileList(dir = '.', currentList = []) {
 }
 
 async function callGemini(prompt, systemInstruction = '') {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const payload = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.2,
-      responseMimeType: 'application/json'
+  const candidateModels = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  let lastError = null;
+
+  for (const modelName of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+      const payload = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json'
+        }
+      };
+
+      if (systemInstruction) {
+        payload.systemInstruction = {
+          parts: [{ text: systemInstruction }]
+        };
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`Model ${modelName} returned status ${res.status}: ${errText.slice(0, 150)}... Trying fallback if available.`);
+        lastError = new Error(`Gemini API error [${res.status}] on ${modelName}: ${errText}`);
+        continue; // try next candidate model
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error(`Gemini returned empty response from ${modelName}`);
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        const clean = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+        return JSON.parse(clean);
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`Error using model ${modelName}: ${err.message}. Trying next candidate...`);
     }
-  };
-
-  if (systemInstruction) {
-    payload.systemInstruction = {
-      parts: [{ text: systemInstruction }]
-    };
   }
 
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API error [${res.status}]: ${errText}`);
-  }
-
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Gemini returned empty response');
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch (err) {
-    // If output has markdown code fences
-    const clean = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-    return JSON.parse(clean);
-  }
+  throw lastError || new Error('All candidate Gemini models failed.');
 }
 
 async function main() {
