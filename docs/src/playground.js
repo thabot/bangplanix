@@ -145,7 +145,7 @@ const SAMPLES = {
             { "type": "line", "bounds": { "x": 0, "y": 2, "width": 250, "height": 1 }, "strokeColor": "#000000", "strokeWidth": 1 },
             { "type": "text", "bounds": { "x": 0, "y": 8, "width": 100, "height": 16 }, "content": "TOTAL:", "fontSize": 11, "fontWeight": "Bold" },
             { "type": "text", "bounds": { "x": 110, "y": 8, "width": 140, "height": 16 }, "content": "345.00", "fontSize": 11, "fontWeight": "Bold", "textAlign": "Right" },
-            { "type": "barcode", "bounds": { "x": 25, "y": 30, "width": 200, "height": 26 }, "expression": "=Parameters!OrderNo.Value", "symbology": "Code128" }
+            { "type": "barcode", "bounds": { "x": 25, "y": 30, "width": 200, "height": 32 }, "expression": "=Parameters!OrderNo.Value", "symbology": "Code128" }
           ]
         }
       }
@@ -179,7 +179,7 @@ const SAMPLES = {
             { "type": "text", "bounds": { "x": 5, "y": 52, "width": 248, "height": 18 }, "expression": "=Parameters!Recipient.Value", "fontSize": 11, "fontWeight": "Bold" },
             { "type": "text", "bounds": { "x": 5, "y": 72, "width": 248, "height": 16 }, "content": "88/12 Sukhumvit 71 Road, Phra Khanong, Bangkok 10110", "fontSize": 9.5 },
             { "type": "line", "bounds": { "x": 0, "y": 98, "width": 258, "height": 1.5 }, "strokeColor": "#000000", "strokeWidth": 1.5 },
-            { "type": "barcode", "bounds": { "x": 14, "y": 110, "width": 230, "height": 55 }, "expression": "=Parameters!TrackingNo.Value", "symbology": "Code128" },
+            { "type": "barcode", "bounds": { "x": 14, "y": 110, "width": 230, "height": 55 }, "expression": "=Parameters!TrackingNo.Value", "symbology": "Code128", "showBarcodeText": false },
             { "type": "text", "bounds": { "x": 0, "y": 172, "width": 258, "height": 16 }, "expression": "=Parameters!TrackingNo.Value", "fontSize": 11, "textAlign": "Center", "fontWeight": "Bold" }
           ]
         }

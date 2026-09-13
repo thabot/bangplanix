@@ -169,17 +169,75 @@ export class BangplanixWasmEngine {
         svg += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="${elem.fillColor || '#F7FAFC'}" stroke="${elem.borderColor || '#CBD5E0'}" rx="${elem.cornerRadius || 0}" />`;
       } else if (elem.type === 'barcode') {
         const val = elem.expression ? this.evaluateExpression(elem.expression, context) : (elem.content || '');
-        const label = `||| [${elem.symbology || 'Code128'}: ${this._escapeXml(String(val))}] |||`;
-        const fontSize = Math.min(10, Math.max(7, (bw - 8) / (label.length * 0.65)));
-        svg += `
-          <g transform="translate(${bx}, ${by})">
-            <rect width="${bw}" height="${bh}" fill="#F8FAFC" stroke="#CBD5E1" rx="4" />
-            <text x="${bw/2}" y="${bh/2 + fontSize/2.5}" font-size="${fontSize.toFixed(1)}" font-family="monospace, monospace" font-weight="600" fill="#334155" text-anchor="middle">${label}</text>
-          </g>
-        `;
+        const symbology = elem.symbology || 'Code128';
+        const showText = elem.showBarcodeText !== undefined ? elem.showBarcodeText : (elem.showText !== undefined ? elem.showText : true);
+        svg += this._renderBarcode(String(val ?? ''), bx, by, bw, bh, showText, symbology);
       }
     }
     return svg;
+  }
+
+  _renderBarcode(text, x, y, width, height, showText, symbology) {
+    if (!text) {
+      return `<g class="bpx-barcode" data-symbology="${symbology}"></g>`;
+    }
+    const patterns = [
+      '212222','222122','222221','121223','121322','131222','122213','122312','132212','221213',
+      '221312','231212','112232','122132','122231','113222','123122','123221','223211','221132',
+      '221231','213212','223112','312131','311222','321122','321221','312212','322112','322211',
+      '212123','212321','232121','111323','131123','131321','112313','132113','132311','211313',
+      '231113','231311','112133','112331','132131','113123','113321','133121','313121','211331',
+      '231131','213113','213311','213131','311123','311321','331121','312113','312311','332111',
+      '314111','221411','431111','111224','111422','121124','121421','141122','141221','112214',
+      '112412','122114','122411','142112','142211','241211','221114','413111','241112','134111',
+      '111242','121142','121241','114212','124112','124211','411212','421112','421211','212141',
+      '214121','412121','111143','111341','131141','114113','114311','411113','411311','113141',
+      '114131','311141','411131','211412','211214','211232','2331112'
+    ];
+
+    const codes = [];
+    for (let i = 0; i < text.length; i++) {
+      const code = text.charCodeAt(i) - 32;
+      codes.push(Math.max(0, Math.min(95, code)));
+    }
+    let sum = 104;
+    for (let i = 0; i < codes.length; i++) {
+      sum += (i + 1) * codes[i];
+    }
+    const checkCode = sum % 103;
+    const symbols = [104, ...codes, checkCode, 106];
+
+    let totalModules = 0;
+    for (const s of symbols) {
+      for (const w of patterns[s]) totalModules += Number(w);
+    }
+
+    const textHeight = showText ? 11 : 0;
+    const barHeight = Math.max(6, height - textHeight - 2);
+    const modWidth = width / totalModules;
+
+    let bars = '';
+    let curX = x;
+    for (const s of symbols) {
+      const pat = patterns[s];
+      let isBar = true;
+      for (let j = 0; j < pat.length; j++) {
+        const w = Number(pat[j]) * modWidth;
+        if (isBar) {
+          bars += `<rect x="${curX.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${barHeight.toFixed(2)}" fill="#000000" />`;
+        }
+        curX += w;
+        isBar = !isBar;
+      }
+    }
+
+    let textSvg = '';
+    if (showText && text) {
+      const fontSize = Math.min(9.5, Math.max(7, width / (text.length * 1.6)));
+      textSvg = `<text x="${(x + width / 2).toFixed(2)}" y="${(y + height - 1).toFixed(2)}" font-size="${fontSize.toFixed(1)}" font-family="monospace, monospace" font-weight="600" fill="#000000" text-anchor="middle">${this._escapeXml(text)}</text>`;
+    }
+
+    return `<g class="bpx-barcode" data-symbology="${symbology}">${bars}${textSvg}</g>`;
   }
 
   _escapeXml(str) {
