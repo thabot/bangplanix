@@ -328,9 +328,17 @@ header {
 }
 
 @media print {
-  body {
+  @page {
+    margin: 0;
+  }
+  body, html {
     background: white !important;
     color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   header, .pane:first-child, .viewer-toolbar, .search-panel, #error-banner {
     display: none !important;
@@ -338,21 +346,45 @@ header {
   .playground-layout {
     display: block !important;
     height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  .pane {
+    border: none !important;
+    height: auto !important;
+    background: transparent !important;
   }
   .preview-pane {
     display: block !important;
     padding: 0 !important;
+    margin: 0 !important;
     background: white !important;
+    border: none !important;
     overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
   }
   .preview-scroll-area {
     display: block !important;
     padding: 0 !important;
+    margin: 0 !important;
     overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
   }
   .preview-canvas-wrapper {
     box-shadow: none !important;
     transform: none !important;
     margin: 0 auto !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .bangplanix-report-svg {
+    display: block !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
   }
 }
