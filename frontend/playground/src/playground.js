@@ -223,16 +223,19 @@ export class BangplanixPlayground {
   constructor() {
     this.engine = new BangplanixWasmEngine();
     this.currentSample = 'invoice';
+    this.zoomLevel = 100;
+    this.zoomMode = 'manual';
+    this.searchMatches = [];
+    this.searchIndex = 0;
+    this.isFullscreen = false;
     this.init();
   }
 
   init() {
     const editor = document.getElementById('bpx-editor');
-    const previewContainer = document.getElementById('preview-canvas-wrapper');
     const sampleSelect = document.getElementById('sample-select');
     const themeBtn = document.getElementById('theme-toggle-btn');
     const exportBtn = document.getElementById('export-svg-btn');
-    const errorBanner = document.getElementById('error-banner');
 
     if (editor) {
       editor.value = JSON.stringify(SAMPLES.invoice.template, null, 2);
@@ -262,6 +265,121 @@ export class BangplanixPlayground {
       exportBtn.addEventListener('click', () => this.downloadSvg());
     }
 
+    // Viewer Toolbar Events
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const zoomSelect = document.getElementById('zoom-select');
+    const fitWidthBtn = document.getElementById('fit-width-btn');
+    const fitPageBtn = document.getElementById('fit-page-btn');
+    const printBtn = document.getElementById('print-btn');
+    const searchBtn = document.getElementById('search-btn');
+    const searchCloseBtn = document.getElementById('search-close-btn');
+    const searchInput = document.getElementById('search-input');
+    const searchNextBtn = document.getElementById('search-next-btn');
+    const searchPrevBtn = document.getElementById('search-prev-btn');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => {
+        this.zoomMode = 'manual';
+        this.zoomLevel = Math.min(500, this.zoomLevel + 25);
+        this.applyZoom();
+      });
+    }
+
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => {
+        this.zoomMode = 'manual';
+        this.zoomLevel = Math.max(25, this.zoomLevel - 25);
+        this.applyZoom();
+      });
+    }
+
+    if (zoomSelect) {
+      zoomSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'fit-width') {
+          this.zoomMode = 'fit-width';
+        } else if (val === 'fit-page') {
+          this.zoomMode = 'fit-page';
+        } else {
+          this.zoomMode = 'manual';
+          this.zoomLevel = parseInt(val, 10) || 100;
+        }
+        this.applyZoom();
+      });
+    }
+
+    if (fitWidthBtn) {
+      fitWidthBtn.addEventListener('click', () => {
+        this.zoomMode = 'fit-width';
+        this.applyZoom();
+      });
+    }
+
+    if (fitPageBtn) {
+      fitPageBtn.addEventListener('click', () => {
+        this.zoomMode = 'fit-page';
+        this.applyZoom();
+      });
+    }
+
+    if (printBtn) {
+      printBtn.addEventListener('click', () => window.print());
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => this.toggleSearch());
+    }
+
+    if (searchCloseBtn) {
+      searchCloseBtn.addEventListener('click', () => this.toggleSearch(false));
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => this.executeSearch(e.target.value));
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (e.shiftKey) this.searchPrev();
+          else this.searchNext();
+        } else if (e.key === 'Escape') {
+          this.toggleSearch(false);
+        }
+      });
+    }
+
+    if (searchNextBtn) {
+      searchNextBtn.addEventListener('click', () => this.searchNext());
+    }
+
+    if (searchPrevBtn) {
+      searchPrevBtn.addEventListener('click', () => this.searchPrev());
+    }
+
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    // Shortcut for Ctrl+F search and Escape
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        const previewPane = document.getElementById('preview-pane');
+        if (previewPane) {
+          e.preventDefault();
+          this.toggleSearch(true);
+        }
+      } else if (e.key === 'Escape' && this.isFullscreen) {
+        this.toggleFullscreen(false);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (this.zoomMode !== 'manual') {
+        this.applyZoom();
+      }
+    });
+
     this.render();
   }
 
@@ -279,12 +397,153 @@ export class BangplanixPlayground {
 
       previewContainer.innerHTML = svg;
       if (errorBanner) errorBanner.style.display = 'none';
+      this.applyZoom();
     } catch (err) {
       if (errorBanner) {
         errorBanner.textContent = `Error: ${err.message}`;
         errorBanner.style.display = 'block';
       }
     }
+  }
+
+  applyZoom() {
+    const wrapper = document.getElementById('preview-canvas-wrapper');
+    const scrollArea = document.getElementById('preview-scroll-area');
+    const zoomSelect = document.getElementById('zoom-select');
+    const fitWidthBtn = document.getElementById('fit-width-btn');
+    const fitPageBtn = document.getElementById('fit-page-btn');
+    const svgEl = wrapper?.querySelector('svg');
+    if (!wrapper || !svgEl) return;
+
+    if (this.zoomMode === 'fit-width' && scrollArea) {
+      const availableWidth = Math.max(100, scrollArea.clientWidth - 48);
+      const naturalWidth = parseFloat(svgEl.getAttribute('width')) || svgEl.viewBox?.baseVal?.width || 595;
+      this.zoomLevel = Math.max(25, Math.min(500, Math.round((availableWidth / naturalWidth) * 100)));
+    } else if (this.zoomMode === 'fit-page' && scrollArea) {
+      const availableHeight = Math.max(100, scrollArea.clientHeight - 48);
+      const naturalHeight = parseFloat(svgEl.getAttribute('height')) || svgEl.viewBox?.baseVal?.height || 842;
+      this.zoomLevel = Math.max(25, Math.min(500, Math.round((availableHeight / naturalHeight) * 100)));
+    }
+
+    wrapper.style.transform = `scale(${this.zoomLevel / 100})`;
+    wrapper.style.transformOrigin = 'top center';
+
+    if (zoomSelect) {
+      if (this.zoomMode === 'manual') {
+        zoomSelect.value = String(this.zoomLevel);
+      } else {
+        zoomSelect.value = this.zoomMode;
+      }
+    }
+
+    if (fitWidthBtn) {
+      fitWidthBtn.classList.toggle('active', this.zoomMode === 'fit-width');
+    }
+    if (fitPageBtn) {
+      fitPageBtn.classList.toggle('active', this.zoomMode === 'fit-page');
+    }
+  }
+
+  toggleSearch(explicitOpen) {
+    const panel = document.getElementById('search-panel');
+    const input = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    if (!panel) return;
+
+    const shouldOpen = explicitOpen !== undefined ? explicitOpen : panel.style.display === 'none';
+    panel.style.display = shouldOpen ? 'flex' : 'none';
+    if (searchBtn) searchBtn.classList.toggle('active', shouldOpen);
+
+    if (shouldOpen && input) {
+      input.focus();
+      input.select();
+      if (input.value) this.executeSearch(input.value);
+    } else {
+      this.clearSearch();
+    }
+  }
+
+  executeSearch(query) {
+    this.clearSearch();
+    const wrapper = document.getElementById('preview-canvas-wrapper');
+    const counter = document.getElementById('search-counter');
+    if (!wrapper || !query || !query.trim()) {
+      if (counter) counter.textContent = '';
+      return;
+    }
+
+    const q = query.trim().toLowerCase();
+    const textNodes = Array.from(wrapper.querySelectorAll('text'));
+    this.searchMatches = textNodes.filter(t => t.textContent && t.textContent.toLowerCase().includes(q));
+    this.searchIndex = 0;
+
+    this.searchMatches.forEach(el => {
+      el.setAttribute('data-original-fill', el.getAttribute('fill') || '#000000');
+      el.setAttribute('fill', '#eab308');
+      el.style.fontWeight = 'bold';
+    });
+
+    this.updateSearchUI();
+  }
+
+  updateSearchUI() {
+    const counter = document.getElementById('search-counter');
+    if (!counter) return;
+
+    if (this.searchMatches.length === 0) {
+      counter.textContent = '0 found';
+      return;
+    }
+
+    counter.textContent = `${this.searchIndex + 1} of ${this.searchMatches.length}`;
+    this.searchMatches.forEach((el, idx) => {
+      if (idx === this.searchIndex) {
+        el.setAttribute('fill', '#ef4444');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        el.setAttribute('fill', '#eab308');
+      }
+    });
+  }
+
+  searchNext() {
+    if (this.searchMatches.length === 0) return;
+    this.searchIndex = (this.searchIndex + 1) % this.searchMatches.length;
+    this.updateSearchUI();
+  }
+
+  searchPrev() {
+    if (this.searchMatches.length === 0) return;
+    this.searchIndex = (this.searchIndex - 1 + this.searchMatches.length) % this.searchMatches.length;
+    this.updateSearchUI();
+  }
+
+  clearSearch() {
+    const wrapper = document.getElementById('preview-canvas-wrapper');
+    if (wrapper) {
+      wrapper.querySelectorAll('text[data-original-fill]').forEach(el => {
+        el.setAttribute('fill', el.getAttribute('data-original-fill'));
+        el.removeAttribute('data-original-fill');
+        el.style.fontWeight = '';
+      });
+    }
+    this.searchMatches = [];
+    this.searchIndex = 0;
+    const counter = document.getElementById('search-counter');
+    if (counter) counter.textContent = '';
+  }
+
+  toggleFullscreen(explicitState) {
+    const previewPane = document.getElementById('preview-pane');
+    const btn = document.getElementById('fullscreen-btn');
+    if (!previewPane) return;
+
+    this.isFullscreen = explicitState !== undefined ? explicitState : !this.isFullscreen;
+    previewPane.classList.toggle('fullscreen', this.isFullscreen);
+    if (btn) {
+      btn.textContent = this.isFullscreen ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
+    }
+    setTimeout(() => this.applyZoom(), 50);
   }
 
   downloadSvg() {

@@ -39,10 +39,51 @@
       </div>
     </div>
 
-    <!-- Live Preview Pane -->
-    <div class="pane preview-pane">
-      <div class="preview-canvas-wrapper" id="preview-canvas-wrapper">
-        <!-- Live SVG Render Output -->
+    <!-- Live Preview Pane with Viewer Toolbar -->
+    <div class="pane preview-pane" id="preview-pane">
+      <div class="viewer-toolbar">
+        <div class="viewer-toolbar-group">
+          <span class="viewer-title">👁️ Preview</span>
+          <button id="search-btn" class="viewer-btn" title="Search document (Ctrl+F)">🔍 Search</button>
+        </div>
+
+        <div class="viewer-toolbar-group">
+          <button id="zoom-out-btn" class="viewer-btn" title="Zoom Out">−</button>
+          <select id="zoom-select" class="viewer-select" title="Zoom Level">
+            <option value="50">50%</option>
+            <option value="75">75%</option>
+            <option value="100" selected>100%</option>
+            <option value="125">125%</option>
+            <option value="150">150%</option>
+            <option value="200">200%</option>
+            <option value="300">300%</option>
+            <option value="fit-width">Fit Width</option>
+            <option value="fit-page">Fit Page</option>
+          </select>
+          <button id="zoom-in-btn" class="viewer-btn" title="Zoom In">+</button>
+          <button id="fit-width-btn" class="viewer-btn desktop-only" title="Fit to Width">↔ Fit Width</button>
+          <button id="fit-page-btn" class="viewer-btn desktop-only" title="Fit to Page">↕ Fit Page</button>
+        </div>
+
+        <div class="viewer-toolbar-group">
+          <button id="print-btn" class="viewer-btn" title="Print Document">🖨️ Print</button>
+          <button id="fullscreen-btn" class="viewer-btn" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        </div>
+      </div>
+
+      <!-- In-document Search Bar -->
+      <div id="search-panel" class="search-panel" style="display: none;">
+        <input id="search-input" type="text" placeholder="Find text in report..." />
+        <span id="search-counter" class="search-counter"></span>
+        <button id="search-prev-btn" class="viewer-btn-sm" title="Previous match">▲</button>
+        <button id="search-next-btn" class="viewer-btn-sm" title="Next match">▼</button>
+        <button id="search-close-btn" class="viewer-btn-sm" title="Close search">✕</button>
+      </div>
+
+      <div class="preview-scroll-area" id="preview-scroll-area">
+        <div class="preview-canvas-wrapper" id="preview-canvas-wrapper">
+          <!-- Live SVG Render Output -->
+        </div>
       </div>
     </div>
   </div>
