@@ -5,10 +5,10 @@ namespace Bangplanix.Core.Licensing;
 /// </summary>
 public enum LicenseTier
 {
-    Community = 0,      // Free, Watermarked, Max 2 CPU cores, Community support
-    Professional = 1,   // $49/mo, Unwatermarked, Up to 8 CPU cores, Standard SLA
-    Enterprise = 2,     // $499/mo, Unwatermarked, Unlimited cores, High-availability SLA, AI Suite, True Vector Redaction
-    OEMSovereign = 3,   // Custom, Unlimited cores, Air-gapped offline validation, Quantum-Safe cryptography, Source redistribution rights
+    Community = 0,      // Free ($0) for gross revenue < $1M USD, Unwatermarked, Up to 4 CPU cores
+    Professional = 1,   // $699/yr (or $59/mo), Unwatermarked, Up to 16 CPU cores, Bursting, Standard SLA
+    Enterprise = 2,     // $1,999/yr (or $199/mo), Unlimited cores, PAdES, Thai e-Tax + TSA, 4-hour SLA
+    OEMSovereign = 3,   // $3,999/yr, Unlimited cores, White-label OEM, 100% Air-gapped, Post-Quantum ML-DSA
     OEM = 3             // Alias for OEMSovereign
 }
 

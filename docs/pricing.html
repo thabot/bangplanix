@@ -171,6 +171,52 @@
       color: #cbd5e1;
       line-height: 1.5;
     }
+    .comparison-section {
+      max-width: 1050px;
+      margin: 50px auto 60px;
+      padding: 0 20px;
+    }
+    .comparison-section h2 {
+      text-align: center;
+      margin-bottom: 12px;
+      color: #f8fafc;
+      font-size: 1.8rem;
+    }
+    .comparison-section p {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 28px;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-pane, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .comparison-table th {
+      background: #0f172a;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    .badge-win {
+      color: #10b981;
+      font-weight: 600;
+    }
+    .badge-tie {
+      color: #38bdf8;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -196,70 +242,156 @@
     <!-- Community Tier -->
     <div class="pricing-card">
       <div class="plan-name">Community</div>
-      <div class="plan-desc">For open-source projects, evaluation, and hobbyists.</div>
+      <div class="plan-desc">For developers, startups, and evaluation (Gross revenue &lt; $1M USD / ~35M THB).</div>
       <div class="plan-price">$0 <span>/ forever</span></div>
-      <div class="plan-thb">Free Open-Source</div>
+      <div class="plan-thb">Free for Startups &amp; Developers</div>
       <ul class="plan-features">
-        <li>Core `.bpx` Reporting Engine</li>
-        <li>Standard Barcodes & QR Codes</li>
-        <li>HarfBuzz Thai & Global Typography</li>
-        <li>Up to 2 CPU Cores</li>
-        <li>Watermarked Output</li>
+        <li><strong>Unwatermarked</strong> Production Output</li>
+        <li>Web Visual Designer (`&lt;bangplanix-designer&gt;`)</li>
+        <li>Core Engine &amp; All Polyglot SDKs</li>
+        <li>MiniExcel XLSX &amp; Big Data Connectors</li>
+        <li>Bangplanix AI Suite (BYOK Key)</li>
+        <li>Up to 4 CPU Cores</li>
       </ul>
       <a href="https://github.com/thabot/bangplanix" class="buy-btn secondary">View on GitHub</a>
     </div>
 
-    <!-- Developer Pro Tier -->
+    <!-- Developer Professional Tier -->
     <div class="pricing-card featured">
-      <div class="popular-badge">MOST POPULAR</div>
-      <div class="plan-name">Developer Pro</div>
-      <div class="plan-desc">For indie hackers, freelancers, and growing internal systems.</div>
-      <div class="plan-price">$49 <span>/ month</span></div>
-      <div class="plan-thb">≈ 1,700 THB / Month (PromptPay & Cards)</div>
+      <div class="popular-badge">HEAD-TO-HEAD VALUE</div>
+      <div class="plan-name">Developer Professional</div>
+      <div class="plan-desc">For growing companies, commercial SaaS, and software houses.</div>
+      <div class="plan-price">$699 <span>/ year</span></div>
+      <div class="plan-thb">or $59 / Month (≈ 24,500 THB / year)</div>
       <ul class="plan-features">
-        <li><strong>Unwatermarked</strong> Production PDFs</li>
+        <li><strong>All Community Features Included</strong></li>
         <li>Web Visual Designer (`&lt;bangplanix-designer&gt;`)</li>
-        <li>MiniExcel XLSX & Big Data Connectors</li>
-        <li>Up to 8 CPU Cores</li>
-        <li>Standard gRPC & REST API</li>
-        <li>Email Support (48h SLA)</li>
+        <li>Scheduled Report Bursting (Multi-channel)</li>
+        <li>MiniExcel XLSX &amp; Big Data Streaming</li>
+        <li>Up to 16 CPU Cores</li>
+        <li>Commercial Legal License Certificate</li>
+        <li>Priority Email Support (24h SLA)</li>
       </ul>
-      <a href="https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0" class="buy-btn featured-btn lemonsqueezy-button">💳 Buy Developer Pro</a>
+      <a href="https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0" class="buy-btn featured-btn lemonsqueezy-button">💳 Buy Professional ($699/yr)</a>
     </div>
 
-    <!-- Enterprise Cloud Tier -->
+    <!-- Enterprise Sovereign Tier -->
     <div class="pricing-card">
-      <div class="plan-name">Enterprise Cloud</div>
-      <div class="plan-desc">For high-traffic SaaS providers, fintech, and banking.</div>
-      <div class="plan-price">$499 <span>/ month</span></div>
-      <div class="plan-thb">≈ 17,500 THB / Month</div>
+      <div class="plan-name">Enterprise Sovereign</div>
+      <div class="plan-desc">For high-traffic SaaS providers, fintech, banking, and public companies.</div>
+      <div class="plan-price">$1,999 <span>/ year</span></div>
+      <div class="plan-thb">or $199 / Month (≈ 70,000 THB / year)</div>
       <ul class="plan-features">
-        <li><strong>All Developer Pro Features</strong></li>
-        <li><strong>Unlimited CPU Cores</strong> & Multi-Pod Autoscaling</li>
-        <li>Bangplanix AI Suite (Natural Language)</li>
-        <li>e-Tax Invoice ETDA (มธอ. 3-2560) Compliant</li>
-        <li>True Vector Redaction & PAdES Signatures</li>
-        <li>Priority Slack / Teams Support (4h SLA)</li>
+        <li><strong>All Professional Features</strong></li>
+        <li><strong>Unlimited CPU Cores</strong> &amp; Pod Autoscaling</li>
+        <li><strong>Thai e-Tax Invoice XML &amp; RFC 3161 TSA Timestamps</strong></li>
+        <li><strong>PAdES ISO 32000-2 Digital Signatures</strong></li>
+        <li>Kubernetes Helm &amp; Multi-Pod Autoscaling</li>
+        <li>Thai Tax Invoice (ภ.พ.20) &amp; WHT 3% Supported</li>
+        <li>Dedicated Slack / Teams Support (4h SLA)</li>
       </ul>
-      <a href="https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4" class="buy-btn primary lemonsqueezy-button">🚀 Buy Enterprise Cloud</a>
+      <a href="https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4" class="buy-btn primary lemonsqueezy-button">🚀 Buy Enterprise ($1,999/yr)</a>
     </div>
 
     <!-- OEM Sovereign Tier -->
     <div class="pricing-card">
       <div class="plan-name">OEM Sovereign</div>
-      <div class="plan-desc">For ISVs, defense, government, and core banking.</div>
-      <div class="plan-price">Custom</div>
-      <div class="plan-thb">Tailored Annual Enterprise Contract</div>
+      <div class="plan-desc">For ISVs, software vendors, defense, and core banking.</div>
+      <div class="plan-price">$3,999 <span>/ year</span></div>
+      <div class="plan-thb">≈ 140,000 THB / year (Royalty-Free Redistribution)</div>
       <ul class="plan-features">
-        <li><strong>All Enterprise Features</strong></li>
-        <li>White-label OEM Redistribution Rights</li>
+        <li><strong>All Enterprise Features Included</strong></li>
+        <li><strong>White-label OEM Redistribution Rights</strong></li>
         <li>Air-Gapped 100% Offline Validation</li>
         <li>NIST FIPS 204 Quantum-Ready ML-DSA</li>
-        <li>Source Code Escrow & Custom Drivers</li>
-        <li>24/7 Phone Support (1h SLA)</li>
+        <li>Source Code Escrow &amp; Custom Integration</li>
+        <li>24/7 Phone &amp; Critical Incident (1h SLA)</li>
       </ul>
       <a href="mailto:thabot47@gmail.com?subject=Bangplanix%20OEM%20Sovereign%20Licensing%20Inquiry" class="buy-btn secondary">🏢 Contact Enterprise Sales</a>
     </div>
+  </div>
+
+  <div class="comparison-section">
+    <h2>🥊 Head-to-Head Comparison: QuestPDF vs Bangplanix</h2>
+    <p>Identical pricing tiers. 3x–5x more enterprise capabilities and localization built-in.</p>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Capability / Feature</th>
+          <th>QuestPDF</th>
+          <th>Bangplanix</th>
+          <th>Advantage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Community Tier</strong></td>
+          <td>Free (&lt; $1M Revenue)</td>
+          <td>Free (&lt; $1M Revenue)</td>
+          <td><span class="badge-tie">Tied on Price</span></td>
+        </tr>
+        <tr>
+          <td><strong>Professional Tier</strong></td>
+          <td>$699 / year</td>
+          <td>$699 / year (or $59/mo)</td>
+          <td><span class="badge-win">Bangplanix (Monthly option)</span></td>
+        </tr>
+        <tr>
+          <td><strong>Enterprise Tier</strong></td>
+          <td>$1,999 / year</td>
+          <td>$1,999 / year (or $199/mo)</td>
+          <td><span class="badge-win">Bangplanix (Monthly option)</span></td>
+        </tr>
+        <tr>
+          <td><strong>OEM / Unlimited Tier</strong></td>
+          <td>$3,999 / year</td>
+          <td>$3,999 / year</td>
+          <td><span class="badge-tie">Tied on Price</span></td>
+        </tr>
+        <tr>
+          <td><strong>Web Visual Designer</strong></td>
+          <td>❌ None (Code-only C# API)</td>
+          <td> Web Visual Designer (`&lt;bangplanix-designer&gt;`)</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Template Portability</strong></td>
+          <td>❌ Hardcoded in C# classes</td>
+          <td> Declarative `.bpx` JSON Schema (Hot-reloadable)</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Polyglot Language SDKs</strong></td>
+          <td>❌ C# / .NET only</td>
+          <td> Node.js, Python, Java, Go, and .NET</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Thai Typography &amp; Localization</strong></td>
+          <td>⚠️ Manual font setup required</td>
+          <td> HarfBuzz สระไม่ลอย, BahtText, PromptPay QR</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Thai e-Tax &amp; PAdES Compliance</strong></td>
+          <td>❌ None</td>
+          <td> Thai e-Tax XML, RFC 3161 TSA, PAdES Signatures</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Bangplanix AI Suite</strong></td>
+          <td>❌ None</td>
+          <td> Natural Language Prompt-to-Report &amp; Anomaly Detection</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+        <tr>
+          <td><strong>Supported Export Formats</strong></td>
+          <td>PDF, XPS, Image</td>
+          <td>PDF, MiniExcel Streaming XLSX, ZPL Labels, ESC/POS</td>
+          <td><span class="badge-win">Bangplanix</span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="faq-section">
