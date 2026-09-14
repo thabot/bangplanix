@@ -37,7 +37,7 @@ docker compose up -d
 ```
 
 Access the service immediately:
-* **Web Management Portal & API:** [`http://localhost:9545`](http://localhost:9545)
+* **REST API & Status Endpoint:** [`http://localhost:9545`](http://localhost:9545) *(Interactive Web Management Portal GUI in [Roadmap v1.1.0](./ROADMAP.md))*
 * **High-Speed gRPC Endpoint:** `localhost:9546`
 
 ### 1.2 Run with Docker CLI
@@ -123,6 +123,8 @@ npm install @bangplanix/designer
 
 ## 🤖 Part 3: Bangplanix AI Suite Natural Language Generation
 
+> 💡 *Note: The core AI engine (`ReportAiGenerator`, `HybridLlmGateway`, `AiSqlSafetyValidator`) is available via .NET and JS SDKs. The interactive Visual AI Designer ribbon buttons and chat dialog are in [Roadmap v1.1.0](./ROADMAP.md).*
+
 Generate complex `.bpx` layouts, calculations, and dataset schemas directly from natural language prompts:
 
 ### English Example Prompt:
@@ -206,7 +208,7 @@ export function InvoiceViewer() {
 
 ## 🔌 Part 6: Backend Polyglot Client SDKs & Languages
 
-Choose your preferred language / stack:
+Bangplanix provides 5 strongly-typed official client SDKs (C# .NET, Node.js/TypeScript, Python, Go, and Java). For other environments, you can integrate directly via HTTP/REST or gRPC (standalone client SDK packages for PHP, Dart/Flutter, Rust, and Ruby are currently in [Roadmap v1.2.0](./ROADMAP.md)):
 
 <details open>
 <summary><b>🔷 1. C# / .NET SDK (.NET 8 / 9 / 10)</b></summary>
@@ -302,7 +304,7 @@ byte[] pdf = client.renderReport(new RenderReportRequest()
 </details>
 
 <details>
-<summary><b>🐘 6. PHP (Laravel / Native cURL)</b></summary>
+<summary><b>🐘 6. PHP (REST API Integration — Standalone Composer Package in Roadmap v1.2.0)</b></summary>
 
 ```php
 <?php
@@ -327,7 +329,7 @@ file_put_contents('invoice.pdf', $pdf);
 </details>
 
 <details>
-<summary><b>🎯 7. Dart / Flutter (Mobile POS & Tablet)</b></summary>
+<summary><b>🎯 7. Dart / Flutter (REST API Integration — Standalone pub.dev Package in Roadmap v1.2.0)</b></summary>
 
 ```dart
 import 'dart:convert';
@@ -357,7 +359,7 @@ Future<void> generateInvoicePdf() async {
 </details>
 
 <details>
-<summary><b>🦀 8. Rust (reqwest Async)</b></summary>
+<summary><b>🦀 8. Rust (reqwest Async REST Integration — Standalone Crate in Roadmap v1.2.0)</b></summary>
 
 ```rust
 use reqwest::Client;
@@ -381,7 +383,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 </details>
 
 <details>
-<summary><b>💎 9. Ruby (Net::HTTP)</b></summary>
+<summary><b>💎 9. Ruby (Net::HTTP REST Integration — Standalone Gem in Roadmap v1.2.0)</b></summary>
 
 ```ruby
 require 'net/http'
@@ -464,7 +466,7 @@ Set your cryptographically signed license token via environment variables:
 export LICENSE_KEY="eyJsaWNlbnNlSWQiOiJMSUMtMTAwMS...<token>"
 ```
 * Automatically unwatermarks generated PDF documents.
-* Unlocks unlimited CPU core execution and enterprise features (AI Suite, Report Bursting, PAdES Signatures).
+* Unlocks unlimited CPU core execution and enterprise features (AI Suite, Report Bursting, PAdES Signatures *(Production CA/TSA & Cloud Drivers in [Roadmap v1.1.0](./ROADMAP.md))*).
 
 ### 8.2 Kubernetes Helm Chart Deployment
 ```bash

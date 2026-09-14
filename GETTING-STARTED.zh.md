@@ -34,7 +34,7 @@ docker compose up -d
 ```
 
 启动完成后可立即访问以下端点：
-* **Web 管理控制台 & REST API:** [`http://localhost:9545`](http://localhost:9545)
+* **REST API 状态端点:** [`http://localhost:9545`](http://localhost:9545) *(Web 管理控制台 GUI 在 [Roadmap v1.1.0](./ROADMAP.md) 中)*
 * **高性能 gRPC 端点:** `localhost:9546`
 
 ### 1.2 使用 Docker CLI 直接启动

@@ -32,7 +32,7 @@ docker compose up -d
 ```
 
 Acceso directo a los servicios:
-* **Portal Web y API REST:** [`http://localhost:9545`](http://localhost:9545)
+* **Punto de enlace de estado y API REST:** [`http://localhost:9545`](http://localhost:9545) *(Portal Web GUI en [Roadmap v1.1.0](./ROADMAP.md))*
 * **Punto de enlace gRPC de Alta Velocidad:** `localhost:9546`
 
 ### 1.2 Ejecución directa con Docker CLI

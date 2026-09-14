@@ -32,7 +32,7 @@ docker compose up -d
 ```
 
 起動後、直ちに以下のエンドポイントにアクセス可能です：
-* **Web 管理ポータル & REST API:** [`http://localhost:9545`](http://localhost:9545)
+* **REST API 状態エンドポイント:** [`http://localhost:9545`](http://localhost:9545) *(Web 管理ポータル GUI は [Roadmap v1.1.0](./ROADMAP.md) に掲載)*
 * **超高速 gRPC エンドポイント:** `localhost:9546`
 
 ### 1.2 Docker CLI で直接起動
