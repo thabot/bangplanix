@@ -4,6 +4,21 @@ This document tracks planned architectural milestones, upcoming capabilities, an
 
 ---
 
+## 📌 Executive Status & Roadmap Tracking Summary (สรุปสถานะฟีเจอร์ใน Roadmap)
+
+ตารางสรุปสถานะฟีเจอร์ที่อยู่ใน Roadmap ที่กำลังพัฒนาหรือเตรียมเปิดใช้งานในรุ่นถัดไป:
+
+| Feature / Capability | Current State in Codebase | Target Milestone | Planned Deliverables & Scope |
+| :--- | :--- | :---: | :--- |
+| **1. Interactive Visual AI Designer UI & Server AI Proxy** | AI Engine Core (C#/.NET & JS) is functional; Ribbon buttons, chat dialog, and `/api/v1/ai/*` server endpoints are staged | **v1.1.0** | Web UI Assistant in `<bangplanix-designer>`, Chat modal, BYOK settings modal, Server AI REST proxy |
+| **2. Production Cloud Storage & Email Bursting Channels** | Bursting Slicing & Cron Engine functional; Delivery channels use simulation stubs (`Task.Delay(5)`) | **v1.1.0** | MailKit production SMTP client, AWS S3 SigV4/SDK driver, Azure Blob storage client, SSH.NET SFTP driver |
+| **3. Cryptographic PAdES Digital Signatures & Certified RFC 3161 TSA** | PDF Signature structure tree and ETDA XML generation functional; Uses zero-padded SHA-256 placeholder & text token | **v1.1.0** | RFC 5652 PKCS#7 / CMS detached signing with X.509 cert chains, Cloud HSM support, Real RFC 3161 TSP HTTP client |
+| **4. Web Management Portal GUI Mounting** | HTML Portal Dashboard implemented in `ManagementPortalServer.cs`; `Program.cs` currently serves JSON status | **v1.1.0** | Route wiring in `Program.cs` mounting GUI dashboard at `GET /` and `GET /portal` with live telemetry |
+| **5. Kubernetes GitOps Operator Daemon Controller** | `BangplanixReportJob` CRD manifests defined in `deploy/k8s/` | **v1.2.0** | Active Kubernetes Controller Daemon (Go / .NET Worker) reconciling CRDs for automated ArgoCD/Flux GitOps pipelines |
+| **6. Polyglot Standalone Published SDK Packages** | 5 Official SDKs available (.NET, TS, Python, Go, Java); PHP, Dart, Rust, Ruby supported via REST HTTP | **v1.2.0** | Official published packages: Composer (`bangplanix/client`), pub.dev (`bangplanix`), crates.io (`bangplanix`), RubyGems (`bangplanix`) |
+
+---
+
 ## 🚀 Upcoming Release: v1.1.0 (Phase 5: Interactive AI Designer & Smart Assistant)
 
 ### 🤖 1. Bangplanix AI Suite — Web UI & Interactive Designer Integration
@@ -110,6 +125,7 @@ Connect the existing HTML Management Portal Dashboard into the running server:
 - [ ] **PHP Client Package:** Official Composer package (`bangplanix/client`) with Guzzle client and Laravel service provider.
 - [ ] **Dart / Flutter Package:** Official pub.dev package (`bangplanix`) for cross-platform mobile POS and tablet printing.
 - [ ] **Rust Client Crate:** Official crates.io crate (`bangplanix`) with `reqwest` async streaming support.
+- [ ] **Ruby Client Gem:** Official RubyGems package (`bangplanix`) with `Net::HTTP` connection pooling and streaming deserialization.
 
 ### 📊 8. Autonomous Analytics & Visual Insights
 - [ ] **AI Chart Recommendation:** Automatically inspects dataset column types and suggests optimal chart types (Bar, Line, Radar, Waterfall, Sparkline).
