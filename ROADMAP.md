@@ -57,12 +57,65 @@ To allow browser clients to leverage AI features in enterprise environments with
 
 ---
 
-## 🔮 Future Backlog (v1.2.0+)
+### 📬 3. Production Storage & Email Bursting Delivery Channels (`Bangplanix.Engine.Bursting`)
 
-### 📊 3. Autonomous Analytics & Visual Insights
+Replace current simulation delay stubs (`await Task.Delay(5)`) with robust, production-grade cloud storage and network protocol clients:
+
+- [ ] **Real SMTP Email Dispatcher (`SmtpEmailDeliveryChannel`):**
+  - Integrate production `MailKit` / `MimeKit` or authenticated `SmtpClient`.
+  - Full support for STARTTLS / SSL (Port 587 / 465 / 25), per-recipient dynamic AES-256 PDF attachments, inline HTML templates, and connection pooling.
+- [ ] **Real AWS S3 Cloud Storage Dispatcher (`S3DeliveryChannel`):**
+  - Integrate official AWS SDK or zero-dependency AWS SigV4 REST client.
+  - Multi-part streaming upload, custom bucket prefixes, object tags, and AWS KMS server-side encryption.
+- [ ] **Real Azure Blob Storage Dispatcher (`AzureBlobDeliveryChannel`):**
+  - Integrate `Azure.Storage.Blobs` client or Azure REST API.
+  - Support for SAS tokens, Azure Managed Identity, and blob tiering (Hot/Cool/Archive).
+- [ ] **Real SFTP Network Dispatcher (`SftpDeliveryChannel`):**
+  - Integrate `SSH.NET` library for secure file transfer.
+  - Password and private key (OpenSSH/RSA/Ed25519) authentication with automatic host key verification and auto-reconnect.
+
+---
+
+### 🛡️ 4. Cryptographic PAdES Digital Signatures & Certified RFC 3161 TSA Timestamps
+
+Upgrade current hash-placeholder and text-token simulations to true cryptographic compliance:
+
+- [ ] **True PAdES / PKCS#7 CMS Detached Signer (`PdfDigitalSigner`):**
+  - Upgrade from zero-padded SHA-256 placeholder to true RFC 5652 PKCS#7 / CMS detached cryptographic signatures (`adbe.pkcs7.detached` / `ETSI.CAdES.detached`).
+  - Support for X.509 certificate chains, private keys from `.pfx` / `.p12` files, Windows Certificate Store, and Cloud HSMs (Azure Key Vault, AWS CloudHSM).
+- [ ] **Real RFC 3161 Time Stamping Protocol (TSP) Client (`ThaiETaxEngine`):**
+  - Upgrade from simulated text block (`-----BEGIN TSA TIMESTAMP TOKEN-----`) to true ASN.1 DER encoded RFC 3161 Timestamp Protocol over HTTP.
+  - Integration with ETDA-certified National Root CAs / commercial TSAs for Thai e-Tax and European e-Invoicing (Factur-X / Peppol BIS 3.0).
+
+---
+
+### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint
+
+Connect the existing HTML Management Portal Dashboard into the running server:
+
+- [ ] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
+  - Mount `ManagementPortalServer` directly to `GET /` (when requested by a browser) and `GET /portal` / `GET /admin`.
+  - Display live telemetry, Kestrel server uptime, active worker queues, license status, and system metrics in an interactive web dashboard instead of static JSON.
+
+---
+
+## 🔮 Future Backlog: v1.2.0+
+
+### ☸️ 6. Kubernetes GitOps Operator Daemon Controller
+- [ ] **Active Operator Controller Daemon:**
+  - Develop an active Kubernetes Controller (Go or C# .NET Worker) to watch and reconcile `BangplanixReportJob` CRDs.
+  - Enable declarative GitOps report execution pipelines (ArgoCD / Flux) with automated pod scheduling, retry policies, and output artifact forwarding.
+
+### 📦 7. Polyglot Standalone Client SDK Packages
+- [ ] **PHP Client Package:** Official Composer package (`bangplanix/client`) with Guzzle client and Laravel service provider.
+- [ ] **Dart / Flutter Package:** Official pub.dev package (`bangplanix`) for cross-platform mobile POS and tablet printing.
+- [ ] **Rust Client Crate:** Official crates.io crate (`bangplanix`) with `reqwest` async streaming support.
+
+### 📊 8. Autonomous Analytics & Visual Insights
 - [ ] **AI Chart Recommendation:** Automatically inspects dataset column types and suggests optimal chart types (Bar, Line, Radar, Waterfall, Sparkline).
 - [ ] **Natural Language Drill-Down Queries:** Click any chart element to ask follow-up questions in natural language.
 
-### 🏢 4. Multi-Tenant Enterprise AI Hub
+### 🏢 9. Multi-Tenant Enterprise AI Hub
 - [ ] Centralized Admin Console for enterprise prompt audit logs, DLP violation alarms, and tenant token consumption dashboards.
 - [ ] Fine-tuned local domain models for Thai Government / Tax Invoicing regulations.
+
