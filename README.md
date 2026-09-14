@@ -317,6 +317,7 @@ Bangplanix is available under **Dual Licensing**:
 ## 💬 Community & Support
 
 * 📖 **Documentation:** Read the [Getting Started Guide](./GETTING-STARTED.md)
+* 🗺️ **Roadmap & Upcoming Features:** View the [Product Roadmap](./ROADMAP.md)
 * 🌐 **WebAssembly Live Playground:** [Interactive Browser Engine](https://thabot.github.io/bangplanix/)
 * 🐞 **Issues & Feedback:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)
 * 💼 **Enterprise Licensing & OEM Partnerships:** `thabot47@gmail.com`
