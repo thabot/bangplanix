@@ -104,10 +104,19 @@ Upgrade current hash-placeholder and text-token simulations to true cryptographi
 
 ---
 
-### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint
+### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint *(✅ Completed in v1.1.0)*
 - [x] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
-  - Mount `ManagementPortalServer` directly to `GET /` (when requested by a browser) and `GET /portal` / `GET /admin`.
-  - Display live telemetry, Kestrel server uptime, active worker queues, license status, container file manager, web report converter, live logs, and database tester in an interactive web dashboard instead of static JSON.
+  - Mounted `ManagementPortalServer` directly to `GET /` (with smart content negotiation for browsers) and `GET /portal` / `GET /admin`.
+- [x] **Pluggable Database Storage Layer (SQLite & PostgreSQL):**
+  - Built-in In-Process **SQLite** (Default at `/app/volumes/data/portal.db`) and Enterprise **PostgreSQL** option with zero-config auto-migration.
+- [x] **Authentication & Role-Based Access Control:**
+  - Secure session-based login with auto-seeded default credentials (`admin` / `bangplanix2026!`), supporting both Guest and Logged-in Admin modes with 100% UI parity.
+- [x] **Container Volume File Management GUI & API:**
+  - Full file explorer for `/templates`, `/data`, `/fonts`, and `/logs` with upload, download, delete, and strict path traversal protection.
+- [x] **Web Report Converter Studio:**
+  - Drag-and-drop instant conversion of SSRS `.rdl`, Crystal `.rpt.xml`, Jaspersoft `.jrxml`, FastReport `.frx` into Bangplanix `.bpx` schema.
+- [x] **Enterprise Telemetry, Report Sandbox & Live Logs:**
+  - Live CPU/RAM/worker telemetry, in-browser PDF/Excel test sandbox, live container log streamer, database health ping tester, and online license activation.
 
 ---
 
