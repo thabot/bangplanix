@@ -6,10 +6,11 @@ describe('Bangplanix Standard & US Standards Template Gallery Tests', () => {
   test('should provide standard templates including international A4 and US formats', () => {
     const mgr = new TemplateGalleryManager();
     const templates = mgr.getTemplates();
-    assert.strictEqual(templates.length, 6);
+    assert.strictEqual(templates.length, 7);
 
     const ids = templates.map(t => t.id);
     assert.ok(ids.includes('a4_commercial_invoice'));
+    assert.ok(ids.includes('a4_multipage_enterprise_invoice'));
     assert.ok(ids.includes('us_commercial_invoice'));
     assert.ok(ids.includes('usps_shipping_label'));
     assert.ok(ids.includes('us_pos_receipt'));
