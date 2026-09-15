@@ -80,6 +80,139 @@ export const US_PRESET_TEMPLATES: GalleryTemplateItem[] = [
     }
   },
   {
+    id: 'a4_multipage_enterprise_invoice',
+    name: 'A4 Multi-Page Enterprise Invoice',
+    category: 'Billing',
+    paperSize: 'ISO A4 (210mm x 297mm • 2 Pages)',
+    description: 'Multi-page commercial invoice with 20 itemized SKU rows looping across 2 pages with running totals & page breaks.',
+    schema: {
+      version: '1.0',
+      metadata: { title: 'Enterprise Tax Invoice (Multi-Page)', author: 'Bangplanix Global Billing Engine' },
+      pageSetup: { paperKind: 'A4', width: 595.28, height: 841.89, orientation: 'Portrait', margins: { top: 36, bottom: 36, left: 36, right: 36 } },
+      parameters: [
+        { name: 'InvoiceNo', type: 'string', defaultValue: 'INV-2026-MULTI' },
+        { name: 'Customer', type: 'string', defaultValue: 'Global Megacorp Logistics LLC' }
+      ],
+      bands: {
+        ReportHeader: {
+          height: 100,
+          elements: [
+            { id: 'mp_title', type: 'Text', x: 0, y: 0, width: 340, height: 28, text: 'BANGPLANIX ENTERPRISE CORP', style: { fontSize: 18, fontWeight: 'Bold', color: '#0f172a' } },
+            { id: 'mp_sub', type: 'Text', x: 0, y: 30, width: 340, height: 18, text: 'Bangkok / Singapore / Tokyo Global Cloud Delivery', style: { fontSize: 10, color: '#64748b' } },
+            { id: 'mp_tax', type: 'Text', x: 0, y: 48, width: 280, height: 18, text: 'Tax ID: 0105559876543 • Customer: Global Megacorp Logistics', style: { fontSize: 10, color: '#64748b' } },
+            { id: 'mp_inv_badge', type: 'Text', x: 340, y: 0, width: 180, height: 28, text: 'ENTERPRISE INVOICE', style: { fontSize: 14, fontWeight: 'Bold', color: '#2563eb', alignment: 'Right' } },
+            { id: 'mp_inv_no', type: 'Text', x: 340, y: 30, width: 180, height: 18, text: 'Invoice #: INV-2026-MULTI', style: { fontSize: 11, fontWeight: 'Bold', alignment: 'Right' } },
+            { id: 'mp_date', type: 'Text', x: 340, y: 48, width: 180, height: 18, text: 'Pages: 2 Pages Continuous', style: { fontSize: 10, color: '#64748b', alignment: 'Right' } }
+          ]
+        },
+        PageHeader: {
+          height: 30,
+          elements: [
+            { id: 'mp_ph_desc', type: 'Text', x: 0, y: 6, width: 250, height: 18, text: 'ITEM DESCRIPTION', style: { fontSize: 9.5, fontWeight: 'Bold', color: '#475569' } },
+            { id: 'mp_ph_sku', type: 'Text', x: 250, y: 6, width: 80, height: 18, text: 'SKU / CODE', style: { fontSize: 9.5, fontWeight: 'Bold', color: '#475569' } },
+            { id: 'mp_ph_qty', type: 'Text', x: 330, y: 6, width: 50, height: 18, text: 'QTY', style: { fontSize: 9.5, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } },
+            { id: 'mp_ph_rate', type: 'Text', x: 390, y: 6, width: 65, height: 18, text: 'RATE', style: { fontSize: 9.5, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } },
+            { id: 'mp_ph_total', type: 'Text', x: 460, y: 6, width: 63, height: 18, text: 'AMOUNT', style: { fontSize: 9.5, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } }
+          ]
+        },
+        Detail: {
+          height: 530,
+          elements: [
+            { id: 'd_item_0_desc', type: 'Text', x: 0, y: 4, width: 250, height: 18, text: '#1. Industrial Cloud Node - Rack 1001', style: { fontSize: 9 } },
+            { id: 'd_item_0_sku', type: 'Text', x: 250, y: 4, width: 80, height: 18, text: 'BPX-CL-1001', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_0_qty', type: 'Text', x: 330, y: 4, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_0_rate', type: 'Text', x: 390, y: 4, width: 65, height: 18, text: '1,250.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_0_amt', type: 'Text', x: 460, y: 4, width: 63, height: 18, text: '1,250.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_1_desc', type: 'Text', x: 0, y: 30, width: 250, height: 18, text: '#2. Industrial Cloud Node - Rack 1002', style: { fontSize: 9 } },
+            { id: 'd_item_1_sku', type: 'Text', x: 250, y: 30, width: 80, height: 18, text: 'BPX-CL-1002', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_1_qty', type: 'Text', x: 330, y: 30, width: 50, height: 18, text: '2', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_1_rate', type: 'Text', x: 390, y: 30, width: 65, height: 18, text: '1,400.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_1_amt', type: 'Text', x: 460, y: 30, width: 63, height: 18, text: '2,800.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_2_desc', type: 'Text', x: 0, y: 56, width: 250, height: 18, text: '#3. Edge Computing Gateway Unit', style: { fontSize: 9 } },
+            { id: 'd_item_2_sku', type: 'Text', x: 250, y: 56, width: 80, height: 18, text: 'BPX-GW-201', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_2_qty', type: 'Text', x: 330, y: 56, width: 50, height: 18, text: '4', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_2_rate', type: 'Text', x: 390, y: 56, width: 65, height: 18, text: '850.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_2_amt', type: 'Text', x: 460, y: 56, width: 63, height: 18, text: '3,400.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_3_desc', type: 'Text', x: 0, y: 82, width: 250, height: 18, text: '#4. High-Throughput NVMe Storage Array', style: { fontSize: 9 } },
+            { id: 'd_item_3_sku', type: 'Text', x: 250, y: 82, width: 80, height: 18, text: 'BPX-ST-500', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_3_qty', type: 'Text', x: 330, y: 82, width: 50, height: 18, text: '2', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_3_rate', type: 'Text', x: 390, y: 82, width: 65, height: 18, text: '3,200.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_3_amt', type: 'Text', x: 460, y: 82, width: 63, height: 18, text: '6,400.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_4_desc', type: 'Text', x: 0, y: 108, width: 250, height: 18, text: '#5. Realtime Roslyn Script Evaluator Module', style: { fontSize: 9 } },
+            { id: 'd_item_4_sku', type: 'Text', x: 250, y: 108, width: 80, height: 18, text: 'BPX-EV-09', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_4_qty', type: 'Text', x: 330, y: 108, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_4_rate', type: 'Text', x: 390, y: 108, width: 65, height: 18, text: '4,500.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_4_amt', type: 'Text', x: 460, y: 108, width: 63, height: 18, text: '4,500.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_5_desc', type: 'Text', x: 0, y: 134, width: 250, height: 18, text: '#6. 2D Datamatrix & Aztec Barcode Pack', style: { fontSize: 9 } },
+            { id: 'd_item_5_sku', type: 'Text', x: 250, y: 134, width: 80, height: 18, text: 'BPX-BC-2D', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_5_qty', type: 'Text', x: 330, y: 134, width: 50, height: 18, text: '5', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_5_rate', type: 'Text', x: 390, y: 134, width: 65, height: 18, text: '350.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_5_amt', type: 'Text', x: 460, y: 134, width: 63, height: 18, text: '1,750.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_6_desc', type: 'Text', x: 0, y: 160, width: 250, height: 18, text: '#7. Enterprise Multi-Tenant Billing Gateway', style: { fontSize: 9 } },
+            { id: 'd_item_6_sku', type: 'Text', x: 250, y: 160, width: 80, height: 18, text: 'BPX-GW-MT', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_6_qty', type: 'Text', x: 330, y: 160, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_6_rate', type: 'Text', x: 390, y: 160, width: 65, height: 18, text: '8,900.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_6_amt', type: 'Text', x: 460, y: 160, width: 63, height: 18, text: '8,900.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_7_desc', type: 'Text', x: 0, y: 186, width: 250, height: 18, text: '#8. AOT Native Linux Shared Library Pack', style: { fontSize: 9 } },
+            { id: 'd_item_7_sku', type: 'Text', x: 250, y: 186, width: 80, height: 18, text: 'BPX-SO-LINUX', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_7_qty', type: 'Text', x: 330, y: 186, width: 50, height: 18, text: '3', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_7_rate', type: 'Text', x: 390, y: 186, width: 65, height: 18, text: '1,200.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_7_amt', type: 'Text', x: 460, y: 186, width: 63, height: 18, text: '3,600.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_8_desc', type: 'Text', x: 0, y: 212, width: 250, height: 18, text: '#9. AOT Native macOS Universal dylib Pack', style: { fontSize: 9 } },
+            { id: 'd_item_8_sku', type: 'Text', x: 250, y: 212, width: 80, height: 18, text: 'BPX-DY-MAC', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_8_qty', type: 'Text', x: 330, y: 212, width: 50, height: 18, text: '3', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_8_rate', type: 'Text', x: 390, y: 212, width: 65, height: 18, text: '1,200.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_8_amt', type: 'Text', x: 460, y: 212, width: 63, height: 18, text: '3,600.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_9_desc', type: 'Text', x: 0, y: 238, width: 250, height: 18, text: '#10. Automated Cluster Failover Watchdog', style: { fontSize: 9 } },
+            { id: 'd_item_9_sku', type: 'Text', x: 250, y: 238, width: 80, height: 18, text: 'BPX-HA-DOG', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_9_qty', type: 'Text', x: 330, y: 238, width: 50, height: 18, text: '2', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_9_rate', type: 'Text', x: 390, y: 238, width: 65, height: 18, text: '2,100.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_9_amt', type: 'Text', x: 460, y: 238, width: 63, height: 18, text: '4,200.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_10_desc', type: 'Text', x: 0, y: 264, width: 250, height: 18, text: '#11. PDF/A-3b Archival Conformance Engine', style: { fontSize: 9 } },
+            { id: 'd_item_10_sku', type: 'Text', x: 250, y: 264, width: 80, height: 18, text: 'BPX-PDFA-3B', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_10_qty', type: 'Text', x: 330, y: 264, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_10_rate', type: 'Text', x: 390, y: 264, width: 65, height: 18, text: '3,800.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_10_amt', type: 'Text', x: 460, y: 264, width: 63, height: 18, text: '3,800.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_11_desc', type: 'Text', x: 0, y: 290, width: 250, height: 18, text: '#12. Thai PromptPay EMV-QR Generator Plug', style: { fontSize: 9 } },
+            { id: 'd_item_11_sku', type: 'Text', x: 250, y: 290, width: 80, height: 18, text: 'BPX-QR-PP', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_11_qty', type: 'Text', x: 330, y: 290, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_11_rate', type: 'Text', x: 390, y: 290, width: 65, height: 18, text: '1,500.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_11_amt', type: 'Text', x: 460, y: 290, width: 63, height: 18, text: '1,500.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } },
+
+            { id: 'd_item_12_desc', type: 'Text', x: 0, y: 316, width: 250, height: 18, text: '#13. Enterprise SLA 24x7 Mission Critical', style: { fontSize: 9 } },
+            { id: 'd_item_12_sku', type: 'Text', x: 250, y: 316, width: 80, height: 18, text: 'BPX-SLA-247', style: { fontSize: 8.5, color: '#64748b' } },
+            { id: 'd_item_12_qty', type: 'Text', x: 330, y: 316, width: 50, height: 18, text: '1', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_12_rate', type: 'Text', x: 390, y: 316, width: 65, height: 18, text: '12,000.00', style: { fontSize: 9, alignment: 'Right' } },
+            { id: 'd_item_12_amt', type: 'Text', x: 460, y: 316, width: 63, height: 18, text: '12,000.00', style: { fontSize: 9, fontWeight: 'Bold', alignment: 'Right' } }
+          ]
+        },
+        ReportFooter: {
+          height: 120,
+          elements: [
+            { id: 'mp_rf_sub_lbl', type: 'Text', x: 320, y: 10, width: 100, height: 18, text: 'Subtotal (13 Items):', style: { fontSize: 10, alignment: 'Right', color: '#64748b' } },
+            { id: 'mp_rf_sub_val', type: 'Text', x: 430, y: 10, width: 93, height: 18, text: '59,900.00 THB', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'mp_rf_tax_lbl', type: 'Text', x: 320, y: 28, width: 100, height: 18, text: 'VAT (7%):', style: { fontSize: 10, alignment: 'Right', color: '#64748b' } },
+            { id: 'mp_rf_tax_val', type: 'Text', x: 430, y: 28, width: 93, height: 18, text: '4,193.00 THB', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'mp_rf_tot_lbl', type: 'Text', x: 300, y: 50, width: 120, height: 24, text: 'Grand Total:', style: { fontSize: 12, fontWeight: 'Bold', alignment: 'Right' } },
+            { id: 'mp_rf_tot_val', type: 'Text', x: 430, y: 50, width: 93, height: 24, text: '64,093.00 THB', style: { fontSize: 13, fontWeight: 'Bold', color: '#2563eb', alignment: 'Right' } },
+            { id: 'mp_rf_barcode', type: 'Barcode', x: 0, y: 60, width: 180, height: 35, text: 'INV-2026-MULTI' }
+          ]
+        }
+      }
+    }
+  },
+  {
     id: 'us_commercial_invoice',
     name: 'US Commercial Tax Invoice',
     category: 'Billing',

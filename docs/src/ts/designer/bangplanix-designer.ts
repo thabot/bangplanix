@@ -223,12 +223,20 @@ export class BangplanixDesigner extends HTMLElement {
     const info = this.core.findElement(this.core.selectedElementIds[0]);
     if (!info) return;
 
+    if (!info.element.style) info.element.style = {};
+
     if (key === 'text') info.element.text = value;
     else if (key === 'expression') info.element.expression = value;
     else if (key === 'width') info.element.width = Number(value);
     else if (key === 'height') info.element.height = Number(value);
     else if (key === 'x') info.element.x = Number(value);
     else if (key === 'y') info.element.y = Number(value);
+    else if (key === 'fontSize') info.element.style.fontSize = Number(value) || 12;
+    else if (key === 'fontFamily') info.element.style.fontFamily = value;
+    else if (key === 'fontWeight') info.element.style.fontWeight = value;
+    else if (key === 'fontStyle') info.element.style.fontStyle = value;
+    else if (key === 'color') info.element.style.color = value;
+    else if (key === 'alignment') info.element.style.alignment = value;
 
     // Update canvas DOM directly without destroying focused input element
     const elDom = this.shadowRoot?.querySelector(`.bpx-element-view[data-el-id="${info.element.id}"]`) as HTMLElement | null;
@@ -255,6 +263,19 @@ export class BangplanixDesigner extends HTMLElement {
         elDom.style.width = `${Number(value) || 0}px`;
       } else if (key === 'height') {
         elDom.style.height = `${Number(value) || 0}px`;
+      } else if (key === 'fontSize') {
+        elDom.style.fontSize = `${Number(value) || 12}px`;
+      } else if (key === 'fontFamily') {
+        elDom.style.fontFamily = value;
+      } else if (key === 'fontWeight') {
+        elDom.style.fontWeight = value;
+      } else if (key === 'fontStyle') {
+        elDom.style.fontStyle = value;
+      } else if (key === 'color') {
+        elDom.style.color = value;
+      } else if (key === 'alignment') {
+        elDom.style.justifyContent = String(value).toLowerCase() === 'right' ? 'flex-end' : (String(value).toLowerCase() === 'center' ? 'center' : 'flex-start');
+        elDom.style.textAlign = String(value).toLowerCase();
       }
     }
 
@@ -284,6 +305,15 @@ export class BangplanixDesigner extends HTMLElement {
     const bandsHtml = Object.entries(bands).map(([bandName, band]: [string, any]) => {
       const elementsHtml = (band.elements || []).map((el: any) => {
         const isSelected = this.core.selectedElementIds.includes(el.id);
+        const style = el.style || {};
+        const fontSize = style.fontSize || 12;
+        const fontFamily = style.fontFamily || 'inherit';
+        const fontWeight = style.fontWeight || 'normal';
+        const fontStyle = style.fontStyle || 'normal';
+        const color = style.color || '#0f172a';
+        const align = (style.alignment || 'Left').toLowerCase();
+        const justify = align === 'right' ? 'flex-end' : (align === 'center' ? 'center' : 'flex-start');
+
         const displayContent = el.type === 'Chart' 
           ? `📊 [Chart: ${el.chart?.title || el.chart?.chartType || 'Column'}]` 
           : (el.type === 'Barcode' || el.type === 'QrCode'
@@ -297,9 +327,9 @@ export class BangplanixDesigner extends HTMLElement {
             class="bpx-element-view ${isSelected ? 'selected' : ''}"
             data-el-id="${el.id}"
             title="Double-click to edit text inline, or drag to move"
-            style="left: ${el.x || 0}px; top: ${el.y || 0}px; width: ${el.width || 100}px; height: ${el.height || 24}px; font-size: ${el.style?.fontSize || 12}px; color: ${el.style?.color || '#0f172a'}; z-index: 2;"
+            style="left: ${el.x || 0}px; top: ${el.y || 0}px; width: ${el.width || 100}px; height: ${el.height || 24}px; font-size: ${fontSize}px; font-family: ${fontFamily}; font-weight: ${fontWeight}; font-style: ${fontStyle}; color: ${color}; text-align: ${align}; justify-content: ${justify}; z-index: 2;"
           >
-            <span class="bpx-el-content">${displayContent}</span>
+            <span class="bpx-el-content" style="width: 100%; text-align: inherit;">${displayContent}</span>
           </div>
         `;
       }).join('');
@@ -312,6 +342,20 @@ export class BangplanixDesigner extends HTMLElement {
       `;
     }).join('');
 
+    const totalBandsHeight = Object.values(bands).reduce((sum: number, b: any) => sum + (b.height || 0), 0);
+    const pageCount = Math.max(1, Math.ceil(totalBandsHeight / pageSetup.height));
+    let pageBreaksHtml = '';
+    for (let p = 1; p < pageCount; p++) {
+      const breakY = p * pageSetup.height;
+      pageBreaksHtml += `
+        <div style="position: absolute; top: ${breakY}px; left: 0; right: 0; border-top: 2px dashed #2563eb; z-index: 10; pointer-events: none; display: flex; justify-content: flex-end; padding-right: 12px; margin-top: -10px;">
+          <span style="background: #2563eb; color: #ffffff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            ✂ Page Break • Page ${p + 1} of ${pageCount}
+          </span>
+        </div>
+      `;
+    }
+
     const datasetsHtml = (report.datasets || []).map((ds: any) => `
       <div style="font-weight: 600; color: #38bdf8; margin-bottom: 4px;">📊 ${ds.name}</div>
       <div style="padding-left: 12px; margin-bottom: 10px;">
@@ -321,6 +365,7 @@ export class BangplanixDesigner extends HTMLElement {
       </div>
     `).join('');
 
+    const currentStyle = selectedInfo?.element?.style || {};
     const propInspectorHtml = selectedInfo ? `
       <div class="bpx-prop-section">
         <div style="font-weight: 600; color: #38bdf8; margin-bottom: 8px;">Selected: ${selectedInfo.element.type}</div>
@@ -347,6 +392,53 @@ export class BangplanixDesigner extends HTMLElement {
         <div class="bpx-prop-row">
           <label>C# Expression</label>
           <input class="bpx-input" type="text" id="prop-expression" value="${(selectedInfo.element.expression || '').replace(/"/g, '&quot;')}" />
+        </div>
+
+        <div style="font-weight: 600; color: #38bdf8; margin: 12px 0 6px 0; border-top: 1px solid #334155; padding-top: 8px;">Typography & Style</div>
+        <div class="bpx-prop-row">
+          <label>Font Family</label>
+          <select class="bpx-input" id="prop-fontFamily">
+            <option value="Sarabun, sans-serif" ${(currentStyle.fontFamily || '').includes('Sarabun') ? 'selected' : ''}>Sarabun (TH)</option>
+            <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" ${(currentStyle.fontFamily || '').includes('apple-system') ? 'selected' : ''}>System Sans</option>
+            <option value="Arial, Helvetica, sans-serif" ${(currentStyle.fontFamily || '').includes('Arial') ? 'selected' : ''}>Arial</option>
+            <option value="Tahoma, sans-serif" ${(currentStyle.fontFamily || '').includes('Tahoma') ? 'selected' : ''}>Tahoma</option>
+            <option value="'Times New Roman', Times, serif" ${(currentStyle.fontFamily || '').includes('Times') ? 'selected' : ''}>Times New Roman</option>
+            <option value="'Courier New', Courier, monospace" ${(currentStyle.fontFamily || '').includes('Courier') ? 'selected' : ''}>Courier New</option>
+          </select>
+        </div>
+        <div class="bpx-prop-row">
+          <label>Font Size (pt)</label>
+          <input class="bpx-input" type="number" id="prop-fontSize" min="6" max="72" value="${currentStyle.fontSize || 12}" />
+        </div>
+        <div class="bpx-prop-row">
+          <label>Font Weight</label>
+          <select class="bpx-input" id="prop-fontWeight">
+            <option value="normal" ${(currentStyle.fontWeight || 'normal') === 'normal' ? 'selected' : ''}>Regular</option>
+            <option value="bold" ${(currentStyle.fontWeight || '') === 'bold' || (currentStyle.fontWeight || '') === 'Bold' ? 'selected' : ''}>Bold</option>
+            <option value="600" ${(currentStyle.fontWeight || '') === '600' ? 'selected' : ''}>Semi-Bold</option>
+          </select>
+        </div>
+        <div class="bpx-prop-row">
+          <label>Font Style</label>
+          <select class="bpx-input" id="prop-fontStyle">
+            <option value="normal" ${(currentStyle.fontStyle || 'normal') === 'normal' ? 'selected' : ''}>Normal</option>
+            <option value="italic" ${(currentStyle.fontStyle || '') === 'italic' ? 'selected' : ''}>Italic</option>
+          </select>
+        </div>
+        <div class="bpx-prop-row">
+          <label>Text Color</label>
+          <div style="display: flex; gap: 4px; align-items: center; width: 140px;">
+            <input type="color" id="prop-color-picker" value="${currentStyle.color && currentStyle.color.startsWith('#') ? currentStyle.color : '#0f172a'}" style="width: 26px; height: 26px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: none;" />
+            <input class="bpx-input" type="text" id="prop-color" value="${currentStyle.color || '#0f172a'}" style="flex: 1;" />
+          </div>
+        </div>
+        <div class="bpx-prop-row">
+          <label>Alignment</label>
+          <select class="bpx-input" id="prop-alignment">
+            <option value="Left" ${(currentStyle.alignment || 'Left').toLowerCase() === 'left' ? 'selected' : ''}>Left</option>
+            <option value="Center" ${(currentStyle.alignment || '').toLowerCase() === 'center' ? 'selected' : ''}>Center</option>
+            <option value="Right" ${(currentStyle.alignment || '').toLowerCase() === 'right' ? 'selected' : ''}>Right</option>
+          </select>
         </div>
       </div>
     ` : `
@@ -384,30 +476,30 @@ export class BangplanixDesigner extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          height: 48px;
+          height: 40px;
           background-color: #1e293b;
           border-bottom: 1px solid #334155;
-          padding: 0 12px;
-          gap: 8px;
+          padding: 0 10px;
+          gap: 6px;
           user-select: none;
         }
 
         .bpx-toolbar-group {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
         }
 
         .bpx-btn {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
+          gap: 4px;
+          padding: 4px 8px;
           background-color: #334155;
           color: #e2e8f0;
           border: 1px solid #475569;
-          border-radius: 6px;
-          font-size: 13px;
+          border-radius: 4px;
+          font-size: 11px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.15s ease;
@@ -426,12 +518,12 @@ export class BangplanixDesigner extends HTMLElement {
 
         .bpx-brand {
           font-weight: 700;
-          font-size: 15px;
+          font-size: 14px;
           letter-spacing: -0.5px;
           color: #38bdf8;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
         }
 
         /* Main Workspace Layout */
@@ -444,7 +536,7 @@ export class BangplanixDesigner extends HTMLElement {
 
         /* Left Sidebar: Toolbox & Data Explorer */
         .bpx-sidebar-left {
-          width: 260px;
+          width: 190px;
           background-color: #1e293b;
           border-right: 1px solid #334155;
           display: flex;
@@ -453,8 +545,8 @@ export class BangplanixDesigner extends HTMLElement {
         }
 
         .bpx-panel-header {
-          padding: 10px 14px;
-          font-size: 12px;
+          padding: 6px 10px;
+          font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -468,25 +560,30 @@ export class BangplanixDesigner extends HTMLElement {
         .bpx-toolbox-items {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          padding: 12px;
+          gap: 5px;
+          padding: 6px;
           overflow-y: auto;
         }
 
         .bpx-tool-card {
           background-color: #0f172a;
           border: 1px solid #334155;
-          border-radius: 6px;
-          padding: 10px 8px;
+          border-radius: 4px;
+          padding: 5px 3px;
           text-align: center;
           cursor: grab;
-          font-size: 12px;
+          font-size: 10.5px;
           transition: all 0.15s ease;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 4px;
+          gap: 2px;
           color: #e2e8f0;
+        }
+
+        .bpx-tool-card span:first-child {
+          font-size: 13px;
+          line-height: 1.1;
         }
 
         .bpx-tool-card:hover {
@@ -593,7 +690,7 @@ export class BangplanixDesigner extends HTMLElement {
 
         /* Bottom Editor Area */
         .bpx-bottom-editor {
-          height: 180px;
+          height: 150px;
           background-color: #0f172a;
           border-top: 1px solid #334155;
           display: flex;
@@ -607,8 +704,8 @@ export class BangplanixDesigner extends HTMLElement {
         }
 
         .bpx-tab {
-          padding: 6px 14px;
-          font-size: 12px;
+          padding: 4px 10px;
+          font-size: 11px;
           font-weight: 500;
           color: #94a3b8;
           cursor: pointer;
@@ -690,15 +787,16 @@ export class BangplanixDesigner extends HTMLElement {
 
         <!-- Center Canvas -->
         <div class="bpx-canvas-container" id="canvas-container">
-          <div class="bpx-page-canvas" style="width: ${pageSetup.width}px; min-height: ${pageSetup.height}px; transform: scale(${this.core.zoomLevel / 100}); transform-origin: top center; position: relative;">
+          <div class="bpx-page-canvas" style="width: ${pageSetup.width}px; min-height: ${Math.max(pageSetup.height, pageCount * pageSetup.height)}px; transform: scale(${this.core.zoomLevel / 100}); transform-origin: top center; position: relative;">
             <div class="bpx-canvas-page-header" style="position: absolute; top: -24px; left: 0; font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
               <span style="background: #1e293b; padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; color: #38bdf8; font-weight: 600;">
-                📄 ${pageSetup.paperKind || (Math.abs(pageSetup.width - 595.28) < 1 ? 'A4' : 'Custom')} (${Math.round(pageSetup.width)} × ${Math.round(pageSetup.height)} pt)
+                📄 ${pageSetup.paperKind || (Math.abs(pageSetup.width - 595.28) < 1 ? 'A4' : 'Custom')} • ${pageCount > 1 ? `Multi-Page (${pageCount} Pages)` : 'Single Page'} (${Math.round(pageSetup.width)} × ${Math.round(pageSetup.height)} pt)
               </span>
               <span style="color: #64748b;">Margins: ${marginTop}pt Top/Bottom, ${marginLeft}pt Left/Right</span>
             </div>
             <!-- Margin Guideline Overlay -->
             <div class="bpx-margin-guide" style="position: absolute; top: ${marginTop}px; left: ${marginLeft}px; right: ${marginRight}px; bottom: ${marginBottom}px; border: 1px dashed #cbd5e1; pointer-events: none; z-index: 1;"></div>
+            ${pageBreaksHtml}
             ${bandsHtml}
           </div>
         </div>
@@ -785,14 +883,26 @@ export class BangplanixDesigner extends HTMLElement {
     });
 
     // Property inputs
-    ['x', 'y', 'width', 'height', 'text', 'expression'].forEach(key => {
-      const input = root.getElementById(`prop-${key}`) as HTMLInputElement | null;
+    ['x', 'y', 'width', 'height', 'text', 'expression', 'fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'color', 'alignment'].forEach(key => {
+      const input = root.getElementById(`prop-${key}`) as HTMLInputElement | HTMLSelectElement | null;
       input?.addEventListener('input', (e: any) => {
         this.updateSelectedProp(key, e.target.value);
       });
-      input?.addEventListener('change', () => {
+      input?.addEventListener('change', (e: any) => {
+        this.updateSelectedProp(key, e.target.value);
         this.core.pushHistory(`Update ${key}`);
       });
+    });
+
+    // Sync color picker and color text input
+    const colorPicker = root.getElementById('prop-color-picker') as HTMLInputElement | null;
+    const colorText = root.getElementById('prop-color') as HTMLInputElement | null;
+    colorPicker?.addEventListener('input', (e: any) => {
+      if (colorText) colorText.value = e.target.value;
+      this.updateSelectedProp('color', e.target.value);
+    });
+    colorPicker?.addEventListener('change', () => {
+      this.core.pushHistory('Update color');
     });
 
     // Bottom editor tabs

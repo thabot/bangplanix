@@ -207,6 +207,7 @@
       <label for="template-select" style="font-size: 12px; color: var(--text-muted);">Template:</label>
       <select id="template-select" class="ribbon-btn">
         <option value="a4_commercial_invoice" selected>🧾 Standard Tax Invoice (A4 210x297mm)</option>
+        <option value="a4_multipage_enterprise_invoice">📑 Multi-Page Tax Invoice (A4 2-Page Table)</option>
         <option value="us_commercial_invoice">🧾 US Commercial Invoice (US Letter)</option>
         <option value="usps_shipping_label">📦 USPS / FedEx Label (4"x6")</option>
         <option value="us_pos_receipt">🛒 Retail POS Receipt (80mm)</option>
@@ -413,6 +414,31 @@
 
       saveBtn.addEventListener('click', () => app.saveDraft());
       exportPdfBtn.addEventListener('click', () => app.exportPdf());
+
+      // Mock Data Scenario Toggle (Single Page vs Multi-Page Data Table)
+      const mockDataBtn = document.getElementById('mock-data-btn');
+      let isMultiPageMock = false;
+      mockDataBtn?.addEventListener('click', () => {
+        isMultiPageMock = !isMultiPageMock;
+        const targetTplId = isMultiPageMock ? 'a4_multipage_enterprise_invoice' : 'a4_commercial_invoice';
+        tplSelect.value = targetTplId;
+        const loaded = app.loadPreset(targetTplId);
+        if (loaded) {
+          schemaEditor.value = JSON.stringify(loaded, null, 2);
+          if (designerEl && designerEl.core) {
+            designerEl.core.report = loaded;
+            designerEl.requestUpdate();
+          }
+          if (paperSelect && loaded.pageSetup?.paperKind) {
+            paperSelect.value = loaded.pageSetup.paperKind;
+          }
+          if (isMultiPageMock) {
+            app.showToast('🎲 Loaded Multi-Page Enterprise Data Table (25 items across 2 pages)');
+          } else {
+            app.showToast('🎲 Loaded Standard 1-Page Tax Invoice');
+          }
+        }
+      });
 
       // SDK Modal
       let currentLang = 'csharp';
