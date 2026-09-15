@@ -13,7 +13,7 @@ This document tracks planned architectural milestones, upcoming capabilities, an
 | **1. Interactive Visual AI Designer UI & Server AI Proxy** | AI Engine Core (C#/.NET & JS) is functional; Ribbon buttons, chat dialog, and `/api/v1/ai/*` server endpoints are staged | **v1.1.0** | Web UI Assistant in `<bangplanix-designer>`, Chat modal, BYOK settings modal, Server AI REST proxy |
 | **2. Production Cloud Storage & Email Bursting Channels** | Bursting Slicing & Cron Engine functional; Delivery channels use simulation stubs (`Task.Delay(5)`) | **v1.1.0** | MailKit production SMTP client, AWS S3 SigV4/SDK driver, Azure Blob storage client, SSH.NET SFTP driver |
 | **3. Cryptographic PAdES Digital Signatures & Certified RFC 3161 TSA** | PDF Signature structure tree and ETDA XML generation functional; Uses zero-padded SHA-256 placeholder & text token | **v1.1.0** | RFC 5652 PKCS#7 / CMS detached signing with X.509 cert chains, Cloud HSM support, Real RFC 3161 TSP HTTP client |
-| **4. Web Management Portal GUI Mounting** | HTML Portal Dashboard implemented in `ManagementPortalServer.cs`; `Program.cs` currently serves JSON status | **v1.1.0** | Route wiring in `Program.cs` mounting GUI dashboard at `GET /` and `GET /portal` with live telemetry |
+| **4. Web Management Portal GUI Mounting & Database Storage** | Fully mounted in `Program.cs` at `GET /`, `GET /portal` with SQLite/Postgres DB, File Manager & Converter | **v1.1.0** *(Completed)* | Route wiring in `Program.cs` mounting GUI dashboard at `GET /` and `GET /portal` with live telemetry, container files, and web converter |
 | **5. Kubernetes GitOps Operator Daemon Controller** | `BangplanixReportJob` CRD manifests defined in `deploy/k8s/` | **v1.2.0** | Active Kubernetes Controller Daemon (Go / .NET Worker) reconciling CRDs for automated ArgoCD/Flux GitOps pipelines |
 | **6. Polyglot Standalone Published SDK Packages** | 5 Official SDKs available (.NET, TS, Python, Go, Java); PHP, Dart, Rust, Ruby supported via REST HTTP | **v1.2.0** | Official published packages: Composer (`bangplanix/client`), pub.dev (`bangplanix`), crates.io (`bangplanix`), RubyGems (`bangplanix`) |
 
@@ -105,12 +105,9 @@ Upgrade current hash-placeholder and text-token simulations to true cryptographi
 ---
 
 ### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint
-
-Connect the existing HTML Management Portal Dashboard into the running server:
-
-- [ ] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
+- [x] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
   - Mount `ManagementPortalServer` directly to `GET /` (when requested by a browser) and `GET /portal` / `GET /admin`.
-  - Display live telemetry, Kestrel server uptime, active worker queues, license status, and system metrics in an interactive web dashboard instead of static JSON.
+  - Display live telemetry, Kestrel server uptime, active worker queues, license status, container file manager, web report converter, live logs, and database tester in an interactive web dashboard instead of static JSON.
 
 ---
 

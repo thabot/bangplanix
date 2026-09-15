@@ -16,8 +16,8 @@ Bangplanix is engineered from the ground up to eliminate the multi-second latenc
 | **Batch Throughput (10,000 Invoices)** | **0.18 sec** *(55,500 pages/sec)* | 4.85 sec | 4.10 sec | 9.20 sec |
 | **Peak Working Set RAM (10k Batch)** | **24.5 MB** *(Zero-GC)* | 185.0 MB | 460.0 MB *(JVM GC)* | 680.0 MB |
 | **Gen 0 / 1 / 2 GC Collections** | **0 / 0 / 0** | N/A (COM Heap) | 48 / 12 / 3 | 92 / 18 / 6 |
-| **Container Image Footprint** | **26.8 MB** *(Distroless AOT)* | Windows Server Core (4.8 GB) | OpenJDK/Tomcat (420 MB) | Node/Chrome (640 MB) |
-| **Cold Start Startup Time** | **1.2 ms** | 2,800 ms | 4,200 ms | 1,450 ms |
+| **Container Image Footprint** | **~100 MB** *(Production Alpine)*<br>*(26.8 MB Distroless Profile)* | Windows Server Core (4.8 GB) | OpenJDK/Tomcat (420 MB) | Node/Chrome (640 MB) |
+| **Cold Start Startup Time** | **1.2 ms** *(Distroless)* / **~50 ms** *(Alpine)* | 2,800 ms | 4,200 ms | 1,450 ms |
 
 ---
 

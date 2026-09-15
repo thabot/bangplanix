@@ -37,16 +37,33 @@ docker compose up -d
 ```
 
 เมื่อรันสำเร็จ สามารถเข้าใช้งานผ่าน Browser ได้ทันที:
-* **REST API & Status Endpoint:** [`http://localhost:9545`](http://localhost:9545) *(Interactive Web Management Portal GUI อยู่ใน [Roadmap v1.1.0](./ROADMAP.md))*
+* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (หรือเข้า [`http://localhost:9545`](http://localhost:9545) ผ่าน Browser)
+  * **Default Credentials:** Username: `admin` / Password: `bangplanix2026!`
 * **High-Speed gRPC Endpoint:** `localhost:9546`
 
 ### 1.2 รันผ่าน Docker CLI โดยตรง
+
+#### ก) ใช้งาน SQLite เป็นฐานข้อมูล Portal (ค่าเริ่มต้น - แนะนำสำหรับทั่วไป):
+```bash
+docker run -d \
+  --name bangplanix-server \
+  -p 9545:9545 -p 9546:9546 \
+  -v $(pwd)/volumes/data:/app/volumes/data \
+  -v $(pwd)/volumes/templates:/app/volumes/templates \
+  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
+  -v $(pwd)/volumes/logs:/app/volumes/logs \
+  -e BANGPLANIX_PORTAL_DB_TYPE=sqlite \
+  ghcr.io/thabot/bangplanix:latest
+```
+
+#### ข) ใช้งาน PostgreSQL สำหรับสภาพแวดล้อม Enterprise / Multi-Pod:
 ```bash
 docker run -d \
   --name bangplanix-server \
   -p 9545:9545 -p 9546:9546 \
   -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
+  -e BANGPLANIX_PORTAL_DB_TYPE=postgres \
+  -e BANGPLANIX_PORTAL_DB_CONNECTION="Host=postgres-host;Port=5432;Database=bangplanix;Username=postgres;Password=secret;" \
   ghcr.io/thabot/bangplanix:latest
 ```
 
@@ -199,17 +216,57 @@ import React, { useEffect, useRef } from 'react';
 import '@bangplanix/viewer';
 
 export function ReportViewerPage({ reportData }) {
+  const viewerRef = useRef(null);
+
+  useEffect(() => {
+    if (viewerRef.current) {
+      // ส่ง Dynamic Parameters หรือ Dataset เข้า Viewer ได้โดยตรง
+      viewerRef.current.parameters = { CustomerId: 1001 };
+      viewerRef.current.reportData = reportData;
+    }
+  }, [reportData]);
+
   return (
     <div style={{ width: '100%', height: '100vh' }}>
       <bangplanix-viewer 
-        src="/api/reports/invoice.pdf"
-        ref={(el) => {
-          if (el) el.parameters = { CustomerId: 1001 };
-        }}
+        ref={viewerRef}
+        src="http://localhost:9545/api/v1/render/pdf"
+        theme="light"
       />
     </div>
   );
 }
+```
+
+### 5.4 ใช้งานใน Vue.js (Vue 3 / Nuxt)
+```vue
+<template>
+  <div class="viewer-container">
+    <bangplanix-viewer 
+      ref="viewer" 
+      src="http://localhost:9545/api/v1/render/pdf" 
+      theme="dark" 
+      zoom="fit-page"
+    />
+  </div>
+</template>
+
+<script setup>
+import { onMounted, ref } from 'vue';
+import '@bangplanix/viewer';
+
+const viewer = ref(null);
+
+onMounted(() => {
+  if (viewer.value) {
+    viewer.value.parameters = { InvoiceNo: "INV-2026-001" };
+  }
+});
+</script>
+
+<style scoped>
+.viewer-container { width: 100%; height: 90vh; }
+</style>
 ```
 
 ---
@@ -429,7 +486,37 @@ curl -X POST http://localhost:9545/api/v1/reports/render \
 
 ## 🔄 บทที่ 7: การแปลงรายงานเดิม (Crystal, SSRS, Jasper, FastReport)
 
-หากคุณมีรายงานเดิมจากระบบอื่นๆ สามารถใช้คำสั่ง **`thabot migrate`** แปลงไฟล์เป็น `.bpx` อัตโนมัติทันที:
+### 7.1 แปลงผ่าน Web Management Portal GUI (ง่ายที่สุด - ลากวางบนเว็บ)
+1. เปิด Browser เข้าไปที่ **[`http://localhost:9545/portal`](http://localhost:9545/portal)** แล้วเลือกแท็บ **"🔄 Report Converter"**
+2. ลากไฟล์รายงานเดิม (เช่น `Invoice.rdl`, `Sales.jrxml`, `Receipt.frx`, `Catalog.rpt.xml`) วางลงในช่อง Drag & Drop
+3. ระบบจะแปลงเป็นโครงสร้าง `.bpx` ทันที พร้อมแสดงพรีวิว JSON สวยงาม
+4. กด **"💾 Download .bpx"** หรือกด **"📁 Save to Container Templates"** เพื่อบันทึกลงโฟลเดอร์ `/app/volumes/templates` ของ Container ได้ทันที
+
+### 7.2 แปลงผ่าน REST Converter API (`POST /api/v1/convert`)
+สามารถส่งไฟล์ผ่าน HTTP Multipart หรือ Text Payload เพื่อให้ Engine แปลงเป็น `.bpx` ได้โดยตรง:
+
+```bash
+# ส่งไฟล์ SSRS RDL ผ่าน cURL
+curl -X POST http://localhost:9545/api/v1/convert \
+  -F "file=@./legacy/Invoice.rdl" \
+  -o ./templates/Invoice.bpx
+```
+
+```javascript
+// ส่งแปลงผ่าน JavaScript fetch ในหน้าเว็บ
+const formData = new FormData();
+formData.append('file', myRdlFile);
+
+const res = await fetch('http://localhost:9545/api/v1/convert', {
+  method: 'POST',
+  body: formData
+});
+const bpxSchema = await res.json();
+console.log('Converted BPX:', bpxSchema);
+```
+
+### 7.3 แปลงผ่าน CLI Command Line (`thabot migrate`)
+หากต้องการแปลงไฟล์ในระดับโฟลเดอร์หรือทำ Batch Pipeline สามารถใช้คำสั่ง **`thabot migrate`**:
 
 ```bash
 # แปลงไฟล์เดี่ยว (SSRS RDL -> BPX)

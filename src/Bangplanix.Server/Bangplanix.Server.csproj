@@ -9,6 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,5 +22,6 @@
     <ProjectReference Include="..\Bangplanix.Engine\Bangplanix.Engine.csproj" />
     <ProjectReference Include="..\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
     <ProjectReference Include="..\Bangplanix.Connectors\Bangplanix.Connectors.csproj" />
+    <ProjectReference Include="..\Bangplanix.Adapters\Bangplanix.Adapters.csproj" />
   </ItemGroup>
 </Project>

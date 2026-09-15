@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\src\Bangplanix.Engine\Bangplanix.Engine.csproj" />
     <ProjectReference Include="..\..\src\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
     <ProjectReference Include="..\..\src\Bangplanix.Printing\Bangplanix.Printing.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Adapters\Bangplanix.Adapters.csproj" />
   </ItemGroup>
 
   <ItemGroup>

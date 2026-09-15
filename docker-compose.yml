@@ -16,6 +16,10 @@ services:
       - BANGPLANIX_GRPC_PORT=9546
       - THABOT_MASTER_KEY=Dev_Local_Master_Key_2026!
       - CRYSTAL_WORKER_URL=http://crystal-worker:8080
+      - BANGPLANIX_PORTAL_DB_TYPE=sqlite # Options: sqlite, postgres
+      - BANGPLANIX_PORTAL_DB_CONNECTION=Data Source=/app/volumes/data/portal.db
+      - BANGPLANIX_PORTAL_USER=admin
+      - BANGPLANIX_PORTAL_PASSWORD=bangplanix2026!
     volumes:
       - ./volumes/data:/app/volumes/data
       - ./volumes/templates:/app/volumes/templates
