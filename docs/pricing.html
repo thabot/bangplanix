@@ -185,15 +185,21 @@
       color: var(--text-muted);
       margin-bottom: 30px;
     }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 50px;
+    }
     .comp-table {
       width: 100%;
+      min-width: 780px;
       border-collapse: collapse;
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
       overflow: hidden;
       font-size: 13px;
-      margin-bottom: 50px;
     }
     .comp-table th, .comp-table td {
       padding: 14px 16px;
@@ -445,71 +451,102 @@
       </tbody>
     </table>
 
-    <!-- Head-to-Head Comparison with QuestPDF -->
-    <h2>Head-to-Head Feature Comparison vs QuestPDF</h2>
-    <p>Why engineering teams and global enterprises choose Bangplanix over QuestPDF and legacy engines</p>
+    <!-- Comprehensive Market Comparison: Bangplanix vs Alternatives -->
+    <h2 id="market-comp-title" data-i18n="marketCompTitle">Comprehensive Market Comparison: Bangplanix vs Alternatives</h2>
+    <p id="market-comp-subtitle" data-i18n="marketCompSubtitle">Why engineering teams and global enterprises choose Bangplanix over QuestPDF, Adobe, and Apryse</p>
 
-    <table class="comp-table">
-      <thead>
-        <tr>
-          <th style="width: 40%;">Feature / Capability</th>
-          <th style="width: 30%;">QuestPDF</th>
-          <th style="width: 30%; color: #38bdf8;">Bangplanix Enterprise</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Pro Tier Annual Price</strong></td>
-          <td>$699 / year</td>
-          <td><strong style="color: #10b981;">$699 / year (Direct Parity)</strong></td>
-        </tr>
-        <tr>
-          <td><strong>Enterprise Tier Annual Price</strong></td>
-          <td>$1,999 / year</td>
-          <td><strong style="color: #10b981;">$1,999 / year (Direct Parity)</strong></td>
-        </tr>
-        <tr>
-          <td><strong>Interactive Web Visual Designer</strong></td>
-          <td><span class="comp-cross">✕ No</span> (C# code only)</td>
-          <td><span class="comp-check">✓ Yes</span> (Built-in &lt;bangplanix-designer&gt;)</td>
-        </tr>
-        <tr>
-          <td><strong>2-Way Real-time Code Synchronization</strong></td>
-          <td><span class="comp-cross">✕ No</span></td>
-          <td><span class="comp-check">✓ Yes</span> (Canvas &lt;-&gt; .bpx Schema)</td>
-        </tr>
-        <tr>
-          <td><strong>Polyglot SDKs (C#, Node.js, Python, Go, Java)</strong></td>
-          <td><span class="comp-cross">✕ C# Only</span></td>
-          <td><span class="comp-check">✓ All 5 Languages Supported</span></td>
-        </tr>
-        <tr>
-          <td><strong>Native AOT Cold Start Speed</strong></td>
-          <td>Fast (~0.2s)</td>
-          <td><strong style="color: #38bdf8;">Sub-millisecond (~0.05s Cold Start)</strong></td>
-        </tr>
-        <tr>
-          <td><strong>Built-in AI NL-to-Report & Formula Assistant</strong></td>
-          <td><span class="comp-cross">✕ No</span></td>
-          <td><span class="comp-check">✓ Yes (BYOK / Enterprise LLM)</span></td>
-        </tr>
-        <tr>
-          <td><strong>Thai e-Tax Invoice & RFC 3161 TSA Timestamps</strong></td>
-          <td><span class="comp-cross">✕ No</span></td>
-          <td><span class="comp-check">✓ Certified ETDA มธอ. 3-2560 Compliant</span></td>
-        </tr>
-        <tr>
-          <td><strong>True Vector PDF Redaction (Sanitization)</strong></td>
-          <td><span class="comp-cross">✕ No</span></td>
-          <td><span class="comp-check">✓ Yes (Permanent Vector Removal)</span></td>
-        </tr>
-        <tr>
-          <td><strong>Legacy SSRS (.rdl) & Crystal Reports (.rpt) Import</strong></td>
-          <td><span class="comp-cross">✕ No</span></td>
-          <td><span class="comp-check">✓ Automatic AST Migration</span></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Feature / Capability</th>
+            <th style="width: 18%;">🔴 Adobe Document Services</th>
+            <th style="width: 18%;">🟣 Apryse (PDFTron / iText)</th>
+            <th style="width: 18%;">📄 QuestPDF</th>
+            <th style="width: 21%; color: #38bdf8;">🚀 Bangplanix Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Commercial Pricing Model</strong></td>
+            <td>Pay-per-Transaction (~$0.05/doc, $5,000+/yr)</td>
+            <td>Quote-based Modular ($1,500 – $10,000+/yr)</td>
+            <td>Flat Tier ($699 – $1,999/yr)</td>
+            <td><strong style="color: #10b981;">Flat Tier $699 – $1,999/yr ($59 – $199/mo)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Community / Free Tier Policy</strong></td>
+            <td>Limited (500–1,000 calls free, then billed)</td>
+            <td>Evaluation Watermark / AGPL Copyleft</td>
+            <td>Free for revenue &lt; $1M (Unwatermarked)</td>
+            <td><strong style="color: #10b981;">Free for revenue &lt; $1M (Unwatermarked, 4 Cores)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Security &amp; Air-Gapped Operation</strong></td>
+            <td><span class="comp-cross">✕ Cloud API Only</span> (Data leaves premises)</td>
+            <td><span class="comp-check">✓ Server SDK</span></td>
+            <td><span class="comp-check">✓ Local Runtime</span></td>
+            <td><strong style="color: #38bdf8;">✓ 100% Offline Air-Gapped + NIST ML-DSA-65</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Interactive Web Visual Designer</strong></td>
+            <td><span class="comp-cross">✕ No</span> (Word template tagging)</td>
+            <td><span class="comp-cross">✕ No</span> (Viewer only)</td>
+            <td><span class="comp-cross">✕ No</span> (C# code only)</td>
+            <td><span class="comp-check">✓ Yes</span> (Built-in &lt;bangplanix-designer&gt;)</td>
+          </tr>
+          <tr>
+            <td><strong>2-Way Real-time Code Synchronization</strong></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-check">✓ Yes</span> (Canvas &lt;-&gt; .bpx Schema)</td>
+          </tr>
+          <tr>
+            <td><strong>Polyglot SDKs (C#, Node.js, Python, Go, Java)</strong></td>
+            <td>REST API Only</td>
+            <td>C++, Java, .NET (Separately priced)</td>
+            <td><span class="comp-cross">✕ C# / .NET Only</span></td>
+            <td><span class="comp-check">✓ All 5 Languages in Single License</span></td>
+          </tr>
+          <tr>
+            <td><strong>Engine Architecture &amp; Footprint</strong></td>
+            <td>Cloud Latency (~1.0s – 2.0s per request)</td>
+            <td>Moderate (~80MB – 150MB RAM)</td>
+            <td>SkiaSharp (~50MB RAM, ~0.2s start)</td>
+            <td><strong style="color: #38bdf8;">Native AOT (&lt; 25MB RAM, 0.05s Cold Start)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Thai e-Tax Invoice &amp; RFC 3161 TSA</strong></td>
+            <td>Generic PDF Signatures only</td>
+            <td>Optional Add-on Module (Custom quote)</td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-check">✓ Certified ETDA มธอ. 3-2560 &amp; PAdES</span></td>
+          </tr>
+          <tr>
+            <td><strong>True Vector PDF Redaction (Sanitization)</strong></td>
+            <td>Cloud Add-on Service</td>
+            <td>High-tier Add-on Module ($$$)</td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-check">✓ Yes</span> (Permanent Vector Removal)</td>
+          </tr>
+          <tr>
+            <td><strong>Built-in AI Assistant &amp; Natural Language</strong></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-check">✓ Yes</span> (BYOK / Enterprise LLM)</td>
+          </tr>
+          <tr>
+            <td><strong>Legacy SSRS (.rdl) &amp; Crystal Reports Import</strong></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-cross">✕ No</span></td>
+            <td><span class="comp-check">✓ Automatic AST Migration</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="faq-section">

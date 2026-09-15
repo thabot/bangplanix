@@ -17,20 +17,21 @@ Our commercial pricing is structured with direct price-point parity against **Qu
 
 ---
 
-## 🥊 Head-to-Head Comparison: QuestPDF vs Bangplanix
+## 🥊 Comprehensive Market Comparison: Bangplanix vs Alternatives
 
-| Feature / Capability | QuestPDF | Bangplanix Enterprise |
-| :--- | :---: | :---: |
-| **Pro Tier Annual Price** | $699 / year | **$699 / year (Direct Parity)** |
-| **Enterprise Tier Annual Price** | $1,999 / year | **$1,999 / year (Direct Parity)** |
-| **Interactive Web Visual Designer** | ❌ No (C# code only) | ✅ **Yes (Built-in `<bangplanix-designer>`)** |
-| **2-Way Real-time Code Synchronization** | ❌ No | ✅ **Yes (Canvas <-> .bpx Schema)** |
-| **Polyglot SDKs (C#, Node.js, Python, Go, Java)** | ⚠️ C# Only | ✅ **All 5 Languages Supported** |
-| **Native AOT Cold Start Speed** | Fast (~0.2s) | **Sub-millisecond (~0.05s Cold Start)** |
-| **Built-in AI NL-to-Report & Formula Assistant** | ❌ No | ✅ **Yes (BYOK / Enterprise LLM)** |
-| **Thai e-Tax Invoice & RFC 3161 TSA Timestamps** | ❌ No | ✅ **Certified ETDA มธอ. 3-2560 Compliant** |
-| **True Vector PDF Redaction (Sanitization)** | ❌ No | ✅ **Yes (Permanent Vector Removal)** |
-| **Legacy SSRS (.rdl) & Crystal Reports (.rpt) Import** | ❌ No | ✅ **Automatic AST Migration** |
+| Feature / Capability | 🔴 Adobe Document Services | 🟣 Apryse (PDFTron / iText) | 📄 QuestPDF | 🚀 Bangplanix Enterprise |
+| :--- | :---: | :---: | :---: | :---: |
+| **Commercial Pricing Model** | Pay-per-Transaction (~$0.05/doc, $5,000+/yr) | Quote-based Modular ($1,500 – $10,000+/yr) | Flat Tier ($699 – $1,999/yr) | **Flat Tier $699 – $1,999/yr ($59 – $199/mo)** |
+| **Community / Free Tier Policy** | Limited (500–1,000 calls free, then billed) | Evaluation Watermark / AGPL Copyleft | Free for revenue < $1M (Unwatermarked) | **Free for revenue < $1M (Unwatermarked, 4 Cores)** |
+| **Security & Air-Gapped Operation** | ❌ Cloud API Only (Data leaves premises) | ✅ Server SDK | ✅ Local Runtime | **100% Offline Air-Gapped + NIST ML-DSA-65** |
+| **Interactive Web Visual Designer** | ❌ No (Word template tagging) | ❌ No (Viewer only) | ❌ No (C# code only) | ✅ **Yes (Built-in `<bangplanix-designer>`)** |
+| **2-Way Real-time Code Synchronization** | ❌ No | ❌ No | ❌ No | ✅ **Yes (Canvas <-> .bpx Schema)** |
+| **Polyglot SDKs (C#, Node.js, Python, Go, Java)** | REST API Only | C++, Java, .NET (Separately priced) | ❌ C# Only | ✅ **All 5 Languages in Single License** |
+| **Engine Architecture & Footprint** | Cloud Latency (~1.0s – 2.0s per request) | Moderate (~80MB – 150MB RAM) | SkiaSharp (~50MB RAM, ~0.2s start) | **Native AOT (< 25MB RAM, 0.05s Cold Start)** |
+| **Thai e-Tax Invoice & RFC 3161 TSA** | Generic PDF Signatures only | Optional Add-on Module (Custom quote) | ❌ No | ✅ **Certified ETDA มธอ. 3-2560 & PAdES** |
+| **True Vector PDF Redaction (Sanitization)** | Cloud Add-on Service | High-tier Add-on Module ($$$) | ❌ No | ✅ **Yes (Permanent Vector Removal)** |
+| **Built-in AI Assistant & Natural Language** | ❌ No | ❌ No | ❌ No | ✅ **Yes (BYOK / Enterprise LLM)** |
+| **Legacy SSRS (.rdl) & Crystal Reports Import** | ❌ No | ❌ No | ❌ No | ✅ **Automatic AST Migration** |
 
 ---
 

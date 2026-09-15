@@ -37,6 +37,8 @@ export interface PricingTranslation {
   colOem: string;
   colSupport: string;
   faqTitle: string;
+  marketCompTitle: string;
+  marketCompSubtitle: string;
 }
 
 export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
@@ -72,7 +74,9 @@ export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
     colRedaction: 'True Vector Redaction',
     colOem: 'Commercial Redistribution (OEM)',
     colSupport: 'Technical Support SLA',
-    faqTitle: 'Frequently Asked Questions'
+    faqTitle: 'Frequently Asked Questions',
+    marketCompTitle: 'Comprehensive Market Comparison: Bangplanix vs Alternatives',
+    marketCompSubtitle: 'Why engineering teams and global enterprises choose Bangplanix over QuestPDF, Adobe, and Apryse'
   },
   th: {
     heroTitle: 'ความคุ้มค่าระดับองค์กรชน QuestPDF พร้อมสิทธิ์เชิงพาณิชย์',
@@ -106,7 +110,9 @@ export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
     colRedaction: 'ถมดำลบเวกเตอร์ถาวร (Redaction)',
     colOem: 'สิทธิ์ฝังในซอฟต์แวร์ขายต่อ (OEM)',
     colSupport: 'ระดับการบริการซัพพอร์ต (SLA)',
-    faqTitle: 'คำถามที่พบบ่อย (FAQ)'
+    faqTitle: 'คำถามที่พบบ่อย (FAQ)',
+    marketCompTitle: 'ตารางเปรียบเทียบตลาดรอบด้าน: Bangplanix เทียบกับค่ายอื่น',
+    marketCompSubtitle: 'เหตุผลที่ทีมวิศวกรรมซอฟต์แวร์และองค์กรชั้นนำเลือก Bangplanix แทน QuestPDF, Adobe และ Apryse'
   },
   zh: {
     heroTitle: '企业级性价比：对标 QuestPDF 的商业许可',
@@ -140,7 +146,9 @@ export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
     colRedaction: '永久矢量脱敏 (Redaction)',
     colOem: '商业再分发许可 (OEM)',
     colSupport: '技术支持 SLA',
-    faqTitle: '常见问题解答 (FAQ)'
+    faqTitle: '常见问题解答 (FAQ)',
+    marketCompTitle: '市场全面横向对比：Bangplanix 对比主流方案',
+    marketCompSubtitle: '为何工程团队和全球企业选择 Bangplanix 替代 QuestPDF、Adobe 与 Apryse'
   },
   ja: {
     heroTitle: 'QuestPDF に匹敵する企業向けバリュー＆商用ライセンス',
@@ -174,7 +182,9 @@ export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
     colRedaction: '完全ベクター墨消し (Redaction)',
     colOem: '商用再配布権 (OEM)',
     colSupport: 'サポート SLA',
-    faqTitle: 'よくある質問 (FAQ)'
+    faqTitle: 'よくある質問 (FAQ)',
+    marketCompTitle: '主要製品との包括的な市場比較：Bangplanix vs 他社',
+    marketCompSubtitle: '開発チームやグローバル企業が QuestPDF、Adobe、Apryse を超えて Bangplanix を選ぶ理由'
   },
   es: {
     heroTitle: 'Valor Empresarial Competitivo y Licencias Comerciales',
@@ -208,6 +218,8 @@ export const PRICING_TRANSLATIONS: Record<string, PricingTranslation> = {
     colRedaction: 'Censura Vectorial Verdadera',
     colOem: 'Redistribución Comercial (OEM)',
     colSupport: 'SLA de Soporte Técnico',
-    faqTitle: 'Preguntas Frecuentes (FAQ)'
+    faqTitle: 'Preguntas Frecuentes (FAQ)',
+    marketCompTitle: 'Comparación Exhaustiva del Mercado: Bangplanix vs Alternativas',
+    marketCompSubtitle: 'Por qué los equipos de ingeniería y empresas globales eligen Bangplanix sobre QuestPDF, Adobe y Apryse'
   }
 };
