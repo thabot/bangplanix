@@ -21,7 +21,7 @@ public sealed class LicensePayload
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerEmail { get; set; } = string.Empty;
     public LicenseTier Tier { get; set; } = LicenseTier.Community;
-    public int MaxAllowedCores { get; set; } = 2;
+    public int MaxAllowedCores { get; set; } = 4;
     public int MaxTenants { get; set; } = 1;
     public bool EnableAiSuite { get; set; }
     public bool EnableReportBursting { get; set; }
