@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangplanix — Interactive Web Visual Designer (WYSIWYG & AI)</title>
+  <link rel="stylesheet" href="src/playground.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg-dark: #0f172a;
+      --panel-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .bpx-global-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+      padding: 0 16px;
+      background: #090d16;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .brand-link { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 700; }
+    .brand-badge { background: #2563eb; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+    .nav-links { display: flex; gap: 12px; }
+    .nav-item { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 6px; }
+    .nav-item.active { background: #1e293b; color: white; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .aot-badge { font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    /* Action Ribbon */
+    .action-ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 16px;
+      background: #141d2e;
+      border-bottom: 1px solid var(--border-color);
+      gap: 12px;
+      overflow-x: auto;
+    }
+    .ribbon-group { display: flex; align-items: center; gap: 8px; }
+    .ribbon-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .ribbon-btn:hover { background: #334155; }
+    .ribbon-btn.primary { background: #2563eb; border-color: #3b82f6; color: white; }
+    .ribbon-btn.success { background: #059669; border-color: #10b981; color: white; }
+
+    /* Main Designer Workspace Layout */
+    .designer-main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Split View Container */
+    .designer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .code-pane {
+      width: 420px;
+      border-left: 1px solid var(--border-color);
+      background: #0d131f;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.2s ease;
+    }
+    .code-pane.hidden { display: none; }
+    .code-header {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      background: #141d2e;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+    .code-editor-area {
+      flex: 1;
+      background: #090d16;
+      color: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 12px;
+      border: none;
+      resize: none;
+      outline: none;
+      white-space: pre;
+    }
+
+    /* Modal dialogs */
+    .bpx-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .bpx-modal-overlay.open { display: flex; }
+    .bpx-modal-card {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      width: 580px;
+      max-width: 90vw;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 14px 18px;
+      background: #141d2e;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+    .modal-body { padding: 18px; max-height: 70vh; overflow-y: auto; }
+    .modal-close { background: none; border: none; color: #94a3b8; font-size: 18px; cursor: pointer; }
+
+    /* Toast */
+    .bpx-toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #059669;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+    }
+    .bpx-toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Global Header -->
+  <header class="bpx-global-nav">
+    <div class="nav-brand">
+      <a href="index.html" class="brand-link">
+        <span>🚀 Bangplanix</span>
+        <span class="brand-badge">AOT ENGINE</span>
+      </a>
+    </div>
+    <nav class="nav-links">
+      <a href="designer.html" class="nav-item active">🎨 Visual Designer</a>
+      <a href="index.html" class="nav-item">⚡ WASM Playground</a>
+      <a href="pricing.html" class="nav-item">💎 Pricing & Plans</a>
+    </nav>
+    <div class="nav-actions">
+      <span class="aot-badge">🛡️ 390 Tests Passed • 0.05s Cold Start</span>
+      <a href="https://github.com/thabot/bangplanix" target="_blank" class="ribbon-btn">⭐ GitHub</a>
+    </div>
+  </header>
+
+  <!-- Action Ribbon Bar -->
+  <div class="action-ribbon">
+    <div class="ribbon-group">
+      <label for="template-select" style="font-size: 12px; color: var(--text-muted);">US Template:</label>
+      <select id="template-select" class="ribbon-btn">
+        <option value="us_commercial_invoice">🧾 US Commercial Invoice (US Letter)</option>
+        <option value="usps_shipping_label">📦 USPS / FedEx Label (4"x6")</option>
+        <option value="us_pos_receipt">🛒 Retail POS Receipt (80mm)</option>
+        <option value="us_payroll_paystub">💼 Corporate Paystub (US Letter)</option>
+        <option value="executive_financial_summary">📊 Financial Summary (Landscape)</option>
+      </select>
+      <button id="save-draft-btn" class="ribbon-btn" title="Save draft to BrowserStorage (Ctrl+S)">💾 Save Draft</button>
+    </div>
+
+    <div class="ribbon-group">
+      <button id="view-design-btn" class="ribbon-btn primary">Design</button>
+      <button id="view-split-btn" class="ribbon-btn">Split Code</button>
+    </div>
+
+    <div class="ribbon-group">
+      <button id="sdk-export-btn" class="ribbon-btn" title="Export ready-to-run code in 5 languages">📋 Copy Code (5 SDKs)</button>
+      <button id="mock-data-btn" class="ribbon-btn" title="Switch between single and multi-page scenarios">🎲 Mock Data</button>
+      <button id="export-pdf-btn" class="ribbon-btn success" title="Export real vector PDF directly from WASM (Ctrl+P)">📥 Export PDF</button>
+      <button id="shortcuts-hud-btn" class="ribbon-btn" title="View Keyboard Shortcuts">⌨️ Shortcuts</button>
+    </div>
+  </div>
+
+  <!-- Main Designer Workspace -->
+  <div class="designer-main-layout">
+    <!-- Visual Designer Mount Container -->
+    <div class="designer-pane" id="designer-mount-point">
+      <!-- Lit component <bangplanix-designer> mounts here -->
+      <bangplanix-designer id="designer-component" style="width: 100%; height: 100%; display: block;"></bangplanix-designer>
+    </div>
+
+    <!-- Live Synchronized Code Split Pane -->
+    <div class="code-pane" id="split-code-pane">
+      <div class="code-header">
+        <span>📄 Live .bpx JSON Schema (2-Way Sync)</span>
+        <span id="sync-status" style="font-size: 11px; color: #10b981;">● Synced</span>
+      </div>
+      <textarea id="live-schema-editor" class="code-editor-area" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="bpx-toast" class="bpx-toast"></div>
+
+  <!-- SDK Modal -->
+  <div id="sdk-modal" class="bpx-modal-overlay">
+    <div class="bpx-modal-card">
+      <div class="modal-header">
+        <span>📋 Copy SDK Code Snippet (5 Languages)</span>
+        <button class="modal-close" id="sdk-modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+          <button class="ribbon-btn primary sdk-lang-tab" data-lang="csharp">C# (.NET)</button>
+          <button class="ribbon-btn sdk-lang-tab" data-lang="nodejs">Node.js</button>
+          <button class="ribbon-btn sdk-lang-tab" data-lang="python">Python</button>
+          <button class="ribbon-btn sdk-lang-tab" data-lang="go">Go</button>
+          <button class="ribbon-btn sdk-lang-tab" data-lang="java">Java</button>
+        </div>
+        <textarea id="sdk-code-display" class="code-editor-area" style="height: 280px; width: 100%; border-radius: 6px;" readonly></textarea>
+        <button id="copy-sdk-clipboard-btn" class="ribbon-btn primary" style="width: 100%; margin-top: 12px; justify-content: center;">
+          📋 Copy to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shortcuts HUD Modal -->
+  <div id="shortcuts-modal" class="bpx-modal-overlay">
+    <div class="bpx-modal-card">
+      <div class="modal-header">
+        <span>⌨️ Keyboard Shortcuts HUD</span>
+        <button class="modal-close" id="shortcuts-modal-close">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 13px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);"><th style="text-align: left; padding: 6px 0;">Shortcut</th><th style="text-align: left;">Action</th></tr>
+          <tr><td style="padding: 6px 0;"><code>Ctrl + Z</code> / <code>Cmd + Z</code></td><td>Undo last action</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Ctrl + Y</code> / <code>Cmd + Shift + Z</code></td><td>Redo action</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Delete</code> / <code>Backspace</code></td><td>Delete selected element</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Arrow Keys (↑↓←→)</code></td><td>Nudge element by 1px (Shift for 10px)</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Ctrl + S</code> / <code>Cmd + S</code></td><td>Save draft to BrowserStorage</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Ctrl + P</code> / <code>Cmd + P</code></td><td>Instant PDF export download</td></tr>
+          <tr><td style="padding: 6px 0;"><code>Escape</code></td><td>Deselect all</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { BangplanixDesignerApp } from './src/dist/designer/designer-app.js';
+    import { TemplateGalleryManager } from './src/dist/designer/template-gallery.js';
+    import { SdkCodeGenerator } from './src/dist/designer/sdk-code-generator.js';
+    import { CodeSyncBridge } from './src/dist/designer/code-sync-bridge.js';
+    import '../frontend/designer/bangplanix-designer.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const app = new BangplanixDesignerApp();
+      const gallery = new TemplateGalleryManager();
+      const sdkGen = new SdkCodeGenerator();
+      const syncBridge = new CodeSyncBridge(250);
+
+      app.init();
+
+      const designerEl = document.getElementById('designer-component');
+      const schemaEditor = document.getElementById('live-schema-editor');
+      const tplSelect = document.getElementById('template-select');
+      const saveBtn = document.getElementById('save-draft-btn');
+      const exportPdfBtn = document.getElementById('export-pdf-btn');
+      const splitPane = document.getElementById('split-code-pane');
+      const viewDesignBtn = document.getElementById('view-design-btn');
+      const viewSplitBtn = document.getElementById('view-split-btn');
+
+      // Load initial schema
+      const initialSchema = app.getReport();
+      if (designerEl && designerEl.core) {
+        designerEl.core.report = initialSchema;
+        designerEl.requestUpdate();
+      }
+      schemaEditor.value = JSON.stringify(initialSchema, null, 2);
+
+      // 2-Way Synchronization: Code -> Canvas
+      schemaEditor.addEventListener('input', () => {
+        syncBridge.onCodeEditorInput(schemaEditor.value, (res) => {
+          const status = document.getElementById('sync-status');
+          if (res.valid && res.schema) {
+            status.textContent = '● Synced';
+            status.style.color = '#10b981';
+            app.setReport(res.schema);
+            if (designerEl && designerEl.core) {
+              designerEl.core.report = res.schema;
+              designerEl.requestUpdate();
+            }
+          } else {
+            status.textContent = '▲ Syntax Error';
+            status.style.color = '#ef4444';
+          }
+        });
+      });
+
+      // Template selection
+      tplSelect.addEventListener('change', (e) => {
+        const loaded = app.loadPreset(e.target.value);
+        if (loaded) {
+          schemaEditor.value = JSON.stringify(loaded, null, 2);
+          if (designerEl && designerEl.core) {
+            designerEl.core.report = loaded;
+            designerEl.requestUpdate();
+          }
+        }
+      });
+
+      // Split view toggle
+      viewDesignBtn.addEventListener('click', () => {
+        splitPane.classList.add('hidden');
+        viewDesignBtn.classList.add('primary');
+        viewSplitBtn.classList.remove('primary');
+      });
+      viewSplitBtn.addEventListener('click', () => {
+        splitPane.classList.remove('hidden');
+        viewSplitBtn.classList.add('primary');
+        viewDesignBtn.classList.remove('primary');
+      });
+
+      saveBtn.addEventListener('click', () => app.saveDraft());
+      exportPdfBtn.addEventListener('click', () => app.exportPdf());
+
+      // SDK Modal
+      let currentLang = 'csharp';
+      const sdkModal = document.getElementById('sdk-modal');
+      const sdkDisplay = document.getElementById('sdk-code-display');
+      document.getElementById('sdk-export-btn').addEventListener('click', () => {
+        sdkDisplay.value = sdkGen.generate(currentLang, app.getReport());
+        sdkModal.classList.add('open');
+      });
+      document.getElementById('sdk-modal-close').addEventListener('click', () => sdkModal.classList.remove('open'));
+      document.querySelectorAll('.sdk-lang-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          document.querySelectorAll('.sdk-lang-tab').forEach(t => t.classList.remove('primary'));
+          e.target.classList.add('primary');
+          currentLang = e.target.dataset.lang;
+          sdkDisplay.value = sdkGen.generate(currentLang, app.getReport());
+        });
+      });
+      document.getElementById('copy-sdk-clipboard-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(sdkDisplay.value);
+        app.showToast('Copied SDK code snippet to clipboard!');
+      });
+
+      // Shortcuts Modal
+      const scModal = document.getElementById('shortcuts-modal');
+      document.getElementById('shortcuts-hud-btn').addEventListener('click', () => scModal.classList.add('open'));
+      document.getElementById('shortcuts-modal-close').addEventListener('click', () => scModal.classList.remove('open'));
+    });
+  </script>
+</body>
+</html>
