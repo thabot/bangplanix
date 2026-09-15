@@ -37,8 +37,14 @@ docker compose up -d
 ```
 
 เมื่อรันสำเร็จ สามารถเข้าใช้งานผ่าน Browser ได้ทันที:
-* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (หรือเข้า [`http://localhost:9545`](http://localhost:9545) ผ่าน Browser)
-  * **Default Credentials:** Username: `admin` / Password: `bangplanix2026!`
+* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (หรือเข้า [`http://localhost:9545`](http://localhost:9545) ผ่าน Web Browser)
+
+> 🔐 **บัญชีผู้ใช้งานเริ่มต้นสำหรับเข้าสู่ระบบ (Default Credentials):**
+> * **Username:** `admin` (หรือกำหนดผ่านตัวแปร `BANGPLANIX_PORTAL_USER`)
+> * **Password:** `bangplanix2026!` (หรือกำหนดผ่านตัวแปร `BANGPLANIX_PORTAL_PASSWORD` / `THABOT_MASTER_KEY`)
+> 
+> *ระบบจะสร้างบัญชีเริ่มต้นนี้ให้อัตโนมัติในการเริ่มต้นระบบครั้งแรก (Auto-Seeded) เพื่อให้สามารถเข้าสู่ระบบและเริ่มบริหารจัดการ Container ได้ทันที*
+
 * **High-Speed gRPC Endpoint:** `localhost:9546`
 
 ### 1.2 รันผ่าน Docker CLI โดยตรง

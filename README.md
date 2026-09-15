@@ -65,7 +65,7 @@ docker compose up -d
 ```
 
 Access the service immediately:
-* **Web Management Portal:** [`http://localhost:9545`](http://localhost:9545)
+* **🚀 Web Management Portal:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (Default Login: `admin` / `bangplanix2026!`)
 * **High-Speed gRPC Endpoint:** `localhost:9546`
 
 ### 2. Verify System Health with System Doctor

@@ -37,16 +37,39 @@ docker compose up -d
 ```
 
 Access the service immediately:
-* **REST API & Status Endpoint:** [`http://localhost:9545`](http://localhost:9545) *(Interactive Web Management Portal GUI in [Roadmap v1.1.0](./ROADMAP.md))*
+* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (or navigate to [`http://localhost:9545`](http://localhost:9545) via Web Browser)
+
+> 🔐 **Default Administrator Credentials:**
+> * **Username:** `admin` (configurable via `BANGPLANIX_PORTAL_USER`)
+> * **Password:** `bangplanix2026!` (configurable via `BANGPLANIX_PORTAL_PASSWORD` / `THABOT_MASTER_KEY`)
+> 
+> *The system automatically seeds this initial admin account on first startup, allowing you to sign in and manage container files immediately.*
+
 * **High-Speed gRPC Endpoint:** `localhost:9546`
 
 ### 1.2 Run with Docker CLI
+
+#### A) Using SQLite for Portal Database (Default - Recommended):
+```bash
+docker run -d \
+  --name bangplanix-server \
+  -p 9545:9545 -p 9546:9546 \
+  -v $(pwd)/volumes/data:/app/volumes/data \
+  -v $(pwd)/volumes/templates:/app/volumes/templates \
+  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
+  -v $(pwd)/volumes/logs:/app/volumes/logs \
+  -e BANGPLANIX_PORTAL_DB_TYPE=sqlite \
+  ghcr.io/thabot/bangplanix:latest
+```
+
+#### B) Using PostgreSQL for Enterprise / Multi-Pod Deployments:
 ```bash
 docker run -d \
   --name bangplanix-server \
   -p 9545:9545 -p 9546:9546 \
   -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
+  -e BANGPLANIX_PORTAL_DB_TYPE=postgres \
+  -e BANGPLANIX_PORTAL_DB_CONNECTION="Host=postgres-host;Port=5432;Database=bangplanix;Username=postgres;Password=secret;" \
   ghcr.io/thabot/bangplanix:latest
 ```
 
