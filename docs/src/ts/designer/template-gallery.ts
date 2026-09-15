@@ -1,6 +1,6 @@
 /**
- * US Standards Preset Template Gallery (100% English)
- * Standard business formats: US Letter 8.5"x11", 4"x6" Shipping, 80mm POS
+ * Standard Preset Template Gallery
+ * Formats: Standard A4 (210x297mm), US Letter 8.5"x11", 4"x6" Shipping, 80mm POS
  */
 import { BpxReportSchema } from '../core/types.js';
 
@@ -14,6 +14,71 @@ export interface GalleryTemplateItem {
 }
 
 export const US_PRESET_TEMPLATES: GalleryTemplateItem[] = [
+  {
+    id: 'a4_commercial_invoice',
+    name: 'A4 Commercial Tax Invoice',
+    category: 'Billing',
+    paperSize: 'ISO A4 (210mm x 297mm)',
+    description: 'International standard A4 commercial invoice with VAT breakdown, itemized SKU table & bank details.',
+    schema: {
+      version: '1.0',
+      metadata: { title: 'Commercial Tax Invoice (A4)', author: 'Bangplanix Global Billing Engine' },
+      pageSetup: { paperKind: 'A4', width: 595.28, height: 841.89, orientation: 'Portrait', margins: { top: 36, bottom: 36, left: 36, right: 36 } },
+      parameters: [
+        { name: 'InvoiceNo', type: 'string', defaultValue: 'INV-2026-9901' },
+        { name: 'Company', type: 'string', defaultValue: 'BANGPLANIX ENTERPRISE CORP' },
+        { name: 'TaxId', type: 'string', defaultValue: '0105559876543' }
+      ],
+      bands: {
+        ReportHeader: {
+          height: 115,
+          elements: [
+            { id: 'h_title', type: 'Text', x: 0, y: 0, width: 320, height: 28, text: 'BANGPLANIX ENTERPRISE CORP', style: { fontSize: 18, fontWeight: 'Bold', color: '#0f172a' } },
+            { id: 'h_tagline', type: 'Text', x: 0, y: 30, width: 320, height: 18, text: 'Empire Tower, 47th Fl., South Sathorn Rd., Bangkok 10120', style: { fontSize: 10, color: '#64748b' } },
+            { id: 'h_taxid', type: 'Text', x: 0, y: 48, width: 280, height: 18, text: 'Tax ID / เลขประจำตัวผู้เสียภาษี: 0105559876543 (Head Office)', style: { fontSize: 10, color: '#64748b' } },
+            { id: 'h_inv_badge', type: 'Text', x: 320, y: 0, width: 200, height: 28, text: 'TAX INVOICE / RECEIPT', style: { fontSize: 15, fontWeight: 'Bold', color: '#2563eb', alignment: 'Right' } },
+            { id: 'h_inv_no', type: 'Text', x: 320, y: 30, width: 200, height: 18, text: 'Invoice #: INV-2026-9901', style: { fontSize: 11, fontWeight: 'Bold', alignment: 'Right' } },
+            { id: 'h_date', type: 'Text', x: 320, y: 48, width: 200, height: 18, text: 'Date: September 15, 2026', style: { fontSize: 10, color: '#64748b', alignment: 'Right' } },
+            { id: 'h_due_date', type: 'Text', x: 320, y: 66, width: 200, height: 18, text: 'Due Date: October 15, 2026', style: { fontSize: 10, color: '#ef4444', fontWeight: 'Bold', alignment: 'Right' } }
+          ]
+        },
+        PageHeader: {
+          height: 32,
+          elements: [
+            { id: 'ph_desc', type: 'Text', x: 0, y: 8, width: 260, height: 18, text: 'ITEM DESCRIPTION', style: { fontSize: 10, fontWeight: 'Bold', color: '#475569' } },
+            { id: 'ph_sku', type: 'Text', x: 260, y: 8, width: 80, height: 18, text: 'SKU / CODE', style: { fontSize: 10, fontWeight: 'Bold', color: '#475569' } },
+            { id: 'ph_qty', type: 'Text', x: 340, y: 8, width: 45, height: 18, text: 'QTY', style: { fontSize: 10, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } },
+            { id: 'ph_rate', type: 'Text', x: 395, y: 8, width: 60, height: 18, text: 'PRICE', style: { fontSize: 10, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } },
+            { id: 'ph_total', type: 'Text', x: 460, y: 8, width: 63, height: 18, text: 'AMOUNT', style: { fontSize: 10, fontWeight: 'Bold', alignment: 'Right', color: '#475569' } }
+          ]
+        },
+        Detail: {
+          height: 30,
+          elements: [
+            { id: 'd_desc', type: 'Text', x: 0, y: 6, width: 260, height: 18, text: 'Bangplanix High-Speed Native AOT Cluster License', style: { fontSize: 10 } },
+            { id: 'd_sku', type: 'Text', x: 260, y: 6, width: 80, height: 18, text: 'BPX-AOT-01', style: { fontSize: 10, color: '#64748b' } },
+            { id: 'd_qty', type: 'Text', x: 340, y: 6, width: 45, height: 18, text: '1', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'd_rate', type: 'Text', x: 395, y: 6, width: 60, height: 18, text: '69,900.00', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'd_amount', type: 'Text', x: 460, y: 6, width: 63, height: 18, text: '69,900.00', style: { fontSize: 10, fontWeight: 'Bold', alignment: 'Right' } }
+          ]
+        },
+        ReportFooter: {
+          height: 140,
+          elements: [
+            { id: 'rf_subtotal_lbl', type: 'Text', x: 320, y: 10, width: 100, height: 18, text: 'Subtotal:', style: { fontSize: 10, alignment: 'Right', color: '#64748b' } },
+            { id: 'rf_subtotal_val', type: 'Text', x: 430, y: 10, width: 93, height: 18, text: '69,900.00 THB', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'rf_tax_lbl', type: 'Text', x: 320, y: 28, width: 100, height: 18, text: 'VAT (7%):', style: { fontSize: 10, alignment: 'Right', color: '#64748b' } },
+            { id: 'rf_tax_val', type: 'Text', x: 430, y: 28, width: 93, height: 18, text: '4,893.00 THB', style: { fontSize: 10, alignment: 'Right' } },
+            { id: 'rf_total_lbl', type: 'Text', x: 300, y: 50, width: 120, height: 24, text: 'Grand Total (รวมทั้งสิ้น):', style: { fontSize: 12, fontWeight: 'Bold', alignment: 'Right' } },
+            { id: 'rf_total_val', type: 'Text', x: 430, y: 50, width: 93, height: 24, text: '74,793.00 THB', style: { fontSize: 13, fontWeight: 'Bold', color: '#2563eb', alignment: 'Right' } },
+            { id: 'rf_bahttext', type: 'Text', x: 0, y: 52, width: 300, height: 20, text: '(=เจ็ดหมื่นสี่พันเจ็ดร้อยเก้าสิบสามบาทถ้วน=)', style: { fontSize: 9.5, fontWeight: 'Bold', color: '#1e293b' } },
+            { id: 'rf_barcode', type: 'Barcode', x: 0, y: 80, width: 180, height: 35, text: 'INV-2026-9901' },
+            { id: 'rf_notes', type: 'Text', x: 200, y: 85, width: 323, height: 35, text: 'Payment via PromptPay / SCB Bank A/C: 111-394821-9\nThank you for choosing Bangplanix Enterprise Engine!', style: { fontSize: 8.5, color: '#64748b' } }
+          ]
+        }
+      }
+    }
+  },
   {
     id: 'us_commercial_invoice',
     name: 'US Commercial Tax Invoice',

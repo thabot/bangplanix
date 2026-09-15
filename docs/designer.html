@@ -204,13 +204,21 @@
   <!-- Action Ribbon Bar -->
   <div class="action-ribbon">
     <div class="ribbon-group">
-      <label for="template-select" style="font-size: 12px; color: var(--text-muted);">US Template:</label>
+      <label for="template-select" style="font-size: 12px; color: var(--text-muted);">Template:</label>
       <select id="template-select" class="ribbon-btn">
+        <option value="a4_commercial_invoice" selected>🧾 Standard Tax Invoice (A4 210x297mm)</option>
         <option value="us_commercial_invoice">🧾 US Commercial Invoice (US Letter)</option>
         <option value="usps_shipping_label">📦 USPS / FedEx Label (4"x6")</option>
         <option value="us_pos_receipt">🛒 Retail POS Receipt (80mm)</option>
         <option value="us_payroll_paystub">💼 Corporate Paystub (US Letter)</option>
         <option value="executive_financial_summary">📊 Financial Summary (Landscape)</option>
+      </select>
+      <label for="paper-select" style="font-size: 12px; color: var(--text-muted); margin-left: 4px;">Paper:</label>
+      <select id="paper-select" class="ribbon-btn">
+        <option value="A4" selected>A4 (210×297mm)</option>
+        <option value="Letter">Letter (8.5"×11")</option>
+        <option value="Legal">Legal (8.5"×14")</option>
+        <option value="POS80">POS (80mm)</option>
       </select>
       <button id="save-draft-btn" class="ribbon-btn" title="Save draft to BrowserStorage (Ctrl+S)">💾 Save Draft</button>
     </div>
@@ -313,6 +321,7 @@
       const designerEl = document.getElementById('designer-component');
       const schemaEditor = document.getElementById('live-schema-editor');
       const tplSelect = document.getElementById('template-select');
+      const paperSelect = document.getElementById('paper-select');
       const saveBtn = document.getElementById('save-draft-btn');
       const exportPdfBtn = document.getElementById('export-pdf-btn');
       const splitPane = document.getElementById('split-code-pane');
@@ -326,6 +335,25 @@
         designerEl.requestUpdate();
       }
       schemaEditor.value = JSON.stringify(initialSchema, null, 2);
+      if (paperSelect && initialSchema?.pageSetup?.paperKind) {
+        paperSelect.value = initialSchema.pageSetup.paperKind;
+      }
+
+      // 2-Way Synchronization: Canvas / Component -> Code Editor
+      designerEl.addEventListener('report-change', (e) => {
+        if (e.detail && e.detail.report) {
+          app.setReport(e.detail.report);
+          schemaEditor.value = JSON.stringify(e.detail.report, null, 2);
+          const status = document.getElementById('sync-status');
+          if (status) {
+            status.textContent = '● Synced';
+            status.style.color = '#10b981';
+          }
+          if (paperSelect && e.detail.report.pageSetup?.paperKind) {
+            paperSelect.value = e.detail.report.pageSetup.paperKind;
+          }
+        }
+      });
 
       // 2-Way Synchronization: Code -> Canvas
       schemaEditor.addEventListener('input', () => {
@@ -339,11 +367,21 @@
               designerEl.core.report = res.schema;
               designerEl.requestUpdate();
             }
+            if (paperSelect && res.schema.pageSetup?.paperKind) {
+              paperSelect.value = res.schema.pageSetup.paperKind;
+            }
           } else {
             status.textContent = '▲ Syntax Error';
             status.style.color = '#ef4444';
           }
         });
+      });
+
+      // Paper size selection
+      paperSelect?.addEventListener('change', (e) => {
+        if (designerEl && typeof designerEl.setPaperSize === 'function') {
+          designerEl.setPaperSize(e.target.value);
+        }
       });
 
       // Template selection
@@ -354,6 +392,9 @@
           if (designerEl && designerEl.core) {
             designerEl.core.report = loaded;
             designerEl.requestUpdate();
+          }
+          if (paperSelect && loaded.pageSetup?.paperKind) {
+            paperSelect.value = loaded.pageSetup.paperKind;
           }
         }
       });

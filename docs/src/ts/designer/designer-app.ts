@@ -27,8 +27,8 @@ export class BangplanixDesignerApp {
     this.shortcutManager = new ShortcutManager();
     this.pdfExporter = new InstantPdfExporter();
 
-    // Load initial template (default to US Commercial Invoice)
-    const initialTpl = this.galleryManager.getTemplateById('us_commercial_invoice');
+    // Load initial template (default to A4 Commercial Invoice)
+    const initialTpl = this.galleryManager.getTemplateById('a4_commercial_invoice') || this.galleryManager.getTemplateById('us_commercial_invoice');
     this.currentReport = initialTpl ? initialTpl.schema : this.getDefaultSchema();
   }
 
@@ -36,7 +36,7 @@ export class BangplanixDesignerApp {
     return {
       version: '1.0',
       metadata: { title: 'Untitled Report' },
-      pageSetup: { width: 612, height: 792, paperKind: 'Letter' },
+      pageSetup: { width: 595.28, height: 841.89, paperKind: 'A4' },
       bands: {
         Detail: { height: 60, elements: [] }
       }

@@ -55,6 +55,40 @@ export class BangplanixDesigner extends HTMLElement {
       height: type === 'Chart' ? 180 : (type === 'Barcode' ? 60 : 25),
       text: type === 'Text' ? 'Label Text' : (type === 'Barcode' ? '123456789' : '')
     });
+    this.dispatchChange();
+    this.requestUpdate();
+  }
+
+  public dispatchChange(): void {
+    this.dispatchEvent(new CustomEvent('report-change', {
+      detail: { report: this.core.report },
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  public setPaperSize(kind: string): void {
+    if (!this.core.report) return;
+    if (!this.core.report.pageSetup) {
+      this.core.report.pageSetup = {};
+    }
+    const ps = this.core.report.pageSetup;
+    ps.paperKind = kind;
+    if (kind === 'A4') {
+      ps.width = 595.28;
+      ps.height = 841.89;
+    } else if (kind === 'Letter') {
+      ps.width = 612;
+      ps.height = 792;
+    } else if (kind === 'Legal') {
+      ps.width = 612;
+      ps.height = 1008;
+    } else if (kind === 'POS80') {
+      ps.width = 226.77;
+      ps.height = 600;
+    }
+    this.core.pushHistory(`Change Paper Size to ${kind}`);
+    this.dispatchChange();
     this.requestUpdate();
   }
 
@@ -62,6 +96,126 @@ export class BangplanixDesigner extends HTMLElement {
     e.stopPropagation();
     this.core.selectElement(id, e.shiftKey || e.ctrlKey);
     this.requestUpdate();
+  }
+
+  private handleElementDblClick(e: MouseEvent, id: string): void {
+    e.stopPropagation();
+    const info = this.core.findElement(id);
+    if (!info) return;
+
+    const elDom = this.shadowRoot?.querySelector(`.bpx-element-view[data-el-id="${id}"]`) as HTMLElement | null;
+    if (!elDom) return;
+
+    if (elDom.querySelector('.bpx-inline-editor')) return;
+
+    const currentText = info.element.text || '';
+    const inlineInput = document.createElement('input');
+    inlineInput.type = 'text';
+    inlineInput.className = 'bpx-inline-editor';
+    inlineInput.value = currentText;
+    inlineInput.style.cssText = `
+      width: 100%;
+      height: 100%;
+      border: 2px solid #2563eb;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: ${info.element.style?.fontSize || 12}px;
+      font-family: inherit;
+      padding: 0 4px;
+      outline: none;
+      box-sizing: border-box;
+      border-radius: 2px;
+      z-index: 100;
+    `;
+
+    let committed = false;
+    const finishEdit = () => {
+      if (committed) return;
+      committed = true;
+      const newText = inlineInput.value;
+      info.element.text = newText;
+      this.core.pushHistory('Inline Edit Text');
+      
+      const propTextInput = this.shadowRoot?.getElementById('prop-text') as HTMLInputElement | null;
+      if (propTextInput && this.core.selectedElementIds.includes(id)) {
+        propTextInput.value = newText;
+      }
+      
+      this.dispatchChange();
+      this.requestUpdate();
+    };
+
+    inlineInput.addEventListener('blur', finishEdit);
+    inlineInput.addEventListener('keydown', (ke: KeyboardEvent) => {
+      if (ke.key === 'Enter') {
+        ke.preventDefault();
+        inlineInput.blur();
+      } else if (ke.key === 'Escape') {
+        inlineInput.value = currentText;
+        inlineInput.blur();
+      }
+    });
+
+    elDom.innerHTML = '';
+    elDom.appendChild(inlineInput);
+    inlineInput.focus();
+    inlineInput.select();
+  }
+
+  private handleElementMouseDown(e: MouseEvent, id: string): void {
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT') return;
+
+    const info = this.core.findElement(id);
+    if (!info) return;
+
+    if (!this.core.selectedElementIds.includes(id)) {
+      this.core.selectElement(id);
+      this.requestUpdate();
+    }
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const initialElX = info.element.x || 0;
+    const initialElY = info.element.y || 0;
+    const zoom = (this.core.zoomLevel || 100) / 100;
+    let moved = false;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const dx = (moveEvent.clientX - startX) / zoom;
+      const dy = (moveEvent.clientY - startY) / zoom;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        moved = true;
+        const newX = Math.max(0, Math.round(initialElX + dx));
+        const newY = Math.max(0, Math.round(initialElY + dy));
+        info.element.x = newX;
+        info.element.y = newY;
+
+        const elDom = this.shadowRoot?.querySelector(`.bpx-element-view[data-el-id="${id}"]`) as HTMLElement | null;
+        if (elDom) {
+          elDom.style.left = `${newX}px`;
+          elDom.style.top = `${newY}px`;
+        }
+
+        const propX = this.shadowRoot?.getElementById('prop-x') as HTMLInputElement | null;
+        const propY = this.shadowRoot?.getElementById('prop-y') as HTMLInputElement | null;
+        if (propX) propX.value = String(newX);
+        if (propY) propY.value = String(newY);
+      }
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      if (moved) {
+        this.core.pushHistory('Move Element');
+        this.dispatchChange();
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
   }
 
   private updateSelectedProp(key: string, value: any): void {
@@ -76,19 +230,55 @@ export class BangplanixDesigner extends HTMLElement {
     else if (key === 'x') info.element.x = Number(value);
     else if (key === 'y') info.element.y = Number(value);
 
-    this.core.pushHistory(`Update ${key}`);
-    this.requestUpdate();
+    // Update canvas DOM directly without destroying focused input element
+    const elDom = this.shadowRoot?.querySelector(`.bpx-element-view[data-el-id="${info.element.id}"]`) as HTMLElement | null;
+    if (elDom) {
+      if (key === 'text' || key === 'expression') {
+        const contentSpan = elDom.querySelector('.bpx-el-content');
+        const displayContent = info.element.type === 'Chart' 
+          ? `📊 [Chart: ${info.element.chart?.title || info.element.chart?.chartType || 'Column'}]` 
+          : (info.element.type === 'Barcode' || info.element.type === 'QrCode'
+            ? `▦ [${info.element.type}: ${info.element.text || '123456'}]`
+            : (info.element.expression 
+              ? `<span style="color: #2563eb; font-style: italic;">{ ${info.element.expression} }</span>`
+              : (info.element.text || info.element.type || '')));
+        if (contentSpan) {
+          contentSpan.innerHTML = displayContent;
+        } else {
+          elDom.innerHTML = `<span class="bpx-el-content">${displayContent}</span>`;
+        }
+      } else if (key === 'x') {
+        elDom.style.left = `${Number(value) || 0}px`;
+      } else if (key === 'y') {
+        elDom.style.top = `${Number(value) || 0}px`;
+      } else if (key === 'width') {
+        elDom.style.width = `${Number(value) || 0}px`;
+      } else if (key === 'height') {
+        elDom.style.height = `${Number(value) || 0}px`;
+      }
+    }
+
+    if (this.core.bottomEditorTab === 'bpxJson') {
+      const codePre = this.shadowRoot?.querySelector('.bpx-editor-body pre');
+      if (codePre) codePre.textContent = this.core.getBpxJson();
+    }
+
+    this.dispatchChange();
   }
 
   public render(): void {
     if (!this.shadowRoot) return;
 
-    const report = this.core.report || { pageSetup: { width: 612, height: 792 }, bands: {} };
+    const report = this.core.report || { pageSetup: { width: 595.28, height: 841.89, paperKind: 'A4', marginTop: 36, marginBottom: 36, marginLeft: 36, marginRight: 36 }, bands: {} };
     const selectedInfo = this.core.selectedElementIds.length === 1
       ? this.core.findElement(this.core.selectedElementIds[0])
       : null;
 
-    const pageSetup = report.pageSetup || { width: 612, height: 792 };
+    const pageSetup = report.pageSetup || { width: 595.28, height: 841.89, paperKind: 'A4', marginTop: 36, marginBottom: 36, marginLeft: 36, marginRight: 36 };
+    const marginTop = pageSetup.marginTop ?? 36;
+    const marginBottom = pageSetup.marginBottom ?? 36;
+    const marginLeft = pageSetup.marginLeft ?? 36;
+    const marginRight = pageSetup.marginRight ?? 36;
     const bands = report.bands || {};
 
     const bandsHtml = Object.entries(bands).map(([bandName, band]: [string, any]) => {
@@ -106,9 +296,10 @@ export class BangplanixDesigner extends HTMLElement {
           <div 
             class="bpx-element-view ${isSelected ? 'selected' : ''}"
             data-el-id="${el.id}"
-            style="left: ${el.x || 0}px; top: ${el.y || 0}px; width: ${el.width || 100}px; height: ${el.height || 24}px; font-size: ${el.style?.fontSize || 12}px; color: ${el.style?.color || '#0f172a'};"
+            title="Double-click to edit text inline, or drag to move"
+            style="left: ${el.x || 0}px; top: ${el.y || 0}px; width: ${el.width || 100}px; height: ${el.height || 24}px; font-size: ${el.style?.fontSize || 12}px; color: ${el.style?.color || '#0f172a'}; z-index: 2;"
           >
-            ${displayContent}
+            <span class="bpx-el-content">${displayContent}</span>
           </div>
         `;
       }).join('');
@@ -499,7 +690,15 @@ export class BangplanixDesigner extends HTMLElement {
 
         <!-- Center Canvas -->
         <div class="bpx-canvas-container" id="canvas-container">
-          <div class="bpx-page-canvas" style="width: ${pageSetup.width}px; min-height: ${pageSetup.height}px; transform: scale(${this.core.zoomLevel / 100}); transform-origin: top center;">
+          <div class="bpx-page-canvas" style="width: ${pageSetup.width}px; min-height: ${pageSetup.height}px; transform: scale(${this.core.zoomLevel / 100}); transform-origin: top center; position: relative;">
+            <div class="bpx-canvas-page-header" style="position: absolute; top: -24px; left: 0; font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+              <span style="background: #1e293b; padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; color: #38bdf8; font-weight: 600;">
+                📄 ${pageSetup.paperKind || (Math.abs(pageSetup.width - 595.28) < 1 ? 'A4' : 'Custom')} (${Math.round(pageSetup.width)} × ${Math.round(pageSetup.height)} pt)
+              </span>
+              <span style="color: #64748b;">Margins: ${marginTop}pt Top/Bottom, ${marginLeft}pt Left/Right</span>
+            </div>
+            <!-- Margin Guideline Overlay -->
+            <div class="bpx-margin-guide" style="position: absolute; top: ${marginTop}px; left: ${marginLeft}px; right: ${marginRight}px; bottom: ${marginBottom}px; border: 1px dashed #cbd5e1; pointer-events: none; z-index: 1;"></div>
             ${bandsHtml}
           </div>
         </div>
@@ -537,17 +736,17 @@ export class BangplanixDesigner extends HTMLElement {
     root.getElementById('btn-mode-code')?.addEventListener('click', () => { this.core.setViewMode('code'); this.requestUpdate(); });
 
     // Undo / Redo / Zoom
-    root.getElementById('btn-undo')?.addEventListener('click', () => { this.core.undo(); this.requestUpdate(); });
-    root.getElementById('btn-redo')?.addEventListener('click', () => { this.core.redo(); this.requestUpdate(); });
+    root.getElementById('btn-undo')?.addEventListener('click', () => { this.core.undo(); this.dispatchChange(); this.requestUpdate(); });
+    root.getElementById('btn-redo')?.addEventListener('click', () => { this.core.redo(); this.dispatchChange(); this.requestUpdate(); });
     root.getElementById('btn-zoom-out')?.addEventListener('click', () => { this.core.zoomOut(); this.requestUpdate(); });
     root.getElementById('btn-zoom-in')?.addEventListener('click', () => { this.core.zoomIn(); this.requestUpdate(); });
     root.getElementById('btn-zoom-reset')?.addEventListener('click', () => { this.core.resetZoom(); this.requestUpdate(); });
 
     // Align / Delete
-    root.getElementById('btn-align-left')?.addEventListener('click', () => { this.core.alignSelectedElements('left'); this.requestUpdate(); });
-    root.getElementById('btn-align-center')?.addEventListener('click', () => { this.core.alignSelectedElements('center'); this.requestUpdate(); });
-    root.getElementById('btn-align-right')?.addEventListener('click', () => { this.core.alignSelectedElements('right'); this.requestUpdate(); });
-    root.getElementById('btn-delete')?.addEventListener('click', () => { this.core.removeSelectedElements(); this.requestUpdate(); });
+    root.getElementById('btn-align-left')?.addEventListener('click', () => { this.core.alignSelectedElements('left'); this.dispatchChange(); this.requestUpdate(); });
+    root.getElementById('btn-align-center')?.addEventListener('click', () => { this.core.alignSelectedElements('center'); this.dispatchChange(); this.requestUpdate(); });
+    root.getElementById('btn-align-right')?.addEventListener('click', () => { this.core.alignSelectedElements('right'); this.dispatchChange(); this.requestUpdate(); });
+    root.getElementById('btn-delete')?.addEventListener('click', () => { this.core.removeSelectedElements(); this.dispatchChange(); this.requestUpdate(); });
 
     // Deselect click
     root.getElementById('canvas-container')?.addEventListener('click', (e: any) => {
@@ -572,10 +771,16 @@ export class BangplanixDesigner extends HTMLElement {
       });
     });
 
-    // Element selection
+    // Element selection & interactions
     root.querySelectorAll('.bpx-element-view').forEach((el: any) => {
       el.addEventListener('click', (e: MouseEvent) => {
         this.handleElementClick(e, el.dataset.elId);
+      });
+      el.addEventListener('dblclick', (e: MouseEvent) => {
+        this.handleElementDblClick(e, el.dataset.elId);
+      });
+      el.addEventListener('mousedown', (e: MouseEvent) => {
+        this.handleElementMouseDown(e, el.dataset.elId);
       });
     });
 
@@ -584,6 +789,9 @@ export class BangplanixDesigner extends HTMLElement {
       const input = root.getElementById(`prop-${key}`) as HTMLInputElement | null;
       input?.addEventListener('input', (e: any) => {
         this.updateSelectedProp(key, e.target.value);
+      });
+      input?.addEventListener('change', () => {
+        this.core.pushHistory(`Update ${key}`);
       });
     });
 
