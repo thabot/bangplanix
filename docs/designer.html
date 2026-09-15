@@ -227,6 +227,8 @@
     <div class="ribbon-group">
       <button id="view-design-btn" class="ribbon-btn primary">Design</button>
       <button id="view-split-btn" class="ribbon-btn">Split Code</button>
+      <button id="quick-print-btn" class="ribbon-btn" title="Quick Print Document">🖨️ Print</button>
+      <button id="fullscreen-btn" class="ribbon-btn" title="Toggle Fullscreen Mode">⛶ Fullscreen</button>
     </div>
 
     <div class="ribbon-group">
@@ -410,6 +412,32 @@
         splitPane.classList.remove('hidden');
         viewSplitBtn.classList.add('primary');
         viewDesignBtn.classList.remove('primary');
+      });
+
+      // Quick Print and Fullscreen
+      document.getElementById('quick-print-btn')?.addEventListener('click', () => {
+        app.exportPdf();
+      });
+      document.getElementById('fullscreen-btn')?.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.().catch?.(() => {});
+        } else {
+          document.exitFullscreen?.().catch?.(() => {});
+        }
+      });
+
+      // View mode synchronization from web component
+      designerEl?.addEventListener('view-mode-change', (e) => {
+        const mode = e.detail?.mode;
+        if (mode === 'code') {
+          splitPane.classList.remove('hidden');
+          viewSplitBtn.classList.add('primary');
+          viewDesignBtn.classList.remove('primary');
+        } else if (mode === 'design') {
+          splitPane.classList.add('hidden');
+          viewDesignBtn.classList.add('primary');
+          viewSplitBtn.classList.remove('primary');
+        }
       });
 
       saveBtn.addEventListener('click', () => app.saveDraft());
