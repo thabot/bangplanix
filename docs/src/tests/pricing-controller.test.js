@@ -44,6 +44,7 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(ctrl.getLanguage(), 'en');
     let t = ctrl.getTranslation();
     assert.ok(t.heroTitle.includes('Head-to-Head'));
+    assert.ok(t.marketCompTitle.includes('Comprehensive Market Comparison'));
     assert.strictEqual(t.perYear, '/ year');
     assert.strictEqual(ctrl.getDisplayPrice(pro).period, '/ year');
 
@@ -52,6 +53,7 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(ctrl.getLanguage(), 'th');
     t = ctrl.getTranslation();
     assert.ok(t.heroTitle.includes('ความคุ้มค่า'));
+    assert.ok(t.marketCompTitle.includes('ตารางเปรียบเทียบตลาดรอบด้าน'));
     assert.strictEqual(t.perYear, '/ ปี');
     assert.strictEqual(ctrl.getDisplayPrice(pro).period, '/ ปี');
 
@@ -60,6 +62,7 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(ctrl.getLanguage(), 'zh');
     t = ctrl.getTranslation();
     assert.ok(t.heroTitle.includes('企业级性价比'));
+    assert.ok(t.marketCompTitle.includes('市场全面横向对比'));
     assert.strictEqual(t.perYear, '/ 年');
     assert.strictEqual(ctrl.getDisplayPrice(pro).period, '/ 年');
 
@@ -68,6 +71,7 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(ctrl.getLanguage(), 'ja');
     t = ctrl.getTranslation();
     assert.ok(t.heroTitle.includes('QuestPDF に匹敵する'));
+    assert.ok(t.marketCompTitle.includes('主要製品との包括的な市場比較'));
     assert.strictEqual(t.perYear, '/ 年');
     assert.strictEqual(ctrl.getDisplayPrice(pro).period, '/ 年');
 
@@ -76,6 +80,7 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(ctrl.getLanguage(), 'es');
     t = ctrl.getTranslation();
     assert.ok(t.heroTitle.includes('Valor Empresarial'));
+    assert.ok(t.marketCompTitle.includes('Comparación Exhaustiva del Mercado'));
     assert.strictEqual(t.perYear, '/ año');
     assert.strictEqual(ctrl.getDisplayPrice(pro).period, '/ año');
   });
