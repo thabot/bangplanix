@@ -306,11 +306,12 @@ curl -X POST http://localhost:9545/api/v1/reports/render \
 ## 💰 Commercial Licensing & Instant Checkout
 
 Bangplanix is available under **Dual Licensing**:
-- **Community Edition (MIT):** Free for evaluation, non-commercial, and open-source projects.
-- **Developer Pro ($49/mo):** Royalty-free redistributable runtime, unwatermarked PDF rendering, all 10 SDKs. [👉 Buy Developer Pro](https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0)
-- **Enterprise Cloud ($499/mo):** Unlimited Kubernetes worker nodes, Post-Quantum ML-DSA signatures, 24/7 SLA. [👉 Buy Enterprise Cloud](https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4)
+- **Community Edition (MIT):** Free forever for developers and businesses with < $1M annual revenue. Unwatermarked production rendering.
+- **Professional ($699/year or $59/mo):** Up to 16 CPU cores, scheduled report bursting, S3/MinIO/SFTP delivery, all 5 SDKs. [👉 Buy Professional](https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0)
+- **Enterprise Sovereign ($1,999/year or $199/mo):** Unlimited CPU cores, Thai e-Tax invoice & RFC 3161 TSA, PAdES digital signatures, True Vector Redaction, 24/7 SLA. [👉 Buy Enterprise Sovereign](https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4)
+- **OEM Sovereign ($3,999/year):** Royalty-free white-label redistribution, 100% offline air-gapped validation, NIST FIPS 204 Post-Quantum Dilithium signatures.
 
-> 💳 *Detailed features breakdown, comparisons, and custom enterprise invoicing are available in [PRICING.md](./PRICING.md).*
+> 💳 *Detailed features breakdown, comparisons with QuestPDF, and global corporate invoicing (PO, VAT, W-8BEN) are available in [PRICING.md](./PRICING.md) and on [pricing.html](./docs/pricing.html).*
 
 ---
 
