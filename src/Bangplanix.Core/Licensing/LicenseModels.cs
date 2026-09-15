@@ -5,10 +5,10 @@ namespace Bangplanix.Core.Licensing;
 /// </summary>
 public enum LicenseTier
 {
-    Community = 0,      // Free ($0) for gross revenue < $1M USD, Unwatermarked, Up to 4 CPU cores
-    Professional = 1,   // $699/yr (or $59/mo), Unwatermarked, Up to 16 CPU cores, Bursting, Standard SLA
-    Enterprise = 2,     // $1,999/yr (or $199/mo), Unlimited cores, PAdES, Thai e-Tax + TSA, 4-hour SLA
-    OEMSovereign = 3,   // $3,999/yr, Unlimited cores, White-label OEM, 100% Air-gapped, Post-Quantum ML-DSA
+    Community = 0,      // Free ($0), Unwatermarked for revenue < $1M, Max 4 CPU cores, Community support
+    Professional = 1,   // $699/yr ($59/mo), Unwatermarked, Up to 16 CPU cores, 24h SLA, Report Bursting
+    Enterprise = 2,     // $1,999/yr ($199/mo), Unlimited cores, PAdES, Thai e-Tax TSA, Vector Redaction, 4h SLA
+    OEMSovereign = 3,   // $3,999/yr, Unlimited cores, Air-gapped offline validation, Quantum-Safe ML-DSA-65, Redistribution
     OEM = 3             // Alias for OEMSovereign
 }
 
@@ -21,7 +21,7 @@ public sealed class LicensePayload
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerEmail { get; set; } = string.Empty;
     public LicenseTier Tier { get; set; } = LicenseTier.Community;
-    public int MaxAllowedCores { get; set; } = 2;
+    public int MaxAllowedCores { get; set; } = 4;
     public int MaxTenants { get; set; } = 1;
     public bool EnableAiSuite { get; set; }
     public bool EnableReportBursting { get; set; }
