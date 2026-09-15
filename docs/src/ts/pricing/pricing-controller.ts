@@ -4,6 +4,9 @@
  * Community ($0), Pro ($699/yr, $59/mo), Enterprise ($1,999/yr, $199/mo), OEM ($3,999/yr)
  */
 import { PricingTierData } from '../core/types.js';
+import { PRICING_TRANSLATIONS, PricingTranslation } from './pricing-translations.js';
+
+export { PRICING_TRANSLATIONS, PricingTranslation };
 
 export const PRICING_TIERS: PricingTierData[] = [
   {
@@ -94,8 +97,11 @@ export const PRICING_TIERS: PricingTierData[] = [
   }
 ];
 
+export type SupportedLanguage = 'en' | 'th' | 'zh' | 'ja' | 'es';
+
 export class BangplanixPricingController {
   private billingCycle: 'annual' | 'monthly' = 'annual';
+  private currentLanguage: SupportedLanguage = 'en';
 
   setBillingCycle(cycle: 'annual' | 'monthly'): void {
     this.billingCycle = cycle;
@@ -105,23 +111,40 @@ export class BangplanixPricingController {
     return this.billingCycle;
   }
 
+  setLanguage(lang: SupportedLanguage): void {
+    if (PRICING_TRANSLATIONS[lang]) {
+      this.currentLanguage = lang;
+    }
+  }
+
+  getLanguage(): SupportedLanguage {
+    return this.currentLanguage;
+  }
+
+  getTranslation(lang?: SupportedLanguage): PricingTranslation {
+    const target = lang || this.currentLanguage;
+    return PRICING_TRANSLATIONS[target] || PRICING_TRANSLATIONS.en;
+  }
+
   getTiers(): PricingTierData[] {
     return PRICING_TIERS;
   }
 
   getDisplayPrice(tier: PricingTierData): { usd: number; thb: number; period: string } {
+    const t = this.getTranslation();
     if (this.billingCycle === 'annual') {
       return {
         usd: tier.priceAnnualUsd,
         thb: tier.priceAnnualThb,
-        period: '/ year'
+        period: t.perYear
       };
     } else {
       return {
         usd: tier.priceMonthlyUsd,
         thb: tier.priceMonthlyThb,
-        period: '/ month'
+        period: t.perMonth
       };
     }
   }
 }
+

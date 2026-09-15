@@ -230,6 +230,21 @@
     .faq-item { margin-bottom: 20px; background: var(--panel-bg); padding: 18px 20px; border-radius: 8px; border: 1px solid var(--border-color); }
     .faq-question { font-weight: 600; margin-bottom: 8px; color: #f8fafc; font-size: 14px; }
     .faq-answer { color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+    .lang-select {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .lang-select:hover, .lang-select:focus {
+      border-color: #3b82f6;
+    }
   </style>
 </head>
 <body>
@@ -248,23 +263,30 @@
       <a href="pricing.html" class="nav-item active">💎 Pricing & Plans</a>
     </nav>
     <div class="nav-actions">
+      <select id="pricing-lang-select" class="lang-select" aria-label="Select Language">
+        <option value="en">🇬🇧 English</option>
+        <option value="th">🇹🇭 ไทย</option>
+        <option value="zh">🇨🇳 简体中文</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="es">🇪🇸 Español</option>
+      </select>
       <span class="aot-badge">🛡️ 390 Tests Passed • 0.05s Cold Start</span>
       <a href="https://github.com/thabot/bangplanix" target="_blank" class="buy-btn secondary" style="padding: 6px 12px; font-size: 12px; width: auto;">⭐ GitHub</a>
     </div>
   </header>
 
   <div class="pricing-hero">
-    <h1>Head-to-Head Enterprise Value & Commercial Licensing</h1>
-    <p>Sub-millisecond Native AOT document generation. Exact same pricing as QuestPDF with 10x more features: Web Visual Designer, Polyglot SDKs, and Built-in AI Suite.</p>
+    <h1 id="hero-title" data-i18n="heroTitle">Head-to-Head Enterprise Value & Commercial Licensing</h1>
+    <p id="hero-subtitle" data-i18n="heroSubtitle">Sub-millisecond Native AOT document generation. Exact same pricing as QuestPDF with 10x more features: Web Visual Designer, Polyglot SDKs, and Built-in AI Suite.</p>
 
     <!-- Interactive Billing Toggle -->
     <div class="billing-toggle-wrapper">
-      <span class="toggle-label" id="monthly-label">Monthly Billing</span>
+      <span class="toggle-label" id="monthly-label" data-i18n="monthlyBilling">Monthly Billing</span>
       <button class="toggle-btn annual" id="billing-cycle-toggle" aria-label="Toggle annual or monthly billing">
         <div class="toggle-circle"></div>
       </button>
-      <span class="toggle-label active" id="annual-label">Annual Billing</span>
-      <span class="discount-badge">SAVE ~15%</span>
+      <span class="toggle-label active" id="annual-label" data-i18n="annualBilling">Annual Billing</span>
+      <span class="discount-badge" id="save-badge" data-i18n="saveBadge">SAVE ~15%</span>
     </div>
   </div>
 
@@ -275,25 +297,25 @@
   <!-- Global Corporate Invoicing Box -->
   <div class="global-corp-notice">
     <div class="corp-info">
-      <h3>🏢 Global & Regional Corporate Invoicing (US, EU, UK, TH, APAC)</h3>
-      <p>
+      <h3 id="corp-notice-title" data-i18n="globalNoticeTitle">🏢 Global & Regional Corporate Invoicing (US, EU, UK, TH, APAC)</h3>
+      <p id="corp-notice-desc" data-i18n="globalNoticeDesc">
         Lemon Squeezy acts as our Global Merchant of Record (MoR), supporting automatic sales tax/VAT compliance across 130+ countries, corporate purchase orders (PO), W-8BEN forms, and international wire transfers. For Thai entities requiring formal Tax Invoices (ภ.พ.20) or 3% Withholding Tax certificates (ภ.ง.ด. 53), our local entity fulfills inquiries directly.
       </p>
     </div>
-    <a href="mailto:thabot47@gmail.com?subject=Bangplanix%20Enterprise%20Corporate%20PO%20Inquiry" class="buy-btn secondary" style="width: auto; white-space: nowrap; padding: 10px 18px;">
+    <a href="mailto:thabot47@gmail.com?subject=Bangplanix%20Enterprise%20Corporate%20PO%20Inquiry" id="request-quote-btn" data-i18n="requestQuoteBtn" class="buy-btn secondary" style="width: auto; white-space: nowrap; padding: 10px 18px;">
       📄 Request Corporate PO / Quote
     </a>
   </div>
 
   <!-- Detailed 4-Tier Matrix Table -->
   <div class="comparison-section">
-    <h2>Complete 4-Tier Feature Matrix</h2>
-    <p>Detailed feature breakdown and entitlements across all Bangplanix commercial licensing tiers</p>
+    <h2 id="matrix-title" data-i18n="matrixTitle">Complete 4-Tier Feature Matrix</h2>
+    <p id="matrix-subtitle" data-i18n="matrixSubtitle">Detailed feature breakdown and entitlements across all Bangplanix commercial licensing tiers</p>
 
     <table class="comp-table">
       <thead>
         <tr>
-          <th style="width: 28%;">Entitlement / Feature</th>
+          <th style="width: 28%;" data-i18n="colFeature">Entitlement / Feature</th>
           <th style="width: 18%;">Community</th>
           <th style="width: 18%; color: #818cf8;">Professional</th>
           <th style="width: 18%; color: #38bdf8;">Enterprise Sovereign</th>
@@ -302,56 +324,56 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>Pricing (Annual / Monthly)</strong></td>
+          <td><strong data-i18n="colPricing">Pricing (Annual / Monthly)</strong></td>
           <td><strong>Free ($0)</strong></td>
           <td><strong>$699/yr</strong> ($59/mo)</td>
           <td><strong>$1,999/yr</strong> ($199/mo)</td>
           <td><strong>$3,999/yr</strong> ($399/mo)</td>
         </tr>
         <tr>
-          <td><strong>Target Audience</strong></td>
-          <td>Devs, Startups (< $1M Rev)</td>
+          <td><strong data-i18n="colTarget">Target Audience</strong></td>
+          <td>Devs, Startups (&lt; $1M Rev)</td>
           <td>Fast-growing SaaS & Apps</td>
           <td>Fintech, Banks, Healthcare</td>
           <td>Software Vendors (ISVs), Defense</td>
         </tr>
         <tr>
-          <td><strong>CPU Core Quota</strong></td>
+          <td><strong data-i18n="colCores">CPU Core Quota</strong></td>
           <td>Up to 4 Cores</td>
           <td>Up to 16 Cores</td>
           <td><strong style="color: #10b981;">Unlimited Cores & Pods</strong></td>
           <td><strong style="color: #10b981;">Unlimited Cores & Pods</strong></td>
         </tr>
         <tr>
-          <td><strong>PDF Watermark</strong></td>
+          <td><strong data-i18n="colWatermark">PDF Watermark</strong></td>
           <td><span class="comp-check">✓ Unwatermarked</span></td>
           <td><span class="comp-check">✓ Unwatermarked</span></td>
           <td><span class="comp-check">✓ Unwatermarked</span></td>
           <td><span class="comp-check">✓ Unwatermarked</span></td>
         </tr>
         <tr>
-          <td><strong>Interactive Web Visual Designer</strong></td>
+          <td><strong data-i18n="colDesigner">Interactive Web Visual Designer</strong></td>
           <td><span class="comp-check">✓ Included</span></td>
           <td><span class="comp-check">✓ Included</span></td>
           <td><span class="comp-check">✓ Included</span></td>
           <td><span class="comp-check">✓ Included</span></td>
         </tr>
         <tr>
-          <td><strong>Polyglot SDKs (C#, Node, Python, Go, Java)</strong></td>
+          <td><strong data-i18n="colSdks">Polyglot SDKs (C#, Node, Python, Go, Java)</strong></td>
           <td><span class="comp-check">✓ All 5 SDKs</span></td>
           <td><span class="comp-check">✓ All 5 SDKs</span></td>
           <td><span class="comp-check">✓ All 5 SDKs</span></td>
           <td><span class="comp-check">✓ All 5 SDKs</span></td>
         </tr>
         <tr>
-          <td><strong>Sub-millisecond Native AOT Engine</strong></td>
+          <td><strong data-i18n="colAot">Sub-millisecond Native AOT Engine</strong></td>
           <td><span class="comp-check">✓ Yes (0.05s Cold Start)</span></td>
           <td><span class="comp-check">✓ Yes (0.05s Cold Start)</span></td>
           <td><span class="comp-check">✓ Yes (0.05s Cold Start)</span></td>
           <td><span class="comp-check">✓ Yes (0.05s Cold Start)</span></td>
         </tr>
         <tr>
-          <td><strong>Scheduled Report Bursting</strong></td>
+          <td><strong data-i18n="colBursting">Scheduled Report Bursting</strong></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-check">✓ Multi-Channel Delivery</span></td>
           <td><span class="comp-check">✓ Multi-Channel Delivery</span></td>
@@ -365,7 +387,7 @@
           <td><span class="comp-check">✓ Yes</span></td>
         </tr>
         <tr>
-          <td><strong>Thai e-Tax & RFC 3161 TSA Timestamps</strong></td>
+          <td><strong data-i18n="colSignatures">Thai e-Tax & RFC 3161 TSA Timestamps</strong></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-check">✓ Certified ETDA Compliant</span></td>
@@ -379,7 +401,7 @@
           <td><span class="comp-check">✓ Cryptographic Hardware Support</span></td>
         </tr>
         <tr>
-          <td><strong>True Vector Redaction (Permanent Scrubbing)</strong></td>
+          <td><strong data-i18n="colRedaction">True Vector Redaction (Permanent Scrubbing)</strong></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-check">✓ Yes</span></td>
@@ -393,7 +415,7 @@
           <td><span class="comp-check">✓ AST Automated Converters</span></td>
         </tr>
         <tr>
-          <td><strong>Commercial Redistribution (OEM Royalty-Free)</strong></td>
+          <td><strong data-i18n="colOem">Commercial Redistribution (OEM Royalty-Free)</strong></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-cross">✕ No</span></td>
           <td><span class="comp-cross">✕ Internal Use Only</span></td>
@@ -407,7 +429,7 @@
           <td><strong style="color: #f59e0b;">✓ NIST FIPS 204 ML-DSA-65 (Dilithium)</strong></td>
         </tr>
         <tr>
-          <td><strong>Technical Support SLA</strong></td>
+          <td><strong data-i18n="colSupport">Technical Support SLA</strong></td>
           <td>GitHub Discussions</td>
           <td>Email Support (24h SLA)</td>
           <td>Dedicated Slack/Teams (4h SLA)</td>
@@ -491,7 +513,7 @@
   </div>
 
   <div class="faq-section">
-    <h2>Frequently Asked Questions</h2>
+    <h2 id="faq-title" data-i18n="faqTitle">Frequently Asked Questions</h2>
     <div class="faq-item">
       <div class="faq-question">💳 How do I receive my License Key after purchase?</div>
       <div class="faq-answer">Upon completing checkout via Lemon Squeezy, a cryptographically signed Ed25519 / NIST ML-DSA-65 license token is generated and delivered instantly to your email. You can activate it by setting the <code>LICENSE_KEY</code> environment variable.</div>
@@ -515,24 +537,36 @@
       const toggleBtn = document.getElementById('billing-cycle-toggle');
       const monthlyLabel = document.getElementById('monthly-label');
       const annualLabel = document.getElementById('annual-label');
+      const langSelect = document.getElementById('pricing-lang-select');
+
+      function applyTranslations() {
+        const trans = controller.getTranslation();
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (key && trans[key]) {
+            el.textContent = trans[key];
+          }
+        });
+      }
 
       function renderPricingCards() {
         const cycle = controller.getBillingCycle();
         const tiers = controller.getTiers();
+        const trans = controller.getTranslation();
 
         container.innerHTML = tiers.map(tier => {
           const display = controller.getDisplayPrice(tier);
           const isFree = tier.id === 'community';
           const priceText = isFree ? '$0' : `$${display.usd}`;
-          const periodText = isFree ? '<span>/ forever</span>' : `<span>${display.period}</span>`;
-          const thbText = isFree ? 'Free Forever (< $1M Rev)' : `≈ ${display.thb.toLocaleString()} THB ${display.period}`;
+          const periodText = isFree ? `<span>${trans.forever}</span>` : `<span>${display.period}</span>`;
+          const thbText = isFree ? trans.freeRevText : `≈ ${display.thb.toLocaleString()} THB ${display.period}`;
           const checkoutUrl = cycle === 'annual' ? tier.checkoutUrlAnnual : tier.checkoutUrlMonthly;
           const isFeatured = tier.isPopular ? 'featured' : '';
-          const popularBadge = tier.isPopular ? '<div class="popular-badge">MOST POPULAR</div>' : '';
+          const popularBadge = tier.isPopular ? `<div class="popular-badge">${trans.popularBadge}</div>` : '';
           const btnClass = tier.isPopular ? 'buy-btn featured-btn' : (tier.id === 'enterprise' ? 'buy-btn primary' : 'buy-btn secondary');
           const isLemon = checkoutUrl.includes('lemonsqueezy.com');
           const lemonClass = isLemon ? 'lemonsqueezy-button' : '';
-          const btnLabel = isFree ? 'Download on GitHub' : (tier.id === 'oem' ? '🏢 Contact Enterprise Sales' : `💳 Buy ${tier.name}`);
+          const btnLabel = isFree ? trans.downloadGithub : (tier.id === 'oem' ? trans.contactSales : `💳 ${trans.buyBtnLabel} ${tier.name}`);
 
           return `
             <div class="pricing-card ${isFeatured}">
@@ -568,6 +602,15 @@
         renderPricingCards();
       });
 
+      if (langSelect) {
+        langSelect.addEventListener('change', (e) => {
+          controller.setLanguage(e.target.value);
+          applyTranslations();
+          renderPricingCards();
+        });
+      }
+
+      applyTranslations();
       renderPricingCards();
     });
   </script>
