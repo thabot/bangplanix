@@ -104,19 +104,34 @@ Upgrade current hash-placeholder and text-token simulations to true cryptographi
 
 ---
 
-### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint *(✅ Completed in v1.1.0)*
-- [x] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
-  - Mounted `ManagementPortalServer` directly to `GET /` (with smart content negotiation for browsers) and `GET /portal` / `GET /admin`.
-- [x] **Pluggable Database Storage Layer (SQLite & PostgreSQL):**
-  - Built-in In-Process **SQLite** (Default at `/app/volumes/data/portal.db`) and Enterprise **PostgreSQL** option with zero-config auto-migration.
-- [x] **Authentication & Role-Based Access Control:**
-  - Secure session-based login with auto-seeded default credentials (`admin` / `bangplanix2026!`), supporting both Guest and Logged-in Admin modes with 100% UI parity.
-- [x] **Container Volume File Management GUI & API:**
-  - Full file explorer for `/templates`, `/data`, `/fonts`, and `/logs` with upload, download, delete, and strict path traversal protection.
+### 🖥️ 5. Web Management Portal GUI Mounting, Storage & Advanced Tools (`Bangplanix.Server/Program.cs`)
+- [x] **Server Host Route Wiring & Content Negotiation:**
+  - Mounted `ManagementPortalServer` directly to `GET /` (when requested by a browser via `Accept: text/html`), `GET /portal`, and `GET /admin`.
+  - Preserves 100% JSON status backward compatibility for REST API / cURL clients at `GET /`.
+- [x] **Dual Database Storage Layer (SQLite Default & PostgreSQL Option):**
+  - Out-of-the-box persistent storage via **SQLite** (`/app/volumes/data/portal.db`) with zero external infrastructure required.
+  - Enterprise clustering option via **PostgreSQL** configured via `BANGPLANIX_PORTAL_DB_TYPE=postgres` and `BANGPLANIX_PORTAL_DB_CONNECTION`.
+  - Automated schema migration for users, sessions, and audit trail logs.
+- [x] **Authentication & Auto-Seeded Default Credentials:**
+  - Secure PBKDF2/SHA-256 hashed password verification and tokenized session management (`POST /api/v1/auth/login`, `logout`, `status`).
+  - Auto-seeded initial administrator account (`admin` / `bangplanix2026!`) with ENV override support.
+  - Full functional parity and UI accessibility for both Guest mode and Logged-in Admin mode.
+- [x] **Container Volume File Manager & Security Sandbox:**
+  - Full GUI and REST API (`GET/POST/DELETE /api/v1/files`) managing `/templates`, `/data`, `/fonts`, and `/logs`.
+  - 100% strict Path Traversal protection preventing directory escape attacks (`../` / `..\`).
 - [x] **Web Report Converter Studio:**
-  - Drag-and-drop instant conversion of SSRS `.rdl`, Crystal `.rpt.xml`, Jaspersoft `.jrxml`, FastReport `.frx` into Bangplanix `.bpx` schema.
-- [x] **Enterprise Telemetry, Report Sandbox & Live Logs:**
-  - Live CPU/RAM/worker telemetry, in-browser PDF/Excel test sandbox, live container log streamer, database health ping tester, and online license activation.
+  - In-browser Drag & Drop converter supporting 21 legacy report engines (SSRS `.rdl`, Crystal `.rpt.xml`, Jaspersoft `.jrxml`, FastReport `.frx`, DevExpress `.repx`, Stimulsoft `.mrt`).
+  - Instant `.bpx` schema preview, single-click download, and direct save into container `/templates`.
+- [x] **Interactive Report Playground & Test Sandbox:**
+  - Live in-browser rendering to PDF (with embedded viewer iframe) and Excel (XLSX download) from container templates or custom JSON.
+- [x] **Live Server & Worker Logs Streamer:**
+  - Real-time in-browser log streaming (`GET /api/v1/logs`) with dynamic keyword/level filtering (`[INFO]`, `[WARN]`, `[ERROR]`).
+- [x] **Online Commercial License Activation:**
+  - Runtime license tier status inspector and online token applicator (`POST /api/v1/license/activate`) without server restart.
+- [x] **Database Connection Health & Query Tester:**
+  - Ping latency measurement and query connectivity verification for PostgreSQL, SQL Server, MySQL, and SQLite.
+- [x] **System Settings & Installed Fonts Inspector:**
+  - Runtime environment telemetry and real-time Thai/global TTF/OTF font discovery in `/app/volumes/fonts`.
 
 ---
 
