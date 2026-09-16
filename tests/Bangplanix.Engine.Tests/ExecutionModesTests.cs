@@ -25,7 +25,7 @@ public class ExecutionModesTests
     [Fact]
     public async Task Mode1_InProcess_RenderToPdf_DirectLibraryUsage_ShouldSucceed()
     {
-        // Arrange - Load template and data without any server or container (Like QuestPDF)
+        // Arrange - Load template and data without any server or container (In-Process Direct Engine)
         var templatePath = GetTemplatePath("schema/v1/samples/invoice.bpx");
         var json = await File.ReadAllTextAsync(templatePath);
         var report = BpxParser.Parse(json);

@@ -44,13 +44,13 @@ graph TD
 
 | Execution Mode | Ideal Architecture | Best Used When... | Docker Needed? |
 | :--- | :--- | :--- | :---: |
-| **Mode 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | You want maximum speed (sub-millisecond Zero-GC), no network hops, and zero external dependencies (Like QuestPDF). | ❌ **No** |
+| **Mode 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | You want maximum speed (sub-millisecond Zero-GC), no network hops, and zero external dependencies (Direct C# SDK). | ❌ **No** |
 | **Mode 2: Standalone Local CLI** | CI/CD, Shell Scripts, Scheduled Tasks | You want to batch convert reports or generate documents from command line without setting up a server. | ❌ **No** |
 | **Mode 3: Microservice / Docker** | Polyglot Stacks (Node, Python, Go, Java, K8s) | You have a distributed architecture and need a centralized reporting engine with REST / gRPC endpoints. | ✅ **Yes** |
 
 ---
 
-### 1.1 Mode 1: Embedded In-Process Library (.NET / C# — Like QuestPDF)
+### 1.1 Mode 1: Embedded In-Process Library (.NET / C# Native)
 
 If you are developing in C# / .NET, **you do not need Docker or any external server**. Simply add the library packages and render reports directly in memory:
 

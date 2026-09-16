@@ -33,7 +33,7 @@ Bangplanix 提供 **3 种高度灵活的运行与部署模式**，完美适配�
 
 | 维度 | 模式 1: C# 进程内嵌入库 | 模式 2: 独立 CLI / Native AOT | 模式 3: Docker 微服务 |
 | :--- | :--- | :--- | :--- |
-| **主要目标人群** | .NET / C# 开发者 (类似 QuestPDF) | CI/CD, 自动化脚本, 终端运维 | 多语言团队 (Node, Python, Go, Java...) |
+| **主要目标人群** | .NET / C# 开发者 (进程内原生调用) | CI/CD, 自动化脚本, 终端运维 | 多语言团队 (Node, Python, Go, Java...) |
 | **外部依赖** | 仅 NuGet 包 (零外部依赖) | 仅单文件可执行文件 (零 Docker) | Docker / Kubernetes |
 | **生成延迟** | **亚毫秒级 (< 1ms)** | 极快 (~10ms) | 网络 I/O 延迟 (~5-15ms) |
 | **多语言支持** | C# / F# / VB.NET | CLI 命令行 / Shell 脚本 | 官方多语言 SDK & REST / gRPC |

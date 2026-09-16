@@ -33,7 +33,7 @@ Bangplanix ofrece **3 modos de ejecución y despliegue altamente flexibles**, ad
 
 | Criterio | Modo 1: Biblioteca C# Embebida | Modo 2: CLI Nativo AOT Independiente | Modo 3: Microservicio Docker |
 | :--- | :--- | :--- | :--- |
-| **Audiencia Principal** | Desarrolladores .NET / C# (estilo QuestPDF) | CI/CD, Scripts de Automatización, DevOps | Equipos Políglotas (Node, Python, Go, Java...) |
+| **Audiencia Principal** | Desarrolladores .NET / C# (ejecución nativa en proceso) | CI/CD, Scripts de Automatización, DevOps | Equipos Políglotas (Node, Python, Go, Java...) |
 | **Dependencias Externas** | Solo paquetes NuGet (Zero dependencias) | Binario único standalone (Zero Docker) | Docker / Kubernetes |
 | **Latencia de Generación**| **Sub-milisegundo (< 1ms)** | Ultrarrápido (~10ms) | Latencia de Red I/O (~5-15ms) |
 | **Soporte Políglota** | C# / F# / VB.NET | Línea de Comandos CLI / Shell | SDKs Oficiales y REST / gRPC |

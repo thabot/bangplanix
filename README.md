@@ -62,7 +62,7 @@
 
 Bangplanix offers **3 flexible execution modes**:
 
-### 📦 Mode 1: In-Process Embedded C# Library (.NET 8/9/10 — QuestPDF Style)
+### 📦 Mode 1: In-Process Embedded C# Library (.NET 8/9/10 Native)
 ```csharp
 using Bangplanix.Core;
 using Bangplanix.Rendering.SkiaSharp;

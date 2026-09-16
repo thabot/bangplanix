@@ -44,13 +44,13 @@ graph TD
 
 | รูปแบบการรัน | สถาปัตยกรรมที่เหมาะสม | ใช้เมื่อไหร่ดี? | ต้องลง Docker ไหม? |
 | :--- | :--- | :--- | :---: |
-| **วิธีที่ 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | ต้องการความเร็วสูงสุดระดับไมโครวินาที (Zero-GC) ไม่ต้องการ Latency เครือข่าย และไม่อยากจัดการเซิร์ฟเวอร์ (เหมือน QuestPDF) | ❌ **ไม่ต้อง** |
+| **วิธีที่ 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | ต้องการความเร็วสูงสุดระดับไมโครวินาที (Zero-GC) ไม่ต้องมี Network Hop และไม่อยากจัดการเซิร์ฟเวอร์แยก (เรียกใช้ผ่าน Direct C# Engine ได้ทันที) | ❌ **ไม่ต้อง** |
 | **วิธีที่ 2: Standalone Local CLI** | CI/CD, Shell Scripts, Batch Jobs | ต้องการสั่งแปลงรายงานเป็นชุด หรือรันคำสั่ง Command Line บนเซิร์ฟเวอร์โดยไม่ต้องเปิด Service ค้างไว้ | ❌ **ไม่ต้อง** |
 | **วิธีที่ 3: Microservice / Docker** | Polyglot Stacks (Node, Python, Go, Java, K8s) | สถาปัตยกรรมแบบกระจายศูนย์ (Distributed) ที่ต้องการเซิร์ฟเวอร์รายงานส่วนกลางพร้อม gRPC / REST API | ✅ **ใช้** |
 
 ---
 
-### 1.1 วิธีที่ 1: ฝังเป็น In-Process Library ในโค้ด C# / .NET (แบบ QuestPDF ไม่ต้องใช้ Docker)
+### 1.1 วิธีที่ 1: ฝังเป็น In-Process Library ในโค้ด C# / .NET (Native In-Process ไม่ต้องใช้ Docker)
 
 หากคุณพัฒนาแอปพลิเคชันด้วย C# / .NET **คุณไม่จำเป็นต้องเปิด Docker หรือเซิร์ฟเวอร์ใดๆ เลย** สามารถอ้างอิง Library เข้าโปรเจกต์และเรนเดอร์เอกสารในหน่วยความจำได้ทันที:
 

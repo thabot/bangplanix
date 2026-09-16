@@ -229,6 +229,61 @@ public sealed class DistributedWorkerAndLicensingTests
         Assert.False(tamperedResult.IsValid);
     }
 
+    [Fact]
+    public void CommercialLicenseEnforcer_ShouldVerifyOfficialEcdsaAsymmetricKeys()
+    {
+        // 1. Official Private Key for signing (Server-side)
+        const string testPrivateKeyPem = """
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEICN10/9dT0eOWs3249mrTrCQujFEH99NvuZEyEtCw3L7oAoGCCqGSM49
+AwEHoUQDQgAEifypBfJuRuE6r/q2tyBccAUvn+gE+zb+MXPSdh4GANAqfadgiqBU
+3BAFa5olWD2DIZF88cBb8kgYskZuHjKkYg==
+-----END EC PRIVATE KEY-----
+""";
+
+        // 2. Default Enforcer with embedded Official Public Key
+        var enforcer = new CommercialLicenseEnforcer();
+
+        var officialEnterprisePayload = new LicensePayload
+        {
+            LicenseId = "BPX-OFFICIAL-ENT-2026",
+            CustomerName = "Enterprise Global Bank",
+            CustomerEmail = "security@globalbank.com",
+            Tier = LicenseTier.Enterprise,
+            MaxAllowedCores = 0, // Unlimited
+            EnableWatermarking = false,
+            EnableReportBursting = true,
+            EnableAiSuite = true,
+            EnableTrueVectorRedaction = true,
+            ExpiresAtUtc = DateTime.UtcNow.AddYears(2)
+        };
+
+        // Sign with Private Key
+        byte[] privateKeyBytes = System.Text.Encoding.UTF8.GetBytes(testPrivateKeyPem);
+        string signedToken = CommercialLicenseEnforcer.GenerateSignedToken(officialEnterprisePayload, privateKeyBytes);
+
+        // Verify with default enforcer (using embedded OfficialPublicKeyPem)
+        var validationResult = enforcer.ApplyLicenseToken(signedToken, currentHostCores: 128);
+
+        Assert.True(validationResult.IsValid);
+        Assert.Equal(LicenseTier.Enterprise, validationResult.ActiveTier);
+        Assert.False(enforcer.RequiresWatermark());
+        Assert.True(enforcer.IsFeatureAllowed("AiSuite"));
+        Assert.True(enforcer.IsFeatureAllowed("TrueVectorRedaction"));
+        Assert.Contains("Enterprise Global Bank", validationResult.StatusMessage);
+
+        // Tamper test: Alter payload string directly
+        string[] tokenParts = signedToken.Split('.');
+        byte[] tamperedPayloadBytes = Convert.FromBase64String(tokenParts[0]);
+        string json = System.Text.Encoding.UTF8.GetString(tamperedPayloadBytes).Replace("Enterprise Global Bank", "Hacked Bank");
+        string tamperedB64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+        string tamperedToken = $"{tamperedB64}.{tokenParts[1]}";
+
+        var tamperedResult = enforcer.ApplyLicenseToken(tamperedToken);
+        Assert.False(tamperedResult.IsValid);
+        Assert.Equal(LicenseTier.Community, tamperedResult.ActiveTier);
+    }
+
     // --- 4. Management Portal Telemetry & Health Checks (Task 4.4.4) ---
     [Fact]
     public void ManagementPortalServer_ShouldProvideEmbeddedHtmlDashboard()
