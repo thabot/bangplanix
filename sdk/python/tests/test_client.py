@@ -110,5 +110,26 @@ class TestBangplanixClient(unittest.TestCase):
         res = client.validate_template('{"version": "1.0"}')
         self.assertTrue(res.get("isValid"))
 
+    def test_render_response_base64_and_stream(self):
+        import base64
+        sample_bytes = b"%PDF-1.7 Simulated Python Payload"
+        res = BangplanixClient().render_to_file.__annotations__ # Check syntax
+        from bangplanix.client import RenderResponse
+        resp = RenderResponse(
+            data=sample_bytes,
+            format="pdf",
+            content_type="application/pdf",
+            length=len(sample_bytes),
+            correlation_id="corr-1",
+            duration_ms=10
+        )
+        # Test to_base64
+        b64 = resp.to_base64()
+        self.assertEqual(b64, base64.b64encode(sample_bytes).decode("utf-8"))
+
+        # Test to_stream
+        stream = resp.to_stream()
+        self.assertEqual(stream.read(), sample_bytes)
+
 if __name__ == "__main__":
     unittest.main()

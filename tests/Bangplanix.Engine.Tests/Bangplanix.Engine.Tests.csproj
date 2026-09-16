@@ -11,6 +11,8 @@
     <ProjectReference Include="..\..\src\Bangplanix.Expressions\Bangplanix.Expressions.csproj" />
     <ProjectReference Include="..\..\src\Bangplanix.Printing\Bangplanix.Printing.csproj" />
     <ProjectReference Include="..\..\src\Bangplanix.Adapters\Bangplanix.Adapters.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Connectors\Bangplanix.Connectors.csproj" />
+    <ProjectReference Include="..\..\src\Bangplanix.Client\Bangplanix.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

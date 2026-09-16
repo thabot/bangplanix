@@ -13,134 +13,172 @@ Welcome to the comprehensive **Bangplanix Enterprise Reporting Engine (.NET 10 /
 
 ## 📑 Table of Contents
 
-1. [🚀 Part 1: Quick Start in 3 Minutes](#-part-1-quick-start-in-3-minutes)
-2. [🎨 Part 2: The `.bpx` Schema & Template Design](#-part-2-the-bpx-schema--template-design)
+1. [🚀 Part 1: 3 Execution Modes & Decision Matrix](#-part-1-3-execution-modes--decision-matrix)
+2. [📁 Part 2: Global Standard Starter Templates Pack & Designer](#-part-2-global-standard-starter-templates-pack--designer)
 3. [🤖 Part 3: Bangplanix AI Suite Natural Language Generation](#-part-3-bangplanix-ai-suite-natural-language-generation)
 4. [💾 Part 4: Data Push & SQL Database Binding](#-part-4-data-push--sql-database-binding)
 5. [🖥️ Part 5: Embedding Frontend Web Components (React, Vue, Web Components)](#-part-5-embedding-frontend-web-components-react-vue-web-components)
-6. [🔌 Part 6: Backend Polyglot Client SDKs (5 Languages)](#-part-6-backend-polyglot-client-sdks-5-languages)
+6. [🔌 Part 6: Backend Polyglot Client SDKs & Return Formats (FilePath, Stream, Base64)](#-part-6-backend-polyglot-client-sdks--return-formats-filepath-stream-base64)
 7. [🔄 Part 7: Legacy Report Migration (Crystal, SSRS, Jasper, FastReport)](#-part-7-legacy-report-migration-crystal-ssrs-jasper-fastreport)
 8. [🚢 Part 8: Production Deployment & License Activation](#-part-8-production-deployment--license-activation)
+9. [🛠️ Part 9: Global Typography & Troubleshooting FAQ](#-part-9-global-typography--troubleshooting-faq)
 
 ---
 
-## 🚀 Part 1: Quick Start in 3 Minutes
+## 🚀 Part 1: 3 Execution Modes & Decision Matrix
 
-Bangplanix is distributed as a lightweight Native AOT container, CLI utility, and web portal.
+Bangplanix provides **three distinct execution modes** designed to match your application architecture and developer preferences:
 
-### 1.1 Run with Docker Compose (Recommended)
-Launch the container using Docker Compose:
+```mermaid
+graph TD
+    A[Bangplanix Core Architecture] --> B[Mode 1: Embedded In-Process Library]
+    A --> C[Mode 2: Standalone Local CLI & Native AOT]
+    A --> D[Mode 3: High-Performance Microservice]
+    
+    B -->|Direct C# API Call| B1[Zero Docker / Zero Latency / In-Memory PDF & XLSX]
+    C -->|CLI & Native AOT Binary| C1[Batch Automation & CI/CD Pipelines]
+    D -->|Docker / Kubernetes| D1[Polyglot REST & gRPC API: C#, Node, Python, Go, Java]
+```
 
+### 📊 Decision Matrix: Which Mode Should You Choose?
+
+| Execution Mode | Ideal Architecture | Best Used When... | Docker Needed? |
+| :--- | :--- | :--- | :---: |
+| **Mode 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | You want maximum speed (sub-millisecond Zero-GC), no network hops, and zero external dependencies (Like QuestPDF). | ❌ **No** |
+| **Mode 2: Standalone Local CLI** | CI/CD, Shell Scripts, Scheduled Tasks | You want to batch convert reports or generate documents from command line without setting up a server. | ❌ **No** |
+| **Mode 3: Microservice / Docker** | Polyglot Stacks (Node, Python, Go, Java, K8s) | You have a distributed architecture and need a centralized reporting engine with REST / gRPC endpoints. | ✅ **Yes** |
+
+---
+
+### 1.1 Mode 1: Embedded In-Process Library (.NET / C# — Like QuestPDF)
+
+If you are developing in C# / .NET, **you do not need Docker or any external server**. Simply add the library packages and render reports directly in memory:
+
+#### Install Packages:
 ```bash
-# Start Bangplanix in background
+dotnet add package Bangplanix.Engine
+dotnet add package Bangplanix.Core
+```
+
+#### In-Process C# Example:
+```csharp
+using Bangplanix.Core.Parser;
+using Bangplanix.Engine.Pdf;
+using Bangplanix.Connectors.Json;
+
+// 1. Load your .bpx template schema
+string templateJson = await File.ReadAllTextAsync("templates/commercial-invoice-ubl.bpx");
+var report = BpxParser.Parse(templateJson);
+
+// 2. Load dataset payload (JSON or Object)
+string dataJson = await File.ReadAllTextAsync("data/commercial-invoice-data.json");
+var dataRows = JsonPushStreamConnector.ParseJsonStringToRows(dataJson);
+
+// 3. Render Vector PDF in-memory (Zero-GC)
+var renderer = new SkiaPdfRenderer();
+byte[] pdfBytes = await renderer.RenderToPdfAsync(report, null, dataRows);
+await File.WriteAllBytesAsync("output/invoice.pdf", pdfBytes);
+```
+
+#### ⚡ 30-Second Copy-Paste Quickstart (ASP.NET Core Minimal API):
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/api/invoice/{id}/pdf", async (int id) =>
+{
+    var template = BpxParser.Parse(await File.ReadAllTextAsync("invoice.bpx"));
+    var pdf = await new SkiaPdfRenderer().RenderToPdfAsync(template);
+    return Results.File(pdf, "application/pdf", $"invoice_{id}.pdf");
+});
+
+app.Run();
+```
+
+---
+
+### 1.2 Mode 2: Standalone Local CLI & Native AOT Binary (Zero Docker)
+
+Use the pre-compiled **Bangplanix CLI** for local scripts, CI/CD pipelines, or batch processing:
+
+#### CLI Commands:
+```bash
+# Render to Vector PDF
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o output/invoice.pdf
+
+# Export to Excel (.xlsx)
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o output/invoice.xlsx -f xlsx
+
+# Validate a .bpx Template Schema
+bangplanix validate -t templates/commercial-invoice-ubl.bpx
+```
+
+#### Terminal Execution Preview:
+```text
+=================================================
+Bangplanix CLI — High Performance Reporting Engine
+=================================================
+[1/3] Parsing .bpx template: templates/commercial-invoice-ubl.bpx
+[2/3] Loading data payload: data.json
+[3/3] Rendering Vector PDF via SkiaSharp Engine...
+✓ PDF generated successfully in 21 ms: D:\bangplanix\output\invoice.pdf (42,318 bytes)
+```
+
+---
+
+### 1.3 Mode 3: High-Performance Reporting Microservice (Docker & Polyglot SDKs)
+
+Deploy Bangplanix as a centralized containerized service for polyglot backend teams:
+
+#### Start Container with Docker Compose:
+```bash
 docker compose up -d
 ```
-
-Access the service immediately:
-* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (or navigate to [`http://localhost:9545`](http://localhost:9545) via Web Browser)
-
-> 🔐 **Default Administrator Credentials:**
-> * **Username:** `admin` (configurable via `BANGPLANIX_PORTAL_USER`)
-> * **Password:** `bangplanix2026!` (configurable via `BANGPLANIX_PORTAL_PASSWORD` / `THABOT_MASTER_KEY`)
-> 
-> *The system automatically seeds this initial admin account on first startup, allowing you to sign in and manage container files immediately.*
-
+* **Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (Default: `admin` / `bangplanix2026!`)
 * **High-Speed gRPC Endpoint:** `localhost:9546`
+* **REST API Endpoint:** `http://localhost:9545/api/v1/report/render`
 
-### 1.2 Run with Docker CLI
-
-#### A) Using SQLite for Portal Database (Default - Recommended):
-```bash
-docker run -d \
-  --name bangplanix-server \
-  -p 9545:9545 -p 9546:9546 \
-  -v $(pwd)/volumes/data:/app/volumes/data \
-  -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
-  -v $(pwd)/volumes/logs:/app/volumes/logs \
-  -e BANGPLANIX_PORTAL_DB_TYPE=sqlite \
-  ghcr.io/thabot/bangplanix:latest
-```
-
-#### B) Using PostgreSQL for Enterprise / Multi-Pod Deployments:
-```bash
-docker run -d \
-  --name bangplanix-server \
-  -p 9545:9545 -p 9546:9546 \
-  -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -e BANGPLANIX_PORTAL_DB_TYPE=postgres \
-  -e BANGPLANIX_PORTAL_DB_CONNECTION="Host=postgres-host;Port=5432;Database=bangplanix;Username=postgres;Password=secret;" \
-  ghcr.io/thabot/bangplanix:latest
-```
-
-### 1.3 System Doctor Health Inspection
-Run the diagnostic doctor to verify hardware acceleration (SIMD AVX-512/Neon, AES-GCM, Server GC, and font discovery):
+#### System Diagnostics (System Doctor):
 ```bash
 dotnet run --project tools/Bangplanix.Cli -- doctor
 ```
 
 ---
 
-## 🎨 Part 2: The `.bpx` Schema & Template Design
+## 📁 Part 2: Global Standard Starter Templates Pack & Designer
 
-Bangplanix report templates are defined in **`.bpx` (Bangplanix JSON Schema v1.0)**, a declarative format parsed at sub-millisecond speeds.
+Bangplanix includes **5 production-ready, international standard templates** in `samples/templates/` that you can immediately adapt:
 
-### Basic `.bpx` Template Structure:
-```json
-{
-  "version": "1.0",
-  "metadata": {
-    "title": "Official Tax Invoice",
-    "author": "Acme Global Technologies"
-  },
-  "pageSetup": {
-    "paperKind": "A4",
-    "orientation": "Portrait",
-    "unit": "Mm",
-    "margins": { "top": 10, "bottom": 10, "left": 10, "right": 10 }
-  },
-  "bands": {
-    "pageHeader": {
-      "height": 30,
-      "elements": [
-        {
-          "type": "Text",
-          "text": "Acme Global Technologies Inc.",
-          "x": 0, "y": 0, "width": 190, "height": 10,
-          "style": { "fontSize": 14, "fontWeight": "Bold", "color": "#0f172a" }
-        }
-      ]
-    },
-    "detail": {
-      "height": 8,
-      "elements": [
-        { "type": "Text", "expression": "=Fields.ItemName", "x": 0, "y": 0, "width": 120, "height": 8 },
-        { "type": "Text", "expression": "=Fields.Price", "x": 120, "y": 0, "width": 70, "height": 8, "style": { "align": "Right" } }
-      ]
-    },
-    "pageFooter": {
-      "height": 15,
-      "elements": [
-        {
-          "type": "Text",
-          "expression": "=\"Total: \" + FormatCurrency(Sum(Fields.Price))",
-          "x": 0, "y": 0, "width": 190, "height": 8,
-          "style": { "fontSize": 9, "color": "#475569" }
-        }
-      ]
-    }
-  }
-}
+| Template | Description | File Path |
+| :--- | :--- | :--- |
+| 🧾 **1. Global Commercial Invoice** | Multi-item commercial tax invoice conforming to UN/CEFACT & UBL 2.1 international trade standards. | `samples/templates/commercial-invoice-ubl.bpx` |
+| 📊 **2. Executive Financial KPI Summary** | Monthly executive business summary with performance KPIs, tables, and visualization charts. | `samples/templates/executive-summary.bpx` |
+| 💰 **3. Corporate Employee Payslip** | Comprehensive compensation slip detailing basic salary, bonuses, tax deductions, and benefits. | `samples/templates/employee-payslip.bpx` |
+| 📦 **4. Shipping Logistics Label (4x6)** | Industrial warehouse shipping label with GS1-128 barcode, QR tracking, and routing indicators. | `samples/templates/shipping-logistics-label-4x6.bpx` |
+| 🖨️ **5. POS Retail Thermal Receipt (80mm)** | High-speed thermal receipt for retail and restaurant POS with discounts, tax breakdown, and QR code. | `samples/templates/pos-thermal-receipt-80mm.bpx` |
+
+### Quick Test Commands for Starter Templates:
+```bash
+# 1. Render Commercial Invoice
+bangplanix render -t samples/templates/commercial-invoice-ubl.bpx -d samples/templates/data/commercial-invoice-data.json -o output/invoice.pdf
+
+# 2. Render Employee Payslip
+bangplanix render -t samples/templates/employee-payslip.bpx -d samples/templates/data/payslip-data.json -o output/payslip.pdf
+
+# 3. Render Shipping Label
+bangplanix render -t samples/templates/shipping-logistics-label-4x6.bpx -d samples/templates/data/shipping-label-data.json -o output/shipping_label.pdf
 ```
 
 ### Visual Drag & Drop Designer (`<bangplanix-designer>`)
-Install and embed the WYSIWYG Web Component:
+Design templates visually without writing raw JSON:
 ```bash
 npm install @bangplanix/designer
 ```
 ```html
 <bangplanix-designer></bangplanix-designer>
 ```
+* **No-Code Layout:** Drag text, tables, barcodes, and charts directly onto the canvas.
+* **Export .bpx:** Click **Export** to download the compiled `.bpx` schema for your C# code or CLI pipelines.
 
 ---
 
@@ -229,9 +267,9 @@ export function InvoiceViewer() {
 
 ---
 
-## 🔌 Part 6: Backend Polyglot Client SDKs & Languages
+## 🔌 Part 6: Backend Polyglot Client SDKs & Return Formats (FilePath, Stream, Base64)
 
-Bangplanix provides 5 strongly-typed official client SDKs (C# .NET, Node.js/TypeScript, Python, Go, and Java). For other environments, you can integrate directly via HTTP/REST or gRPC (standalone client SDK packages for PHP, Dart/Flutter, Rust, and Ruby are currently in [Roadmap v1.2.0](./ROADMAP.md)):
+All official SDKs support **3 unified return formats** (Saving to FilePath, In-Memory Streams, and Base64 Strings) for frictionless integration with Web APIs, cloud storage, and frontends:
 
 <details open>
 <summary><b>🔷 1. C# / .NET SDK (.NET 8 / 9 / 10)</b></summary>
@@ -243,12 +281,17 @@ dotnet add package Bangplanix.Client
 using Bangplanix.Client;
 
 var client = new BangplanixClient("http://localhost:9545");
-byte[] pdf = await client.RenderReportAsync(new RenderReportRequest
-{
-    TemplatePath = "templates/invoice.bpx",
-    DataJson = JsonSerializer.Serialize(orders)
-});
-await File.WriteAllBytesAsync("invoice.pdf", pdf);
+var request = new RenderClientRequest { TemplatePath = "templates/commercial-invoice-ubl.bpx", DataJson = jsonData };
+
+// 1. Direct File Output (FilePath)
+await client.RenderToFileAsync(request, "output/invoice.pdf");
+
+// 2. In-Memory Stream Output (Stream)
+var result = await client.RenderReportAsync(request);
+using MemoryStream stream = result.ToStream();
+
+// 3. Base64 String Output (Base64)
+string base64String = result.ToBase64();
 ```
 </details>
 
@@ -260,14 +303,18 @@ npm install @bangplanix/client
 ```
 ```typescript
 import { BangplanixClient } from '@bangplanix/client';
-import * as fs from 'fs';
 
-const client = new BangplanixClient({ baseUrl: 'http://localhost:9545' });
-const pdfBuffer = await client.renderReport({
-  templatePath: 'templates/invoice.bpx',
-  data: [{ ItemName: 'Server Node', Price: 2500 }]
-});
-fs.writeFileSync('invoice.pdf', pdfBuffer);
+const client = new BangplanixClient({ serverUrl: 'http://localhost:9545' });
+const request = { templatePath: 'templates/commercial-invoice-ubl.bpx', data: orderItems };
+
+// 1. Direct File Output (FilePath)
+await client.renderToFile(request, 'output/invoice.pdf');
+
+// 2. In-Memory Stream Output (Stream)
+const stream = await client.renderToStream(request);
+
+// 3. Base64 String Output (Base64)
+const { base64 } = await client.renderToBase64(request);
 ```
 </details>
 
@@ -278,14 +325,20 @@ fs.writeFileSync('invoice.pdf', pdfBuffer);
 pip install bangplanix
 ```
 ```python
-from bangplanix import BangplanixClient
+from bangplanix import BangplanixClient, RenderRequest
 
-client = BangplanixClient(base_url="http://localhost:9545")
-pdf_bytes = client.render_to_file(
-    template_path="templates/invoice.bpx",
-    data=[{"ItemName": "Storage Node", "Price": 450}],
-    output_path="invoice.pdf"
-)
+client = BangplanixClient(server_url="http://localhost:9545")
+req = RenderRequest(template_path="templates/commercial-invoice-ubl.bpx", data=order_items)
+
+# 1. Direct File Output (FilePath)
+client.render_to_file(req, "output/invoice.pdf")
+
+# 2. In-Memory Stream Output (Stream)
+res = client.render_report(req)
+stream = res.to_stream() # io.BytesIO
+
+# 3. Base64 String Output (Base64)
+base64_str = res.to_base64()
 ```
 </details>
 
@@ -300,17 +353,22 @@ package main
 
 import (
     "context"
-    "os"
     bangplanix "github.com/thabot/bangplanix/sdk/go"
 )
 
 func main() {
     client := bangplanix.NewClient("http://localhost:9545")
-    pdf, _ := client.RenderReport(context.Background(), &bangplanix.RenderRequest{
-        TemplatePath: "templates/invoice.bpx",
-        DataJson:     `[{"ItemName": "RAM Stick", "Price": 120}]`,
-    })
-    os.WriteFile("invoice.pdf", pdf, 0644)
+    req := bangplanix.RenderRequest{TemplatePath: "templates/commercial-invoice-ubl.bpx", DataJSON: jsonData}
+
+    // 1. Direct File Output (FilePath)
+    client.RenderToFile(context.Background(), req, "output/invoice.pdf")
+
+    // 2. In-Memory Stream Output (Stream)
+    res, _ := client.RenderReport(context.Background(), req)
+    reader := res.ToReader() // io.Reader
+
+    // 3. Base64 String Output (Base64)
+    base64Str := res.ToBase64()
 }
 ```
 </details>
@@ -320,9 +378,17 @@ func main() {
 
 ```java
 BangplanixClient client = new BangplanixClient("http://localhost:9545");
-byte[] pdf = client.renderReport(new RenderReportRequest()
-    .setTemplatePath("templates/invoice.bpx")
-    .setDataJson(jsonData));
+RenderRequest req = new RenderRequest("templates/commercial-invoice-ubl.bpx", jsonData);
+
+// 1. Direct File Output (FilePath)
+client.renderToFile(req, "output/invoice.pdf");
+
+// 2. In-Memory Stream Output (Stream)
+RenderResponse res = client.renderReport(req);
+InputStream stream = res.toInputStream();
+
+// 3. Base64 String Output (Base64)
+String base64 = res.toBase64();
 ```
 </details>
 
@@ -499,6 +565,29 @@ helm upgrade --install bangplanix ./deploy/helm/bangplanix \
   --set autoscaling.enabled=true \
   --set licenseKey="eyJ..."
 ```
+
+---
+
+## 🛠️ Part 9: Global Typography & Troubleshooting FAQ
+
+### 9.1 Multi-Language Typography & Complex Text Shaping
+* **HarfBuzz Integration:** Bangplanix integrates **HarfBuzzSharp** to automatically shape complex scripts (Thai floating tone marks/vowels, Arabic right-to-left cursive, Devanagari ligatures, and East Asian CJK characters) without glyph clipping.
+* **Custom Font Loading:** Map your TTF/OTF fonts to `/app/volumes/fonts` or pass custom font paths in the CLI with `--font-dir`.
+
+### 9.2 Troubleshooting & FAQ
+
+#### Q: How do I resolve missing fonts or square tofu characters in Docker/Linux?
+**A:** Mount standard TrueType fonts into the container using the volume flag:
+```bash
+docker run -v $(pwd)/volumes/fonts:/app/volumes/fonts ...
+```
+Bangplanix scans this directory recursively upon startup and caches font tables for instant sub-millisecond lookups.
+
+#### Q: Why is Excel (.xlsx) export faster than PDF?
+**A:** Excel export utilizes **MiniExcel** zero-allocation streaming, directly constructing OpenXML ZIP packages with minimal memory footprint, whereas PDF performs high-precision vector canvas operations and text shaping.
+
+#### Q: Can I print directly to POS slip printers without generating a PDF?
+**A:** Yes! Use the CLI `print` command with `--printer-type escpos` or `--printer-type zpl` to send raw byte sequences directly to network thermal printers on port 9100 or via CUPS/IPP.
 
 ---
 

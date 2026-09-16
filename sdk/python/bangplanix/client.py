@@ -16,6 +16,9 @@ class RenderRequest:
     format: str = "pdf"
     correlation_id: Optional[str] = None
 
+import base64
+import io
+
 @dataclass
 class RenderResponse:
     data: bytes
@@ -24,6 +27,16 @@ class RenderResponse:
     length: int
     correlation_id: str
     duration_ms: int
+
+    def to_base64(self) -> str:
+        return base64.b64encode(self.data).decode("utf-8")
+
+    def to_stream(self) -> io.BytesIO:
+        return io.BytesIO(self.data)
+
+    def save_to_file(self, file_path: str) -> None:
+        with open(file_path, "wb") as f:
+            f.write(self.data)
 
 class BangplanixClient:
     def __init__(self, server_url: str = "http://localhost:9545", timeout: int = 30, api_key: Optional[str] = None, max_retries: int = 3, retry_delay_sec: float = 0.2):

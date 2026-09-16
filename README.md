@@ -58,21 +58,37 @@
 
 ---
 
-## 🚀 Quick Start in 30 Seconds
+## 🚀 3 Execution Modes: Choose What Fits Your Stack
 
-### 1. Launch with Docker Compose
-```bash
-docker compose up -d
+Bangplanix offers **3 flexible execution modes**:
+
+### 📦 Mode 1: In-Process Embedded C# Library (.NET 8/9/10 — QuestPDF Style)
+```csharp
+using Bangplanix.Core;
+using Bangplanix.Rendering.SkiaSharp;
+
+var template = ReportTemplate.LoadFromJsonFile("templates/commercial-invoice-ubl.bpx");
+var engine = new ReportEngine();
+var result = await engine.RenderAsync(template, myDataJson, ExportFormat.Pdf);
+await File.WriteAllBytesAsync("invoice.pdf", result.ToByteArray());
 ```
 
-Access the service immediately:
-* **🚀 Web Management Portal:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (Default Login: `admin` / `bangplanix2026!`)
-* **High-Speed gRPC Endpoint:** `localhost:9546`
-
-### 2. Verify System Health with System Doctor
+### 💻 Mode 2: Standalone Local CLI & Native AOT Binary (Zero Docker)
 ```bash
-dotnet run --project tools/Bangplanix.Cli -- doctor
+# Render PDF directly with sub-10ms latency
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o invoice.pdf
+
+# Run diagnostic health check
+bangplanix doctor
 ```
+
+### 🐳 Mode 3: Docker Microservice & Polyglot SDKs
+```bash
+docker run -d -p 9545:9545 -p 9546:9546 \
+  -v $(pwd)/volumes/templates:/app/volumes/templates \
+  ghcr.io/thabot/bangplanix:latest
+```
+Access Web Portal at [`http://localhost:9545/portal`](http://localhost:9545/portal) (Default Login: `admin` / `bangplanix2026!`).
 
 ---
 

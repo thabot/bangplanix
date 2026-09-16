@@ -13,91 +13,172 @@
 
 ## 📑 สารบัญ (Table of Contents)
 
-1. [🚀 บทที่ 1: Quick Start ติดตั้งและรันใน 3 นาที](#-บทที่-1-quick-start-ติดตั้งและรันใน-3-นาที)
-2. [🎨 บทที่ 2: โครงสร้างไฟล์ `.bpx` และการออกแบบรายงาน](#-บทที่-2-โครงสร้างไฟล์-bpx-และการออกแบบรายงาน)
+1. [🚀 บทที่ 1: 3 รูปแบบการรันและการแปลงรายงาน (3 Execution Modes)](#-บทที่-1-3-รูปแบบการรันและการแปลงรายงาน-3-execution-modes)
+2. [📁 บทที่ 2: คลังเทมเพลตมาตรฐานสากล (Global Starter Templates Pack) & Designer](#-บทที่-2-คลังเทมเพลตมาตรฐานสากล-global-starter-templates-pack--designer)
 3. [🤖 บทที่ 3: การใช้ AI Suite สั่งสร้างรายงานด้วยภาษาพูด](#-บทที่-3-การใช้-ai-suite-สั่งสร้างรายงานด้วยภาษาพูด)
 4. [💾 บทที่ 4: การป้อนข้อมูล (JSON Data Push & SQL Databases)](#-บทที่-4-การป้อนข้อมูล-json-data-push--sql-databases)
 5. [🖥️ บทที่ 5: การนำไปฝังในหน้าเว็บ Frontend (React, Vue, Web Components)](#-บทที่-5-การนำไปฝังในหน้าเว็บ-frontend-react-vue-web-components)
-6. [🔌 บทที่ 6: การเรียกใช้งานผ่าน Backend SDKs (5 ภาษา)](#-บทที่-6-การเรียกใช้งานผ่าน-backend-sdks-5-ภาษา)
+6. [🔌 บทที่ 6: การเรียกใช้งานผ่าน Backend SDKs & รูปแบบผลลัพธ์ (FilePath, Stream, Base64)](#-บทที่-6-การเรียกใช้งานผ่าน-backend-sdks--รูปแบบผลลัพธ์-filepath-stream-base64)
 7. [🔄 บทที่ 7: การแปลงรายงานเดิม (Crystal, SSRS, Jasper, FastReport)](#-บทที่-7-การแปลงรายงานเดิม-crystal-ssrs-jasper-fastreport)
 8. [🚢 บทที่ 8: การนำขึ้นใช้งานบน Production & License Activation](#-บทที่-8-การนำขึ้นใช้งานบน-production--license-activation)
+9. [🛠️ บทที่ 9: การจัดการฟอนต์ภาษาไทยและคำถามที่พบบ่อย (Troubleshooting FAQ)](#-บทที่-9-การจัดการฟอนต์ภาษาไทยและคำถามที่พบบ่อย-troubleshooting-faq)
 
 ---
 
-## 🚀 บทที่ 1: Quick Start ติดตั้งและรันใน 3 นาที
+## 🚀 บทที่ 1: 3 รูปแบบการรันและการแปลงรายงาน (3 Execution Modes)
 
-Bangplanix ให้บริการทั้งในรูปแบบ Standalone Container, CLI Tool และ Web Portal
+Bangplanix มอบความยืดหยุ่นสูงสุดด้วย **3 รูปแบบการรัน** ที่ตอบโจทย์ทุกสถาปัตยกรรมระบบ:
 
-### 1.1 รันผ่าน Docker Compose (แนะนำ)
-สร้างไฟล์ `docker-compose.yml` หรือใช้ไฟล์ในโปรเจกต์:
+```mermaid
+graph TD
+    A[Bangplanix Core Architecture] --> B[วิธีที่ 1: ฝังเป็น In-Process Library]
+    A --> C[วิธีที่ 2: รันผ่าน Standalone Local CLI]
+    A --> D[วิธีที่ 3: รันเป็น High-Performance Microservice]
+    
+    B -->|เรียกตรงใน C#| B1[ไม่ใช้ Docker / Zero Latency / สร้าง PDF และ XLSX ในแรม]
+    C -->|CLI & Native AOT .exe| C1[เหมาะกับงาน Batch & ทำระบบ CI/CD]
+    D -->|Docker / Kubernetes| D1[Polyglot REST & gRPC API: C#, Node, Python, Go, Java]
+```
 
+### 📊 ตารางเปรียบเทียบ: ควรเลือกใช้โหมดไหน? (Decision Matrix)
+
+| รูปแบบการรัน | สถาปัตยกรรมที่เหมาะสม | ใช้เมื่อไหร่ดี? | ต้องลง Docker ไหม? |
+| :--- | :--- | :--- | :---: |
+| **วิธีที่ 1: In-Process Library** | .NET 8 / 9 / 10 Apps (Web API, Worker, MAUI) | ต้องการความเร็วสูงสุดระดับไมโครวินาที (Zero-GC) ไม่ต้องการ Latency เครือข่าย และไม่อยากจัดการเซิร์ฟเวอร์ (เหมือน QuestPDF) | ❌ **ไม่ต้อง** |
+| **วิธีที่ 2: Standalone Local CLI** | CI/CD, Shell Scripts, Batch Jobs | ต้องการสั่งแปลงรายงานเป็นชุด หรือรันคำสั่ง Command Line บนเซิร์ฟเวอร์โดยไม่ต้องเปิด Service ค้างไว้ | ❌ **ไม่ต้อง** |
+| **วิธีที่ 3: Microservice / Docker** | Polyglot Stacks (Node, Python, Go, Java, K8s) | สถาปัตยกรรมแบบกระจายศูนย์ (Distributed) ที่ต้องการเซิร์ฟเวอร์รายงานส่วนกลางพร้อม gRPC / REST API | ✅ **ใช้** |
+
+---
+
+### 1.1 วิธีที่ 1: ฝังเป็น In-Process Library ในโค้ด C# / .NET (แบบ QuestPDF ไม่ต้องใช้ Docker)
+
+หากคุณพัฒนาแอปพลิเคชันด้วย C# / .NET **คุณไม่จำเป็นต้องเปิด Docker หรือเซิร์ฟเวอร์ใดๆ เลย** สามารถอ้างอิง Library เข้าโปรเจกต์และเรนเดอร์เอกสารในหน่วยความจำได้ทันที:
+
+#### ติดตั้ง Package:
 ```bash
-# รัน Container ในโหมด Background
+dotnet add package Bangplanix.Engine
+dotnet add package Bangplanix.Core
+```
+
+#### ตัวอย่างโค้ด C# (In-Process):
+```csharp
+using Bangplanix.Core.Parser;
+using Bangplanix.Engine.Pdf;
+using Bangplanix.Connectors.Json;
+
+// 1. อ่าน Schema เทมเพลต .bpx
+string templateJson = await File.ReadAllTextAsync("templates/commercial-invoice-ubl.bpx");
+var report = BpxParser.Parse(templateJson);
+
+// 2. อ่านข้อมูล Dataset JSON
+string dataJson = await File.ReadAllTextAsync("data/commercial-invoice-data.json");
+var dataRows = JsonPushStreamConnector.ParseJsonStringToRows(dataJson);
+
+// 3. เรนเดอร์เป็น Vector PDF ในหน่วยความจำโดยตรง
+var renderer = new SkiaPdfRenderer();
+byte[] pdfBytes = await renderer.RenderToPdfAsync(report, null, dataRows);
+await File.WriteAllBytesAsync("output/invoice.pdf", pdfBytes);
+```
+
+#### ⚡ 30-Second Copy-Paste Quickstart (ASP.NET Core Minimal API):
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/api/invoice/{id}/pdf", async (int id) =>
+{
+    var template = BpxParser.Parse(await File.ReadAllTextAsync("invoice.bpx"));
+    var pdf = await new SkiaPdfRenderer().RenderToPdfAsync(template);
+    return Results.File(pdf, "application/pdf", $"invoice_{id}.pdf");
+});
+
+app.Run();
+```
+
+---
+
+### 1.2 วิธีที่ 2: รันผ่าน Standalone Local CLI หรือ Native AOT Binary (ไม่ต้องลง Docker)
+
+สำหรับการทำงานแบบ Batch Automation, CI/CD Pipeline หรือใช้งานบน Desktop สามารถใช้ **Bangplanix CLI** หรือไฟล์ Native AOT executable:
+
+#### ตัวอย่างคำสั่ง CLI:
+```bash
+# สั่งเรนเดอร์เป็น PDF
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o output/invoice.pdf
+
+# สั่งส่งออกเป็น Excel (.xlsx)
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o output/invoice.xlsx -f xlsx
+
+# ตรวจสอบความถูกต้องของเทมเพลต .bpx
+bangplanix validate -t templates/commercial-invoice-ubl.bpx
+```
+
+#### ตัวอย่างหน้าจอผลลัพธ์ (Terminal Preview):
+```text
+=================================================
+Bangplanix CLI — High Performance Reporting Engine
+=================================================
+[1/3] Parsing .bpx template: templates/commercial-invoice-ubl.bpx
+[2/3] Loading data payload: data.json
+[3/3] Rendering Vector PDF via SkiaSharp Engine...
+✓ PDF generated successfully in 21 ms: D:\bangplanix\output\invoice.pdf (42,318 bytes)
+```
+
+---
+
+### 1.3 วิธีที่ 3: รันเป็น High-Performance Reporting Microservice (Docker & Polyglot SDKs)
+
+สำหรับระบบที่เขียนด้วยหลายภาษา (**Node.js, Python, Go, Java, C#**) สามารถรันเป็น Reporting Service รวมศูนย์ผ่าน Docker Compose:
+
+#### เริ่มรัน Container:
+```bash
 docker compose up -d
 ```
-
-เมื่อรันสำเร็จ สามารถเข้าใช้งานผ่าน Browser ได้ทันที:
-* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (หรือเข้า [`http://localhost:9545`](http://localhost:9545) ผ่าน Web Browser)
-
-> 🔐 **บัญชีผู้ใช้งานเริ่มต้นสำหรับเข้าสู่ระบบ (Default Credentials):**
-> * **Username:** `admin` (หรือกำหนดผ่านตัวแปร `BANGPLANIX_PORTAL_USER`)
-> * **Password:** `bangplanix2026!` (หรือกำหนดผ่านตัวแปร `BANGPLANIX_PORTAL_PASSWORD` / `THABOT_MASTER_KEY`)
-> 
-> *ระบบจะสร้างบัญชีเริ่มต้นนี้ให้อัตโนมัติในการเริ่มต้นระบบครั้งแรก (Auto-Seeded) เพื่อให้สามารถเข้าสู่ระบบและเริ่มบริหารจัดการ Container ได้ทันที*
-
+* **🚀 Web Management Portal GUI:** [`http://localhost:9545/portal`](http://localhost:9545/portal) (เข้าสู่ระบบด้วย: `admin` / `bangplanix2026!`)
 * **High-Speed gRPC Endpoint:** `localhost:9546`
+* **REST API Endpoint:** `http://localhost:9545/api/v1/report/render`
 
-### 1.2 รันผ่าน Docker CLI โดยตรง
-
-#### ก) ใช้งาน SQLite เป็นฐานข้อมูล Portal (ค่าเริ่มต้น - แนะนำสำหรับทั่วไป):
-```bash
-docker run -d \
-  --name bangplanix-server \
-  -p 9545:9545 -p 9546:9546 \
-  -v $(pwd)/volumes/data:/app/volumes/data \
-  -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -v $(pwd)/volumes/fonts:/app/volumes/fonts \
-  -v $(pwd)/volumes/logs:/app/volumes/logs \
-  -e BANGPLANIX_PORTAL_DB_TYPE=sqlite \
-  ghcr.io/thabot/bangplanix:latest
-```
-
-#### ข) ใช้งาน PostgreSQL สำหรับสภาพแวดล้อม Enterprise / Multi-Pod:
-```bash
-docker run -d \
-  --name bangplanix-server \
-  -p 9545:9545 -p 9546:9546 \
-  -v $(pwd)/volumes/templates:/app/volumes/templates \
-  -e BANGPLANIX_PORTAL_DB_TYPE=postgres \
-  -e BANGPLANIX_PORTAL_DB_CONNECTION="Host=postgres-host;Port=5432;Database=bangplanix;Username=postgres;Password=secret;" \
-  ghcr.io/thabot/bangplanix:latest
-```
-
-### 1.3 ตรวจสอบความพร้อมของระบบด้วย `thabot doctor`
+#### ตรวจสอบความพร้อมของระบบ (System Doctor):
 ```bash
 dotnet run --project tools/Bangplanix.Cli -- doctor
 ```
-ระบบจะตรวจเช็ค .NET Runtime, Server GC, SIMD Hardware Acceleration, AES-256 Crypto, และ Fonts พร้อมรายงานผลทันที
 
 ---
 
-## 🎨 บทที่ 2: โครงสร้างไฟล์ `.bpx` และการออกแบบรายงาน
+## 📁 บทที่ 2: คลังเทมเพลตมาตรฐานสากล (Global Starter Templates Pack) & Designer
 
-เทมเพลตรายงานของ Bangplanix จัดเก็บในรูปแบบ **`.bpx` (Bangplanix JSON Schema)** ซึ่งเป็น Plain JSON ที่ Zero-Allocation Parser อ่านได้อย่างรวดเร็ว
+Bangplanix มาพร้อม **5 เทมเพลตมาตรฐานสากลระดับโลก** ในโฟลเดอร์ `samples/templates/` ที่พร้อมนำไปปรับแต่งใช้งานได้ทันที:
 
-### โครงสร้างหลักของไฟล์ `.bpx`:
-```json
-{
-  "version": "1.0",
-  "metadata": {
-    "title": "ใบเสร็จรับเงิน / Tax Invoice",
-    "author": "Siam Enterprise Co., Ltd."
-  },
-  "pageSetup": {
-    "paperKind": "A4",
-    "orientation": "Portrait",
-    "unit": "Mm",
-    "margins": { "top": 10, "bottom": 10, "left": 10, "right": 10 }
+| เทมเพลต | รายละเอียด | ไฟล์เทมเพลต |
+| :--- | :--- | :--- |
+| 🧾 **1. Global Commercial Invoice** | ใบแจ้งหนี้การค้ามาตรฐานสากล UN/CEFACT & UBL 2.1 พร้อมตารางรายการสินค้าและคำนวณภาษี | `samples/templates/commercial-invoice-ubl.bpx` |
+| 📊 **2. Executive Financial KPI Summary** | รายงานสรุปผลประกอบการและตัวชี้วัดธุรกิจสำหรับผู้บริหาร พร้อมแผนภูมิสรุปยอด | `samples/templates/executive-summary.bpx` |
+| 💰 **3. Corporate Employee Payslip** | สลิปเงินเดือนพนักงานองค์กรสากล พร้อมแจกแจงรายได้ โบนัส และภาษีหัก ณ ที่จ่าย | `samples/templates/employee-payslip.bpx` |
+| 📦 **4. Shipping Logistics Label (4x6)** | ป้ายติดพัสดุและบาร์โค้ดขนส่งมาตรฐาน GS1-128 / QR Code สำหรับงานคลังสินค้า | `samples/templates/shipping-logistics-label-4x6.bpx` |
+| 🖨️ **5. POS Retail Thermal Receipt (80mm)** | ใบเสร็จรับเงินเครื่องพิมพ์ความร้อน POS สำหรับธุรกิจค้าปลีกและร้านอาหาร | `samples/templates/pos-thermal-receipt-80mm.bpx` |
+
+### ตัวอย่างคำสั่งทดสอบเรนเดอร์ Starter Templates:
+```bash
+# 1. ทดสอบเรนเดอร์ Commercial Invoice
+bangplanix render -t samples/templates/commercial-invoice-ubl.bpx -d samples/templates/data/commercial-invoice-data.json -o output/invoice.pdf
+
+# 2. ทดสอบเรนเดอร์ Employee Payslip
+bangplanix render -t samples/templates/employee-payslip.bpx -d samples/templates/data/payslip-data.json -o output/payslip.pdf
+
+# 3. ทดสอบเรนเดอร์ Shipping Label
+bangplanix render -t samples/templates/shipping-logistics-label-4x6.bpx -d samples/templates/data/shipping-label-data.json -o output/shipping_label.pdf
+```
+
+### การออกแบบด้วย Web Visual Designer (`<bangplanix-designer>`)
+ออกแบบและปรับแต่งรายงานผ่านหน้าเว็บได้โดยไม่ต้องเขียน JSON:
+```bash
+npm install @bangplanix/designer
+```
+```html
+<bangplanix-designer></bangplanix-designer>
+```
+* **No-Code Layout:** ลากวางข้อความ ตาราง บาร์โค้ด และรูปภาพบนผืนผ้าใบได้แบบ WYSIWYG
+* **Export .bpx:** กดปุ่ม **Export** เพื่อนำไฟล์ Schema ไปใช้ในโค้ด C# หรือคำสั่ง CLI ได้ทันที
   },
   "bands": {
     "pageHeader": {
@@ -291,12 +372,21 @@ dotnet add package Bangplanix.Client
 using Bangplanix.Client;
 
 var client = new BangplanixClient("http://localhost:9545");
-byte[] pdf = await client.RenderReportAsync(new RenderReportRequest
+var request = new RenderReportRequest
 {
-    TemplatePath = "templates/invoice.bpx",
+    TemplatePath = "templates/commercial-invoice-ubl.bpx",
     DataJson = JsonSerializer.Serialize(myDataset)
-});
-await File.WriteAllBytesAsync("invoice.pdf", pdf);
+};
+
+// 1. บันทึกไฟล์ลงดิสก์โดยตรง (FilePath)
+await client.RenderToFileAsync(request, "output/invoice.pdf");
+
+// 2. รับผลลัพธ์เป็น In-Memory Stream (Stream)
+var result = await client.RenderReportAsync(request);
+using Stream stream = result.ToStream();
+
+// 3. รับผลลัพธ์เป็น Base64 String (Base64)
+string base64String = result.ToBase64();
 ```
 </details>
 
@@ -311,11 +401,19 @@ import { BangplanixClient } from '@bangplanix/client';
 import * as fs from 'fs';
 
 const client = new BangplanixClient({ baseUrl: 'http://localhost:9545' });
-const pdfBuffer = await client.renderReport({
-  templatePath: 'templates/invoice.bpx',
-  data: [ { ItemName: 'Laptop', Price: 35000 } ]
-});
-fs.writeFileSync('invoice.pdf', pdfBuffer);
+const req = {
+  templatePath: 'templates/commercial-invoice-ubl.bpx',
+  data: [{ ItemName: 'High-Performance Cloud Server', Price: 35000 }]
+};
+
+// 1. บันทึกไฟล์ลงดิสก์โดยตรง (FilePath)
+await client.renderToFile(req, 'output/invoice.pdf');
+
+// 2. รับผลลัพธ์เป็น Readable Stream (Stream)
+const stream = await client.renderToStream(req);
+
+// 3. รับผลลัพธ์เป็น Base64 String (Base64)
+const base64Str = await client.renderToBase64(req);
 ```
 </details>
 
@@ -329,11 +427,19 @@ pip install bangplanix
 from bangplanix import BangplanixClient
 
 client = BangplanixClient(base_url="http://localhost:9545")
-pdf_bytes = client.render_to_file(
-    template_path="templates/invoice.bpx",
-    data=[{"ItemName": "Monitor", "Price": 8500}],
-    output_path="invoice.pdf"
-)
+payload = {
+    "template_path": "templates/commercial-invoice-ubl.bpx",
+    "data": [{"ItemName": "Enterprise Cloud Node", "Price": 8500}]
+}
+
+# 1. บันทึกไฟล์ลงดิสก์โดยตรง (FilePath)
+client.render_to_file(**payload, output_path="output/invoice.pdf")
+
+# 2. รับผลลัพธ์เป็น In-Memory Binary Stream (Stream)
+stream = client.render_to_stream(**payload)
+
+# 3. รับผลลัพธ์เป็น Base64 String (Base64)
+base64_str = client.render_to_base64(**payload)
 ```
 </details>
 
@@ -354,11 +460,19 @@ import (
 
 func main() {
     client := bangplanix.NewClient("http://localhost:9545")
-    pdf, err := client.RenderReport(context.Background(), &bangplanix.RenderRequest{
-        TemplatePath: "templates/invoice.bpx",
-        DataJson:     `[{"ItemName": "Keyboard", "Price": 2500}]`,
-    })
-    os.WriteFile("invoice.pdf", pdf, 0644)
+    req := &bangplanix.RenderRequest{
+        TemplatePath: "templates/commercial-invoice-ubl.bpx",
+        DataJson:     `[{"ItemName": "Mechanical Keyboard", "Price": 2500}]`,
+    }
+
+    // 1. บันทึกไฟล์ลงดิสก์โดยตรง (FilePath)
+    _ = client.RenderToFile(context.Background(), req, "output/invoice.pdf")
+
+    // 2. รับผลลัพธ์เป็น In-Memory Reader Stream (Stream)
+    reader, _ := client.RenderToReader(context.Background(), req)
+
+    // 3. รับผลลัพธ์เป็น Base64 String (Base64)
+    base64Str, _ := client.RenderToBase64(context.Background(), req)
 }
 ```
 </details>
@@ -368,9 +482,17 @@ func main() {
 
 ```java
 BangplanixClient client = new BangplanixClient("http://localhost:9545");
-byte[] pdf = client.renderReport(new RenderReportRequest()
-    .setTemplatePath("templates/invoice.bpx")
-    .setDataJson(jsonData));
+RenderRequest req = new RenderRequest("templates/commercial-invoice-ubl.bpx", jsonData);
+
+// 1. บันทึกไฟล์ลงดิสก์โดยตรง (FilePath)
+client.renderToFile(req, "output/invoice.pdf");
+
+// 2. รับผลลัพธ์เป็น In-Memory Stream (Stream)
+RenderResponse res = client.renderReport(req);
+InputStream stream = res.toInputStream();
+
+// 3. รับผลลัพธ์เป็น Base64 String (Base64)
+String base64 = res.toBase64();
 ```
 </details>
 
@@ -380,7 +502,7 @@ byte[] pdf = client.renderReport(new RenderReportRequest()
 ```php
 <?php
 $payload = [
-    'templatePath' => 'templates/invoice.bpx',
+    'templatePath' => 'templates/commercial-invoice-ubl.bpx',
     'format' => 'Pdf',
     'dataJson' => json_encode([['ItemName' => 'Service Fee', 'Price' => 5000]])
 ];
@@ -413,10 +535,10 @@ Future<void> generateInvoicePdf() async {
     url,
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
-      'templatePath': 'templates/invoice.bpx',
+      'templatePath': 'templates/commercial-invoice-ubl.bpx',
       'format': 'Pdf',
       'dataJson': jsonEncode([
-        {'ItemName': 'Mobile POS Machine', 'Price': 8900}
+        {'ItemName': 'Mobile POS Terminal', 'Price': 8900}
       ])
     }),
   );
@@ -441,7 +563,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
     let res = client.post("http://localhost:9545/api/v1/reports/render")
         .json(&json!({
-            "templatePath": "templates/invoice.bpx",
+            "templatePath": "templates/commercial-invoice-ubl.bpx",
             "format": "Pdf",
             "dataJson": "[{\"ItemName\":\"High-Speed Compute\",\"Price\":9900}]"
         }))
@@ -463,7 +585,7 @@ require 'json'
 
 uri = URI.parse("http://localhost:9545/api/v1/reports/render")
 payload = {
-  templatePath: "templates/invoice.bpx",
+  templatePath: "templates/commercial-invoice-ubl.bpx",
   format: "Pdf",
   dataJson: [{ ItemName: "SaaS Monthly Subscription", Price: 1200 }].to_json
 }
@@ -480,9 +602,9 @@ File.open("invoice.pdf", "wb") { |f| f.write(response.body) }
 curl -X POST http://localhost:9545/api/v1/reports/render \
   -H "Content-Type: application/json" \
   -d '{
-    "templatePath": "templates/invoice.bpx",
+    "templatePath": "templates/commercial-invoice-ubl.bpx",
     "format": "Pdf",
-    "dataJson": "[{\"ItemName\":\"Cloud Server\",\"Price\":15000}]"
+    "dataJson": "[{\"ItemName\":\"Cloud Compute Node\",\"Price\":15000}]"
   }' \
   --output invoice.pdf
 ```
@@ -579,6 +701,29 @@ helm upgrade --install bangplanix ./deploy/helm/bangplanix \
   --set autoscaling.enabled=true \
   --set licenseKey="eyJ..."
 ```
+
+---
+
+## 🛠️ บทที่ 9: ฟอนต์สากล & คำถามที่พบบ่อย (Typography & FAQ)
+
+### 9.1 ฟอนต์หลายภาษาและการจัดวางอักขระซับซ้อน (HarfBuzz Text Shaping)
+* **HarfBuzzSharp Integration:** Bangplanix รวม **HarfBuzzSharp** เพื่อตัดและจัดเรียงสระ/วรรณยุกต์ภาษาไทย (ไม่ลอย/ไม่จม), อักษรภาษาอาหรับ (ขวาไปซ้าย Cursive), เทวนาครี, และอักษร CJK (จีน/ญี่ปุ่น/เกาหลี) ได้อย่างแม่นยำ 100%
+* **การโหลดฟอนต์ Custom:** วางไฟล์ `.ttf` / `.otf` ลงในโฟลเดอร์ `/app/volumes/fonts` หรือระบุพารามิเตอร์ `--font-dir` ใน CLI
+
+### 9.2 คำถามที่พบบ่อย (FAQ)
+
+#### Q: หากรันบน Docker / Linux แล้วฟอนต์เป็นสี่เหลี่ยม (Tofu boxes) แก้ไขอย่างไร?
+**A:** แมปโฟลเดอร์ฟอนต์ TrueType ของระบบเข้าไปยัง Container ด้วย Volume flag:
+```bash
+docker run -v $(pwd)/volumes/fonts:/app/volumes/fonts ...
+```
+Bangplanix จะสแกนค้นหาฟอนต์แบบอัตโนมัติและแคช Font Table ไว้เพื่อการเรนเดอร์ระดับ sub-millisecond
+
+#### Q: ทำไมการส่งออก Excel (.xlsx) จึงเร็วกว่า PDF?
+**A:** การส่งออก Excel ใช้ **MiniExcel** ทำ Zero-Allocation Streaming สร้าง OpenXML ZIP โดยตรงโดยแทบไม่ใช้ Memory ขณะที่ PDF ต้องคำนวณเวกเตอร์กราฟิกและการตัดคำอย่างละเอียด
+
+#### Q: สั่งพิมพ์ตรงไปยังเครื่องพิมพ์สลิป POS โดยไม่ต้องสร้าง PDF ได้หรือไม่?
+**A:** ได้ทันที! ใช้คำสั่ง CLI `print` ร่วมกับ `--printer-type escpos` หรือ `--printer-type zpl` เพื่อส่ง Raw Byte Command ไปยังพอร์ต 9100 ของเครื่องพิมพ์ทางเครือข่าย หรือผ่าน CUPS/IPP โดยตรง
 
 ---
 

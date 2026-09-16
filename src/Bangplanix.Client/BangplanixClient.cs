@@ -237,6 +237,20 @@ public sealed record RenderClientRequest
 public sealed record RenderResult(byte[] Data, string Format, string ContentType, string CorrelationId, long DurationMs)
 {
     public int Length => Data.Length;
+
+    public string ToBase64() => Convert.ToBase64String(Data);
+
+    public MemoryStream ToStream() => new(Data);
+
+    public Task SaveToFileAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        var dir = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        return File.WriteAllBytesAsync(filePath, Data, cancellationToken);
+    }
 }
 
 public sealed record BatchItemResult(bool IsSuccess, RenderResult? Result, string? ErrorMessage, RenderClientRequest Request);

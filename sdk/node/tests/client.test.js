@@ -167,4 +167,34 @@ describe('Bangplanix Node.js Client SDK Tests', () => {
     );
     assert.equal(callCount, 1, 'Should fail immediately without retrying non-transient errors');
   });
+
+  test('renderReport and helpers should support Base64 and Stream return formats', async () => {
+    const sampleBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x37]); // %PDF-1.7
+    const mockFetch = async () => ({
+      ok: true,
+      status: 200,
+      headers: new Map([['content-type', 'application/pdf']]),
+      arrayBuffer: async () => sampleBytes.buffer
+    });
+
+    const client = new BangplanixClient({ fetch: mockFetch });
+    const result = await client.renderReport({ templatePath: 'schema/v1/samples/invoice.bpx' });
+
+    // Test toBase64()
+    const base64 = result.toBase64();
+    assert.equal(base64, Buffer.from(sampleBytes).toString('base64'));
+
+    // Test renderToBase64()
+    const b64Result = await client.renderToBase64({ templatePath: 'schema/v1/samples/invoice.bpx' });
+    assert.equal(b64Result.base64, base64);
+
+    // Test toStream()
+    const stream = result.toStream();
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    const streamedBuffer = Buffer.concat(chunks);
+    assert.deepEqual(streamedBuffer, Buffer.from(sampleBytes));
+  });
 });
