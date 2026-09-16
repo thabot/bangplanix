@@ -181,8 +181,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEifypBfJuRuE6r/q2tyBccAUvn+gE
     public bool RequiresWatermark()
     {
         if (!_lastResult.IsValid) return true;
-        if (_lastResult.ActiveTier == LicenseTier.Community) return true;
-        return _currentPayload?.EnableWatermarking ?? true;
+        return _currentPayload?.EnableWatermarking ?? false;
     }
 
     /// <summary>

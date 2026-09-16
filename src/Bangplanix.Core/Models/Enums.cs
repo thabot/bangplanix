@@ -16,6 +16,40 @@ public enum PageOrientation
     Landscape
 }
 
+public enum PageNumberPosition
+{
+    BottomRight,
+    BottomCenter,
+    BottomLeft,
+    TopRight,
+    TopCenter,
+    TopLeft
+}
+
+public enum PageDisplayMode
+{
+    All,
+    FirstPageOnly,
+    NotFirstPage,
+    LastPageOnly,
+    NotLastPage,
+    OddPages,
+    EvenPages
+}
+
+public enum WatermarkLayer
+{
+    Background,
+    Foreground
+}
+
+public enum ColumnWidthType
+{
+    Constant,
+    Relative,
+    Auto
+}
+
 public enum UnitType
 {
     Mm,

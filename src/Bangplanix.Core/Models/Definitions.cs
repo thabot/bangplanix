@@ -210,9 +210,22 @@ public sealed class ElementDefinition
     [JsonPropertyName("cornerRadius")]
     public double CornerRadius { get; set; }
 
+    [JsonPropertyName("canGrow")]
+    public bool CanGrow { get; set; }
+
+    [JsonPropertyName("ensureSpace")]
+    public double EnsureSpace { get; set; }
+
+    [JsonPropertyName("showOnPages")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public PageDisplayMode ShowOnPages { get; set; } = PageDisplayMode.All;
+
     [JsonPropertyName("chart")]
     public ChartDefinition? Chart { get; set; }
 
     [JsonPropertyName("sparkline")]
     public SparklineDefinition? Sparkline { get; set; }
+
+    [JsonPropertyName("table")]
+    public TableDefinition? Table { get; set; }
 }

@@ -7,6 +7,16 @@ public sealed class BandDefinition
     [JsonPropertyName("height")]
     public double Height { get; set; }
 
+    [JsonPropertyName("canGrow")]
+    public bool CanGrow { get; set; }
+
+    [JsonPropertyName("ensureSpace")]
+    public double EnsureSpace { get; set; }
+
+    [JsonPropertyName("showOnPages")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public PageDisplayMode ShowOnPages { get; set; } = PageDisplayMode.All;
+
     [JsonPropertyName("keepTogether")]
     public bool KeepTogether { get; set; }
 
@@ -24,6 +34,16 @@ public sealed class GroupBandDefinition
 
     [JsonPropertyName("height")]
     public double Height { get; set; }
+
+    [JsonPropertyName("canGrow")]
+    public bool CanGrow { get; set; }
+
+    [JsonPropertyName("ensureSpace")]
+    public double EnsureSpace { get; set; }
+
+    [JsonPropertyName("showOnPages")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public PageDisplayMode ShowOnPages { get; set; } = PageDisplayMode.All;
 
     [JsonPropertyName("repeatOnEveryPage")]
     public bool RepeatOnEveryPage { get; set; }
@@ -87,4 +107,7 @@ public sealed class ReportDefinition
 
     [JsonPropertyName("bands")]
     public BandsDefinition Bands { get; set; } = new();
+
+    [JsonPropertyName("watermark")]
+    public WatermarkDefinition? Watermark { get; set; }
 }

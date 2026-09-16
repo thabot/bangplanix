@@ -72,6 +72,21 @@ LogEntry("Bangplanix Engine starting up (.NET 10 / Alpine Linux)...");
 
 // Commercial License Enforcer
 var licenseEnforcer = new CommercialLicenseEnforcer();
+string? envLicenseKey = Environment.GetEnvironmentVariable("BANGPLANIX_LICENSE_KEY")
+    ?? Environment.GetEnvironmentVariable("LICENSE_KEY");
+
+if (!string.IsNullOrWhiteSpace(envLicenseKey))
+{
+    var initResult = licenseEnforcer.ApplyLicenseToken(envLicenseKey, Environment.ProcessorCount);
+    if (initResult.IsValid)
+    {
+        LogEntry($"[INFO] Commercial License activated from environment variable. Tier: {initResult.ActiveTier} (Licensed To: {initResult.Payload?.CustomerName ?? "Commercial Customer"})");
+    }
+    else
+    {
+        LogEntry($"[WARN] License activation from environment variable failed: {initResult.StatusMessage}");
+    }
+}
 
 var app = builder.Build();
 
