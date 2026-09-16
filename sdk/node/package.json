@@ -11,5 +11,5 @@
   },
   "keywords": ["reporting", "pdf", "xlsx", "bangplanix", "grpc", "charts"],
   "author": "Thabot / Bangplanix Team",
-  "license": "Apache-2.0"
+  "license": "MIT"
 }

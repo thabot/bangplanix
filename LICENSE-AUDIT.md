@@ -41,5 +41,8 @@
 ## 🔒 Legal & Compliance Summary
 
 1. **Commercial Embedding Safety:** No code or binary in the Bangplanix engine contains GNU General Public License (GPL), Affero General Public License (AGPL), or Lesser General Public License (LGPL) code.
-2. **Proprietary & OEM Friendly:** Enterprise customers and OEM partners can safely bundle, distribute, and embed Bangplanix inside proprietary SaaS platforms and air-gapped on-premise appliances without triggering any viral copyleft obligations.
-3. **Cryptographic Freedom:** All cryptographic algorithms (AES-256-GCM, HMAC-SHA512, Ed25519, NIST Post-Quantum FIPS 204 ML-DSA-65) utilize standard .NET cryptographic primitives and unencumbered open algorithms.
+2. **Hybrid Licensing Architecture:**
+   - **Client SDKs (C#, Node.js, Python, Go, Java):** **100% MIT Licensed** — allowing unrestricted adoption and embedding within any proprietary commercial application without fear of licensing contagion.
+   - **Core Engine & Server:** Governed by the **Bangplanix Community License** (free for businesses with revenue < $1M USD and ≤ 4 CPU cores) and **Commercial Subscription** (for enterprise deployments).
+3. **Proprietary & OEM Friendly:** Enterprise customers and OEM partners can safely bundle, distribute, and embed Bangplanix inside proprietary SaaS platforms and air-gapped on-premise appliances without triggering any viral copyleft obligations.
+4. **Cryptographic Freedom:** All cryptographic algorithms (AES-256-GCM, HMAC-SHA512, Ed25519, NIST Post-Quantum FIPS 204 ML-DSA-65) utilize standard .NET cryptographic primitives and unencumbered open algorithms.

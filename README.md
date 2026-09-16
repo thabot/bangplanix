@@ -1,10 +1,11 @@
 # 🚀 Bangplanix — High-Performance Enterprise Reporting Engine
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0%20(Native%20AOT)-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-Community%20%7C%20Commercial-blue.svg)](LICENSE.md)
+[![SDK License](https://img.shields.io/badge/SDKs-MIT-brightgreen.svg)](LICENSE.md)
 [![Tests](https://img.shields.io/badge/Tests-428%2F428%20Passed%20(100%25)-success)](https://github.com/thabot/bangplanix/actions)
 [![Architecture](https://img.shields.io/badge/Architecture-Zero--GC%20%7C%20SIMD-orange)](GETTING-STARTED.md)
-[![Zero Copyleft](https://img.shields.io/badge/Compliance-100%25%20Permissive-brightgreen)](LICENSE-AUDIT.md)
+[![Zero Copyleft](https://img.shields.io/badge/Compliance-100%25%20Zero%20Copyleft-brightgreen)](LICENSE-AUDIT.md)
 
 [![Docker Image](https://img.shields.io/badge/Docker%20Hub-thabot%2Fbangplanix-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/thabot/bangplanix)
 [![NuGet](https://img.shields.io/badge/NuGet-Bangplanix.Client-004880?logo=nuget&logoColor=white)](https://www.nuget.org/packages/Bangplanix.Client/)
@@ -326,5 +327,8 @@ Bangplanix is available under **Dual Licensing**:
 ---
 
 ## 📜 License & Compliance
-
-Bangplanix is released under the **MIT License** for community evaluation. For commercial licenses and high-core cluster licensing, see [PRICING.md](./PRICING.md) and [LICENSE-COMMERCIAL.md](./LICENSE-COMMERCIAL.md).
+ 
+Bangplanix operates on a **modern hybrid licensing model** designed for frictionless developer adoption:
+* 🔌 **Client SDKs (C#, Node.js, Python, Go, Java):** **100% MIT Licensed** — unrestricted, open, and safe to embed in any commercial application.
+* 🚀 **Core Engine & Server:** **Bangplanix Community License** (Free for individuals, open-source projects, and businesses with annual gross revenue < $1,000,000 USD running on ≤ 4 CPU cores).
+* 💎 **Commercial & Enterprise:** Organizations with annual revenue ≥ $1,000,000 USD, or requiring high CPU core quotas and enterprise modules (Thai e-Tax Invoice, PAdES), require a Commercial License. See [PRICING.md](./PRICING.md) and [LICENSE-COMMERCIAL.md](./LICENSE-COMMERCIAL.md).
