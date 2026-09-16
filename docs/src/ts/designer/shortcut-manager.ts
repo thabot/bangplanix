@@ -49,9 +49,22 @@ export class ShortcutManager {
 
     // Delete or Backspace (Delete selected)
     if (e.key === 'Delete' || e.key === 'Backspace') {
-      const activeEl = document.activeElement;
-      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-        return false; // Don't delete canvas element when typing in text input
+      const target = e.target as HTMLElement | null;
+      let activeEl: Element | null = typeof document !== 'undefined' ? document.activeElement : null;
+      if (!activeEl && (target as any)?.shadowRoot?.activeElement) {
+        activeEl = (target as any).shadowRoot.activeElement;
+      }
+      while (activeEl && (activeEl as HTMLElement).shadowRoot && (activeEl as HTMLElement).shadowRoot?.activeElement) {
+        activeEl = (activeEl as HTMLElement).shadowRoot!.activeElement;
+      }
+      
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      const isInput = (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)) ||
+                      (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) ||
+                      path.some((el: any) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA' || el?.isContentEditable);
+
+      if (isInput) {
+        return false; // Don't delete canvas element when typing in text input inside or outside Shadow DOM
       }
       e.preventDefault();
       this.trigger('delete');

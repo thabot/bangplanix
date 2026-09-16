@@ -17,5 +17,7 @@
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
     <PackageReference Include="ZXing.Net" />
     <PackageReference Include="QRCoder" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
 </Project>

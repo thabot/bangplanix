@@ -2,15 +2,15 @@
 
 **Version 1.0 — Effective Date: September 12, 2026**
 
-This Commercial License Agreement (the "Agreement") is entered into between **Bangplanix Technologies** ("Licensor") and the entity or individual purchasing a commercial subscription ("Licensee").
+This Commercial License Agreement (the "Agreement") is entered into between **Bangplanix Technologies** ("Licensor") and the entity or individual purchasing a commercial subscription ("Licensee") when Licensee does not qualify for or exceeds the criteria of the free Bangplanix Community License (e.g. annual gross revenue >= USD $1,000,000, > 4 CPU cores, or requiring enterprise certified features).
 
 ---
 
 ### 1. Grant of License
 Subject to the terms and conditions of this Agreement and payment of applicable license fees:
-- **Developer Pro Tier:** Licensor grants Licensee a non-exclusive, worldwide, non-transferable license to install and execute the Software on systems utilizing up to eight (8) CPU cores for internal business use or non-redistributed SaaS applications.
-- **Enterprise Cloud Tier:** Licensor grants Licensee a non-exclusive, worldwide license to deploy the Software across unlimited CPU cores, containers, and Kubernetes pods for internal and customer-facing multi-tenant applications.
-- **OEM Sovereign Tier:** Licensor grants Licensee a royalty-free, worldwide right to bundle, embed, white-label, and redistribute the Software as an integrated component of Licensee's commercial applications and hardware appliances.
+- **Professional Tier:** Licensor grants Licensee a non-exclusive, worldwide, non-transferable license to install and execute the Software on systems utilizing up to sixteen (16) CPU cores for internal business use, customer-facing portals, or non-redistributed SaaS applications.
+- **Enterprise Sovereign Tier:** Licensor grants Licensee a non-exclusive, worldwide license to deploy the Software across unlimited CPU cores, containers, and Kubernetes pods for internal and customer-facing multi-tenant applications, including Thai e-Tax Invoice (ETDA มธอ. 3-2560) and PAdES digital signatures.
+- **OEM Sovereign Tier:** Licensor grants Licensee a royalty-free, worldwide right to bundle, embed, white-label, and redistribute the Software as an integrated component of Licensee's commercial applications and hardware appliances with 100% offline air-gapped cryptographic validation.
 
 ### 2. Restrictions
 Unless expressly permitted under an OEM Sovereign contract, Licensee shall not:

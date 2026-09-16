@@ -75,13 +75,20 @@ export class BangplanixClient {
         const buffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || (payload.format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/pdf');
 
+        const uint8Data = new Uint8Array(buffer);
         return {
-          data: new Uint8Array(buffer),
+          data: uint8Data,
           format: payload.format,
           contentType,
           length: buffer.byteLength,
           correlationId,
-          durationMs: Date.now() - startTime
+          durationMs: Date.now() - startTime,
+          toBase64() {
+            return Buffer.from(uint8Data).toString('base64');
+          },
+          toStream() {
+            return Readable.from(Buffer.from(uint8Data));
+          }
         };
       } catch (err) {
         lastError = err;
@@ -107,6 +114,19 @@ export class BangplanixClient {
       ...result,
       filePath: outputPath
     };
+  }
+
+  async renderToBase64(request) {
+    const result = await this.renderReport(request);
+    return {
+      ...result,
+      base64: result.toBase64()
+    };
+  }
+
+  async renderToStream(request) {
+    const result = await this.renderReport(request);
+    return result.toStream();
   }
 
   async renderBatch(requests, concurrencyLimit = 4) {

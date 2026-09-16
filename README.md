@@ -1,10 +1,11 @@
 # 🚀 Bangplanix — High-Performance Enterprise Reporting Engine
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0%20(Native%20AOT)-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-Community%20%7C%20Commercial-blue.svg)](LICENSE.md)
+[![SDK License](https://img.shields.io/badge/SDKs-MIT-brightgreen.svg)](LICENSE.md)
 [![Tests](https://img.shields.io/badge/Tests-428%2F428%20Passed%20(100%25)-success)](https://github.com/thabot/bangplanix/actions)
 [![Architecture](https://img.shields.io/badge/Architecture-Zero--GC%20%7C%20SIMD-orange)](GETTING-STARTED.md)
-[![Zero Copyleft](https://img.shields.io/badge/Compliance-100%25%20Permissive-brightgreen)](LICENSE-AUDIT.md)
+[![Zero Copyleft](https://img.shields.io/badge/Compliance-100%25%20Zero%20Copyleft-brightgreen)](LICENSE-AUDIT.md)
 
 [![Docker Image](https://img.shields.io/badge/Docker%20Hub-thabot%2Fbangplanix-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/thabot/bangplanix)
 [![NuGet](https://img.shields.io/badge/NuGet-Bangplanix.Client-004880?logo=nuget&logoColor=white)](https://www.nuget.org/packages/Bangplanix.Client/)
@@ -57,21 +58,37 @@
 
 ---
 
-## 🚀 Quick Start in 30 Seconds
+## 🚀 3 Execution Modes: Choose What Fits Your Stack
 
-### 1. Launch with Docker Compose
-```bash
-docker compose up -d
+Bangplanix offers **3 flexible execution modes**:
+
+### 📦 Mode 1: In-Process Embedded C# Library (.NET 8/9/10 Native)
+```csharp
+using Bangplanix.Core;
+using Bangplanix.Rendering.SkiaSharp;
+
+var template = ReportTemplate.LoadFromJsonFile("templates/commercial-invoice-ubl.bpx");
+var engine = new ReportEngine();
+var result = await engine.RenderAsync(template, myDataJson, ExportFormat.Pdf);
+await File.WriteAllBytesAsync("invoice.pdf", result.ToByteArray());
 ```
 
-Access the service immediately:
-* **Web Management Portal:** [`http://localhost:9545`](http://localhost:9545)
-* **High-Speed gRPC Endpoint:** `localhost:9546`
-
-### 2. Verify System Health with System Doctor
+### 💻 Mode 2: Standalone Local CLI & Native AOT Binary (Zero Docker)
 ```bash
-dotnet run --project tools/Bangplanix.Cli -- doctor
+# Render PDF directly with sub-10ms latency
+bangplanix render -t templates/commercial-invoice-ubl.bpx -d data.json -o invoice.pdf
+
+# Run diagnostic health check
+bangplanix doctor
 ```
+
+### 🐳 Mode 3: Docker Microservice & Polyglot SDKs
+```bash
+docker run -d -p 9545:9545 -p 9546:9546 \
+  -v $(pwd)/volumes/templates:/app/volumes/templates \
+  ghcr.io/thabot/bangplanix:latest
+```
+Access Web Portal at [`http://localhost:9545/portal`](http://localhost:9545/portal) (Default Login: `admin` / `bangplanix2026!`).
 
 ---
 
@@ -326,5 +343,8 @@ Bangplanix is available under **Dual Licensing**:
 ---
 
 ## 📜 License & Compliance
-
-Bangplanix is released under the **MIT License** for community evaluation. For commercial licenses and high-core cluster licensing, see [PRICING.md](./PRICING.md) and [LICENSE-COMMERCIAL.md](./LICENSE-COMMERCIAL.md).
+ 
+Bangplanix operates on a **modern hybrid licensing model** designed for frictionless developer adoption:
+* 🔌 **Client SDKs (C#, Node.js, Python, Go, Java):** **100% MIT Licensed** — unrestricted, open, and safe to embed in any commercial application.
+* 🚀 **Core Engine & Server:** **Bangplanix Community License** (Free for individuals, open-source projects, and businesses with annual gross revenue < $1,000,000 USD running on ≤ 4 CPU cores).
+* 💎 **Commercial & Enterprise:** Organizations with annual revenue ≥ $1,000,000 USD, or requiring high CPU core quotas and enterprise modules (Thai e-Tax Invoice, PAdES), require a Commercial License. See [PRICING.md](./PRICING.md) and [LICENSE-COMMERCIAL.md](./LICENSE-COMMERCIAL.md).

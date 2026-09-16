@@ -13,7 +13,7 @@ This document tracks planned architectural milestones, upcoming capabilities, an
 | **1. Interactive Visual AI Designer UI & Server AI Proxy** | AI Engine Core (C#/.NET & JS) is functional; Ribbon buttons, chat dialog, and `/api/v1/ai/*` server endpoints are staged | **v1.1.0** | Web UI Assistant in `<bangplanix-designer>`, Chat modal, BYOK settings modal, Server AI REST proxy |
 | **2. Production Cloud Storage & Email Bursting Channels** | Bursting Slicing & Cron Engine functional; Delivery channels use simulation stubs (`Task.Delay(5)`) | **v1.1.0** | MailKit production SMTP client, AWS S3 SigV4/SDK driver, Azure Blob storage client, SSH.NET SFTP driver |
 | **3. Cryptographic PAdES Digital Signatures & Certified RFC 3161 TSA** | PDF Signature structure tree and ETDA XML generation functional; Uses zero-padded SHA-256 placeholder & text token | **v1.1.0** | RFC 5652 PKCS#7 / CMS detached signing with X.509 cert chains, Cloud HSM support, Real RFC 3161 TSP HTTP client |
-| **4. Web Management Portal GUI Mounting** | HTML Portal Dashboard implemented in `ManagementPortalServer.cs`; `Program.cs` currently serves JSON status | **v1.1.0** | Route wiring in `Program.cs` mounting GUI dashboard at `GET /` and `GET /portal` with live telemetry |
+| **4. Web Management Portal GUI Mounting & Database Storage** | Fully mounted in `Program.cs` at `GET /`, `GET /portal` with SQLite/Postgres DB, File Manager & Converter | **v1.1.0** *(Completed)* | Route wiring in `Program.cs` mounting GUI dashboard at `GET /` and `GET /portal` with live telemetry, container files, and web converter |
 | **5. Kubernetes GitOps Operator Daemon Controller** | `BangplanixReportJob` CRD manifests defined in `deploy/k8s/` | **v1.2.0** | Active Kubernetes Controller Daemon (Go / .NET Worker) reconciling CRDs for automated ArgoCD/Flux GitOps pipelines |
 | **6. Polyglot Standalone Published SDK Packages** | 5 Official SDKs available (.NET, TS, Python, Go, Java); PHP, Dart, Rust, Ruby supported via REST HTTP | **v1.2.0** | Official published packages: Composer (`bangplanix/client`), pub.dev (`bangplanix`), crates.io (`bangplanix`), RubyGems (`bangplanix`) |
 
@@ -104,13 +104,34 @@ Upgrade current hash-placeholder and text-token simulations to true cryptographi
 
 ---
 
-### 🖥️ 5. Web Management Portal GUI Mounting in Server Entrypoint
-
-Connect the existing HTML Management Portal Dashboard into the running server:
-
-- [ ] **Server Host Route Wiring (`Bangplanix.Server/Program.cs`):**
-  - Mount `ManagementPortalServer` directly to `GET /` (when requested by a browser) and `GET /portal` / `GET /admin`.
-  - Display live telemetry, Kestrel server uptime, active worker queues, license status, and system metrics in an interactive web dashboard instead of static JSON.
+### 🖥️ 5. Web Management Portal GUI Mounting, Storage & Advanced Tools (`Bangplanix.Server/Program.cs`)
+- [x] **Server Host Route Wiring & Content Negotiation:**
+  - Mounted `ManagementPortalServer` directly to `GET /` (when requested by a browser via `Accept: text/html`), `GET /portal`, and `GET /admin`.
+  - Preserves 100% JSON status backward compatibility for REST API / cURL clients at `GET /`.
+- [x] **Dual Database Storage Layer (SQLite Default & PostgreSQL Option):**
+  - Out-of-the-box persistent storage via **SQLite** (`/app/volumes/data/portal.db`) with zero external infrastructure required.
+  - Enterprise clustering option via **PostgreSQL** configured via `BANGPLANIX_PORTAL_DB_TYPE=postgres` and `BANGPLANIX_PORTAL_DB_CONNECTION`.
+  - Automated schema migration for users, sessions, and audit trail logs.
+- [x] **Authentication & Auto-Seeded Default Credentials:**
+  - Secure PBKDF2/SHA-256 hashed password verification and tokenized session management (`POST /api/v1/auth/login`, `logout`, `status`).
+  - Auto-seeded initial administrator account (`admin` / `bangplanix2026!`) with ENV override support.
+  - Full functional parity and UI accessibility for both Guest mode and Logged-in Admin mode.
+- [x] **Container Volume File Manager & Security Sandbox:**
+  - Full GUI and REST API (`GET/POST/DELETE /api/v1/files`) managing `/templates`, `/data`, `/fonts`, and `/logs`.
+  - 100% strict Path Traversal protection preventing directory escape attacks (`../` / `..\`).
+- [x] **Web Report Converter Studio:**
+  - In-browser Drag & Drop converter supporting 21 legacy report engines (SSRS `.rdl`, Crystal `.rpt.xml`, Jaspersoft `.jrxml`, FastReport `.frx`, DevExpress `.repx`, Stimulsoft `.mrt`).
+  - Instant `.bpx` schema preview, single-click download, and direct save into container `/templates`.
+- [x] **Interactive Report Playground & Test Sandbox:**
+  - Live in-browser rendering to PDF (with embedded viewer iframe) and Excel (XLSX download) from container templates or custom JSON.
+- [x] **Live Server & Worker Logs Streamer:**
+  - Real-time in-browser log streaming (`GET /api/v1/logs`) with dynamic keyword/level filtering (`[INFO]`, `[WARN]`, `[ERROR]`).
+- [x] **Online Commercial License Activation:**
+  - Runtime license tier status inspector and online token applicator (`POST /api/v1/license/activate`) without server restart.
+- [x] **Database Connection Health & Query Tester:**
+  - Ping latency measurement and query connectivity verification for PostgreSQL, SQL Server, MySQL, and SQLite.
+- [x] **System Settings & Installed Fonts Inspector:**
+  - Runtime environment telemetry and real-time Thai/global TTF/OTF font discovery in `/app/volumes/fonts`.
 
 ---
 

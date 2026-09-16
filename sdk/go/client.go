@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -34,6 +35,24 @@ type RenderResponse struct {
 	Length        int
 	CorrelationID string
 	DurationMs    int64
+}
+
+func (r *RenderResponse) ToBase64() string {
+	return base64.StdEncoding.EncodeToString(r.Data)
+}
+
+func (r *RenderResponse) ToReader() io.Reader {
+	return bytes.NewReader(r.Data)
+}
+
+func (r *RenderResponse) SaveToFile(filePath string) error {
+	dir := filepath.Dir(filePath)
+	if dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(filePath, r.Data, 0644)
 }
 
 type BatchResult struct {

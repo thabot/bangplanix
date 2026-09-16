@@ -10,7 +10,14 @@ namespace Bangplanix.Engine.Licensing;
 /// </summary>
 public sealed class CommercialLicenseEnforcer
 {
-    private static readonly byte[] DefaultPublicKey = "bangplanix_master_pub_key_2026_ed25519_dilithium"u8.ToArray();
+    public const string OfficialPublicKeyPem = """
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEifypBfJuRuE6r/q2tyBccAUvn+gE
++zb+MXPSdh4GANAqfadgiqBU3BAFa5olWD2DIZF88cBb8kgYskZuHjKkYg==
+-----END PUBLIC KEY-----
+""";
+
+    private static readonly byte[] DefaultPublicKey = Encoding.UTF8.GetBytes(OfficialPublicKeyPem);
     private readonly ILicenseSignatureVerifier _verifier;
     private readonly byte[] _publicKeyBytes;
     private LicensePayload? _currentPayload;
