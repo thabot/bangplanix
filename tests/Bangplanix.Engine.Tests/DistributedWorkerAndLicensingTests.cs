@@ -143,14 +143,30 @@ public sealed class DistributedWorkerAndLicensingTests
         byte[] privateKey = "bangplanix_master_pub_key_2026_ed25519_dilithium"u8.ToArray();
         var enforcer = new CommercialLicenseEnforcer(publicKeyBytes: privateKey);
 
-        // Community default
+        // Community default (Unwatermarked production output for < $1M revenue)
         var communityResult = enforcer.ApplyLicenseToken(null, currentHostCores: 4);
         Assert.True(communityResult.IsValid);
         Assert.Equal(LicenseTier.Community, communityResult.ActiveTier);
-        Assert.True(enforcer.RequiresWatermark());
+        Assert.False(enforcer.RequiresWatermark());
         Assert.False(enforcer.IsFeatureAllowed("AiSuite"));
 
-        // Generate Signed Pro License (Max 8 cores)
+        // Evaluation license with explicit watermarking enabled
+        var evalPayload = new LicensePayload
+        {
+            LicenseId = "LIC-EVAL-001",
+            CustomerName = "Evaluation Client",
+            CustomerEmail = "eval@client.com",
+            Tier = LicenseTier.Professional,
+            MaxAllowedCores = 8,
+            EnableWatermarking = true,
+            ExpiresAtUtc = DateTime.UtcNow.AddMonths(1)
+        };
+        string signedEvalToken = CommercialLicenseEnforcer.GenerateSignedToken(evalPayload, privateKey);
+        var evalResult = enforcer.ApplyLicenseToken(signedEvalToken, currentHostCores: 8);
+        Assert.True(evalResult.IsValid);
+        Assert.True(enforcer.RequiresWatermark());
+
+        // Generate Signed Pro License (Max 8 cores, Unwatermarked)
         var proPayload = new LicensePayload
         {
             LicenseId = "LIC-PRO-001",
@@ -177,6 +193,7 @@ public sealed class DistributedWorkerAndLicensingTests
         var coreExceededResult = enforcer.ApplyLicenseToken(signedProToken, currentHostCores: 16);
         Assert.False(coreExceededResult.IsValid);
         Assert.True(coreExceededResult.CoreLimitExceeded);
+        Assert.True(enforcer.RequiresWatermark()); // Invalid/exceeded state requires watermark
 
         // Generate Signed Enterprise License (Unlimited Cores + AI Suite)
         var entPayload = new LicensePayload
@@ -222,11 +239,13 @@ public sealed class DistributedWorkerAndLicensingTests
 
         Assert.False(result.IsValid);
         Assert.True(result.IsExpired);
+        Assert.True(enforcer.RequiresWatermark());
 
         // Tampered token
         string tamperedToken = expiredToken[..^4] + "AAAA";
         var tamperedResult = enforcer.ApplyLicenseToken(tamperedToken);
         Assert.False(tamperedResult.IsValid);
+        Assert.True(enforcer.RequiresWatermark());
     }
 
     [Fact]
@@ -282,6 +301,40 @@ AwEHoUQDQgAEifypBfJuRuE6r/q2tyBccAUvn+gE+zb+MXPSdh4GANAqfadgiqBU
         var tamperedResult = enforcer.ApplyLicenseToken(tamperedToken);
         Assert.False(tamperedResult.IsValid);
         Assert.Equal(LicenseTier.Community, tamperedResult.ActiveTier);
+    }
+
+    [Fact]
+    public void CommercialLicenseEnforcer_ShouldHandleEnvironmentVariableActivation()
+    {
+        const string testPrivateKeyPem = """
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEICN10/9dT0eOWs3249mrTrCQujFEH99NvuZEyEtCw3L7oAoGCCqGSM49
+AwEHoUQDQgAEifypBfJuRuE6r/q2tyBccAUvn+gE+zb+MXPSdh4GANAqfadgiqBU
+3BAFa5olWD2DIZF88cBb8kgYskZuHjKkYg==
+-----END EC PRIVATE KEY-----
+""";
+        var enforcer = new CommercialLicenseEnforcer();
+
+        var payload = new LicensePayload
+        {
+            LicenseId = "BPX-ENV-PRO-2026",
+            CustomerName = "Env Config Corp",
+            CustomerEmail = "devops@envcorp.com",
+            Tier = LicenseTier.Professional,
+            MaxAllowedCores = 16,
+            EnableWatermarking = false,
+            ExpiresAtUtc = DateTime.UtcNow.AddYears(1)
+        };
+
+        byte[] privateKeyBytes = System.Text.Encoding.UTF8.GetBytes(testPrivateKeyPem);
+        string token = CommercialLicenseEnforcer.GenerateSignedToken(payload, privateKeyBytes);
+
+        // Simulate reading environment variable
+        var result = enforcer.ApplyLicenseToken(token, currentHostCores: 8);
+        Assert.True(result.IsValid);
+        Assert.Equal(LicenseTier.Professional, result.ActiveTier);
+        Assert.Equal("Env Config Corp", result.Payload?.CustomerName);
+        Assert.False(enforcer.RequiresWatermark());
     }
 
     // --- 4. Management Portal Telemetry & Health Checks (Task 4.4.4) ---
