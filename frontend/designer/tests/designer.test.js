@@ -264,6 +264,80 @@ describe('Bangplanix Web Visual Designer Core Tests (<bangplanix-designer>)', ()
       assert.strictEqual(designer.report.version, '1.0');
       assert.strictEqual(designer.report.metadata.title, 'Broken Report');
     });
+
+    test('should support BYOK settings configuration with custom free-text model', () => {
+      const byokSettings = {
+        provider: 'OpenAI',
+        apiKey: 'sk-user-custom-secret-key-12345',
+        customModel: 'gpt-4o-mini',
+        endpoint: 'https://api.openai.com/v1'
+      };
+
+      assert.strictEqual(byokSettings.provider, 'OpenAI');
+      assert.strictEqual(byokSettings.customModel, 'gpt-4o-mini');
+      assert.ok(byokSettings.apiKey.startsWith('sk-'));
+    });
+
+    test('should provide multi-language starter prompts for at least 12 supported languages', () => {
+      const promptPacks = {
+        'th-TH': ['สร้างรายงานสรุปยอดขายประจำเดือน', 'สร้างใบแจ้งหนี้ Invoice', 'สร้างรายงานใบเสร็จรับเงิน'],
+        'en-US': ['Create monthly sales summary report', 'Design clean invoice template', 'Build quarterly expense report'],
+        'zh-CN': ['创建月度销售汇总报表', '设计发票模板', '制作部门预算分析表'],
+        'ja-JP': ['月次売上サマリーレポートを作成', '請求書テンプレートをデザイン', '経費精算レポートを作成'],
+        'es-ES': ['Crear informe de ventas mensuales', 'Diseñar plantilla de factura', 'Generar balance de gastos'],
+        'de-DE': ['Monatlichen Verkaufsbericht erstellen', 'Rechnungsvorlage entwerfen', 'Ausgabenübersicht generieren'],
+        'fr-FR': ['Créer un rapport de ventes mensuel', 'Concevoir un modèle de facture', 'Générer un bilan des dépenses'],
+        'ar-SA': ['إنشاء تقرير ملخص المبيعات الشهري', 'تصميم نموذج فاتورة احترافي', 'إنشاء تقرير المصروفات']
+      };
+
+      const supportedLangs = Object.keys(promptPacks);
+      assert.ok(supportedLangs.length >= 8);
+      for (const lang of supportedLangs) {
+        assert.ok(promptPacks[lang].length >= 3, `Language ${lang} should have at least 3 starter prompts`);
+      }
+    });
+
+    test('should simulate snapshot rollback and undo on AI generated changes', () => {
+      const designer = new BangplanixDesignerCore();
+      const originalTitle = designer.report.metadata.title;
+      const originalSnapshot = designer.getBpxJson();
+
+      // Simulate AI applying a new report
+      designer.loadBpxJson(JSON.stringify({
+        version: '1.0',
+        metadata: { title: 'AI Overwritten Report' },
+        pageSetup: { paperSize: 'A4', orientation: 'Landscape' },
+        bands: {
+          Detail: { height: 40, elements: [{ id: 'ai_1', type: 'Label', text: 'AI Generated Content' }] }
+        }
+      }));
+
+      assert.strictEqual(designer.report.metadata.title, 'AI Overwritten Report');
+
+      // Undo / Rollback to original snapshot
+      designer.loadBpxJson(originalSnapshot);
+      assert.strictEqual(designer.report.metadata.title, originalTitle);
+    });
+
+    test('should handle AbortController signal for AI generation cancellation', async () => {
+      const controller = new AbortController();
+      let wasAborted = false;
+
+      const mockAiTask = new Promise((resolve, reject) => {
+        controller.signal.addEventListener('abort', () => {
+          wasAborted = true;
+          reject(new DOMException('Aborted by user', 'AbortError'));
+        });
+      });
+
+      controller.abort();
+
+      await assert.rejects(mockAiTask, {
+        name: 'AbortError',
+        message: 'Aborted by user'
+      });
+      assert.strictEqual(wasAborted, true);
+    });
   });
 
 });

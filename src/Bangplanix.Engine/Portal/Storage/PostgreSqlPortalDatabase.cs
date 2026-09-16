@@ -41,6 +41,18 @@ public sealed class PostgreSqlPortalDatabase : IPortalDatabase
                 details TEXT NOT NULL,
                 timestamp_utc TIMESTAMPTZ NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS portal_ai_history (
+                id BIGSERIAL PRIMARY KEY,
+                username VARCHAR(100) NOT NULL,
+                prompt_text TEXT NOT NULL,
+                provider VARCHAR(100) NOT NULL,
+                model_name VARCHAR(100) NOT NULL,
+                original_bpx_snapshot TEXT,
+                generated_bpx TEXT NOT NULL,
+                generated_sql TEXT,
+                created_at_utc TIMESTAMPTZ NOT NULL
+            );
         """;
 
         await using var cmd = _dataSource.CreateCommand(ddl);
@@ -178,6 +190,94 @@ public sealed class PostgreSqlPortalDatabase : IPortalDatabase
             ));
         }
         return list;
+    }
+
+    public async Task<long> SaveAiHistoryAsync(
+        string username,
+        string promptText,
+        string provider,
+        string modelName,
+        string? originalBpxSnapshot,
+        string generatedBpx,
+        string? generatedSql,
+        CancellationToken cancellationToken = default)
+    {
+        if (_dataSource == null) await InitializeAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var cmd = _dataSource!.CreateCommand("""
+            INSERT INTO portal_ai_history (username, prompt_text, provider, model_name, original_bpx_snapshot, generated_bpx, generated_sql, created_at_utc)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id;
+        """);
+        cmd.Parameters.AddWithValue(username);
+        cmd.Parameters.AddWithValue(promptText);
+        cmd.Parameters.AddWithValue(provider);
+        cmd.Parameters.AddWithValue(modelName);
+        cmd.Parameters.AddWithValue((object?)originalBpxSnapshot ?? DBNull.Value);
+        cmd.Parameters.AddWithValue(generatedBpx);
+        cmd.Parameters.AddWithValue((object?)generatedSql ?? DBNull.Value);
+        cmd.Parameters.AddWithValue(DateTime.UtcNow);
+
+        var result = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        return Convert.ToInt64(result);
+    }
+
+    public async Task<IReadOnlyList<PortalAiHistory>> GetAiHistoryAsync(string? username = null, int limit = 50, CancellationToken cancellationToken = default)
+    {
+        if (_dataSource == null) await InitializeAsync(cancellationToken).ConfigureAwait(false);
+
+        var list = new List<PortalAiHistory>();
+        await using var cmd = string.IsNullOrWhiteSpace(username)
+            ? _dataSource!.CreateCommand("SELECT id, username, prompt_text, provider, model_name, original_bpx_snapshot, generated_bpx, generated_sql, created_at_utc FROM portal_ai_history ORDER BY id DESC LIMIT $1")
+            : _dataSource!.CreateCommand("SELECT id, username, prompt_text, provider, model_name, original_bpx_snapshot, generated_bpx, generated_sql, created_at_utc FROM portal_ai_history WHERE username = $2 ORDER BY id DESC LIMIT $1");
+
+        cmd.Parameters.AddWithValue(limit);
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            cmd.Parameters.AddWithValue(username);
+        }
+
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            list.Add(new PortalAiHistory(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.GetDateTime(8).ToUniversalTime()
+            ));
+        }
+        return list;
+    }
+
+    public async Task<PortalAiHistory?> GetAiHistoryItemAsync(long id, CancellationToken cancellationToken = default)
+    {
+        if (_dataSource == null) await InitializeAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var cmd = _dataSource!.CreateCommand("SELECT id, username, prompt_text, provider, model_name, original_bpx_snapshot, generated_bpx, generated_sql, created_at_utc FROM portal_ai_history WHERE id = $1 LIMIT 1");
+        cmd.Parameters.AddWithValue(id);
+
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return new PortalAiHistory(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.GetDateTime(8).ToUniversalTime()
+            );
+        }
+        return null;
     }
 
     public async ValueTask DisposeAsync()
