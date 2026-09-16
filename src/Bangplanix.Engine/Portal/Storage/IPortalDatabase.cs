@@ -3,6 +3,7 @@ namespace Bangplanix.Engine.Portal.Storage;
 public sealed record PortalUser(string Username, string PasswordHash, string Role, DateTime CreatedAtUtc);
 public sealed record PortalSession(string Token, string Username, string Role, DateTime ExpiresAtUtc);
 public sealed record PortalAuditLog(long Id, string Action, string Username, string Details, DateTime TimestampUtc);
+public sealed record PortalAiHistory(long Id, string Username, string PromptText, string Provider, string ModelName, string? OriginalBpxSnapshot, string GeneratedBpx, string? GeneratedSql, DateTime CreatedAtUtc);
 
 public interface IPortalDatabase : IAsyncDisposable
 {
@@ -15,4 +16,7 @@ public interface IPortalDatabase : IAsyncDisposable
     Task RevokeSessionAsync(string token, CancellationToken cancellationToken = default);
     Task LogAuditAsync(string action, string username, string details, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PortalAuditLog>> GetAuditLogsAsync(int limit = 50, CancellationToken cancellationToken = default);
+    Task<long> SaveAiHistoryAsync(string username, string promptText, string provider, string modelName, string? originalBpxSnapshot, string generatedBpx, string? generatedSql, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PortalAiHistory>> GetAiHistoryAsync(string? username = null, int limit = 50, CancellationToken cancellationToken = default);
+    Task<PortalAiHistory?> GetAiHistoryItemAsync(long id, CancellationToken cancellationToken = default);
 }
