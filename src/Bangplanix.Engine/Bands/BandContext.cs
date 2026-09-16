@@ -15,6 +15,7 @@ public sealed class BandContext
     public int CurrentRowIndex { get; set; }
     public int CurrentPageNumber { get; set; } = 1;
     public int TotalPages { get; set; } = 1;
+    public float AvailableHeight { get; set; }
     public string? CurrentGroupKey { get; set; }
 
     public object? ResolveExpressionOrValue(string? text, string? expression)
@@ -37,6 +38,18 @@ public sealed class BandContext
         if (expr.Equals("@Globals.TotalPages", StringComparison.OrdinalIgnoreCase))
         {
             return TotalPages;
+        }
+        if (expr.Equals("@Globals.IsFirstPage", StringComparison.OrdinalIgnoreCase))
+        {
+            return CurrentPageNumber == 1;
+        }
+        if (expr.Equals("@Globals.IsLastPage", StringComparison.OrdinalIgnoreCase))
+        {
+            return CurrentPageNumber == TotalPages;
+        }
+        if (expr.Equals("@Context.AvailableHeight", StringComparison.OrdinalIgnoreCase))
+        {
+            return AvailableHeight;
         }
         if (expr.StartsWith("@Parameters.", StringComparison.OrdinalIgnoreCase))
         {

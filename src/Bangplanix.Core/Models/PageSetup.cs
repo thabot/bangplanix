@@ -58,6 +58,25 @@ public sealed class PageSetup
     [JsonPropertyName("margins")]
     public MarginDefinition Margins { get; set; } = new();
 
+    [JsonPropertyName("showPageNumbers")]
+    public bool ShowPageNumbers { get; set; } = false;
+
+    [JsonPropertyName("pageNumberFormat")]
+    public string? PageNumberFormat { get; set; }
+
+    [JsonPropertyName("pageNumberPosition")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public PageNumberPosition PageNumberPosition { get; set; } = PageNumberPosition.BottomRight;
+
+    [JsonPropertyName("pageNumberStyle")]
+    public StyleDefinition? PageNumberStyle { get; set; }
+
+    [JsonPropertyName("continuousHeight")]
+    public bool ContinuousHeight { get; set; } = false;
+
+    [JsonPropertyName("watermark")]
+    public WatermarkDefinition? Watermark { get; set; }
+
     public (double WidthMm, double HeightMm) GetEffectiveDimensionsMm()
     {
         double w = Unit switch
