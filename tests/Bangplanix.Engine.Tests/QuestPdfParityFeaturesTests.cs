@@ -303,4 +303,290 @@ public class QuestPdfParityFeaturesTests
         pdfBytes.Should().NotBeNull();
         pdfBytes.Length.Should().BeGreaterThan(500);
     }
+
+    [Theory]
+    [InlineData(PageNumberPosition.BottomRight)]
+    [InlineData(PageNumberPosition.BottomCenter)]
+    [InlineData(PageNumberPosition.BottomLeft)]
+    [InlineData(PageNumberPosition.TopRight)]
+    [InlineData(PageNumberPosition.TopCenter)]
+    [InlineData(PageNumberPosition.TopLeft)]
+    public async Task AutoPageNumbering_AllPositions_RendersSuccessfully(PageNumberPosition position)
+    {
+        var report = new ReportDefinition
+        {
+            PageSetup = new PageSetup
+            {
+                PaperKind = PaperKind.A4,
+                ShowPageNumbers = true,
+                PageNumberFormat = "Page {page} of {total}",
+                PageNumberPosition = position,
+                PageNumberStyle = new StyleDefinition { FontSize = 8.0, Color = "#333333" }
+            },
+            Bands = new BandsDefinition
+            {
+                Detail = new BandDefinition
+                {
+                    Height = 30.0,
+                    Elements = [new ElementDefinition { Type = ElementType.Text, Text = "Position Test", X = 10, Y = 5, Width = 100, Height = 10 }]
+                }
+            }
+        };
+
+        var renderer = new SkiaPdfRenderer();
+        var pdfBytes = await renderer.RenderToPdfAsync(report);
+
+        pdfBytes.Should().NotBeNull();
+        pdfBytes.Length.Should().BeGreaterThan(500);
+    }
+
+    [Fact]
+    public void DynamicTextWrapping_MixedThaiEnglishNumeric_WrapsAndMeasuresAccurately()
+    {
+        var mixedText = "รหัสสินค้า SKU-994821: Apple MacBook Pro 16\" (M3 Max 128GB RAM 2TB SSD) Space Black ประกันศูนย์ AppleCare+ 3 ปี";
+        using var paint = new SKPaint { TextSize = 12.0f };
+        var lines = SkiaReportCanvas.WrapTextLines(mixedText, paint, 150.0f);
+
+        lines.Should().NotBeEmpty();
+        lines.Count.Should().BeGreaterThan(1, "Long mixed string in narrow width must wrap into multiple lines");
+
+        var measuredHeight = SkiaReportCanvas.MeasureTextHeight(mixedText, 150.0f, new StyleDefinition { FontSize = 12.0 });
+        measuredHeight.Should().BeGreaterThan(20.0f);
+    }
+
+    [Fact]
+    public void DynamicTextWrapping_ExplicitNewlines_CalculatesLineCountAccurately()
+    {
+        var multilineText = "บรรทัดที่ 1: รายการเริ่มต้น\r\nบรรทัดที่ 2: รายละเอียดเพิ่มเติม\nบรรทัดที่ 3: สรุปข้อมูล";
+        using var paint = new SKPaint { TextSize = 10.0f };
+        var lines = SkiaReportCanvas.WrapTextLines(multilineText, paint, 500.0f);
+
+        lines.Count.Should().Be(3);
+        lines[0].Should().Contain("บรรทัดที่ 1");
+        lines[1].Should().Contain("บรรทัดที่ 2");
+        lines[2].Should().Contain("บรรทัดที่ 3");
+    }
+
+    [Fact]
+    public async Task DynamicTextWrapping_TextAlignments_RenderWithoutError()
+    {
+        var report = new ReportDefinition
+        {
+            PageSetup = new PageSetup { PaperKind = PaperKind.A4 },
+            Bands = new BandsDefinition
+            {
+                Detail = new BandDefinition
+                {
+                    Height = 60.0,
+                    Elements =
+                    [
+                        new ElementDefinition
+                        {
+                            Type = ElementType.Text,
+                            Text = "ข้อความชิดซ้าย\nบรรทัดสอง",
+                            X = 10, Y = 5, Width = 50, Height = 20, CanGrow = true,
+                            Style = new StyleDefinition { Align = HorizontalAlign.Left }
+                        },
+                        new ElementDefinition
+                        {
+                            Type = ElementType.Text,
+                            Text = "ข้อความกึ่งกลาง\nบรรทัดสอง",
+                            X = 70, Y = 5, Width = 50, Height = 20, CanGrow = true,
+                            Style = new StyleDefinition { Align = HorizontalAlign.Center }
+                        },
+                        new ElementDefinition
+                        {
+                            Type = ElementType.Text,
+                            Text = "ข้อความชิดขวา\nบรรทัดสอง",
+                            X = 130, Y = 5, Width = 50, Height = 20, CanGrow = true,
+                            Style = new StyleDefinition { Align = HorizontalAlign.Right }
+                        }
+                    ]
+                }
+            }
+        };
+
+        var renderer = new SkiaPdfRenderer();
+        var pdfBytes = await renderer.RenderToPdfAsync(report);
+        pdfBytes.Should().NotBeNull();
+        pdfBytes.Length.Should().BeGreaterThan(500);
+    }
+
+    [Fact]
+    public void TableComponent_ColumnSpanAndCellPadding_CalculatesCorrectLayout()
+    {
+        var table = new TableDefinition
+        {
+            Columns =
+            [
+                new TableColumnDefinition { Width = "50pt" },
+                new TableColumnDefinition { Width = "100pt" },
+                new TableColumnDefinition { Width = "150pt" }
+            ],
+            Rows =
+            [
+                new TableRowDefinition
+                {
+                    Height = 25,
+                    Cells =
+                    [
+                        new TableCellDefinition { Text = "Col 1" },
+                        new TableCellDefinition
+                        {
+                            Text = "Spanning 2 Columns",
+                            ColumnSpan = 2,
+                            Padding = new TablePaddingDefinition { Left = 10, Right = 10, Top = 5, Bottom = 5 },
+                            Border = new BorderDefinition { Width = 1.5, Color = "#FF0000" }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var colWidths = TableRenderer.CalculateColumnWidths(table.Columns, 300.0f, UnitType.Pt);
+        colWidths.Should().Equal([50.0f, 100.0f, 150.0f]);
+
+        var context = new BandContext { Report = new ReportDefinition() };
+        var measuredHeight = TableRenderer.MeasureRowHeight(table.Rows[0], colWidths, UnitType.Pt, context, context.Report);
+        measuredHeight.Should().BeGreaterThanOrEqualTo(25.0f);
+    }
+
+    [Fact]
+    public void FlowControl_EnsureSpace_OnReportFooter_ForcesNewPage()
+    {
+        var report = new ReportDefinition
+        {
+            PageSetup = new PageSetup
+            {
+                PaperKind = PaperKind.A4,
+                Height = 297.0,
+                Margins = new MarginDefinition { Top = 10, Bottom = 10, Left = 10, Right = 10 }
+            },
+            Bands = new BandsDefinition
+            {
+                Detail = new BandDefinition { Height = 250.0 }, // Consumes almost whole page
+                ReportFooter = new BandDefinition
+                {
+                    Height = 40.0,
+                    EnsureSpace = 50.0 // 50mm > remaining space (27mm) -> forces page break to page 2
+                }
+            }
+        };
+
+        var context = new BandContext
+        {
+            Report = report,
+            MainDataRows = [new Dictionary<string, object?> { ["x"] = 1 }]
+        };
+
+        using var stream = new MemoryStream();
+        using var doc = SKDocument.CreatePdf(stream);
+        PaginationEngine.RenderReportPages(report, doc, context);
+        doc.Close();
+
+        context.TotalPages.Should().Be(2, "ReportFooter with EnsureSpace exceeding remaining space must break to page 2");
+    }
+
+    [Fact]
+    public void FlowControl_ShowOnPages_AllModes_MatchCorrectly()
+    {
+        var context = new BandContext { CurrentPageNumber = 2, TotalPages = 4 };
+
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.All, context).Should().BeTrue();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.FirstPageOnly, context).Should().BeFalse();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.NotFirstPage, context).Should().BeTrue();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.EvenPages, context).Should().BeTrue();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.OddPages, context).Should().BeFalse();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.NotLastPage, context).Should().BeTrue();
+        SkiaReportCanvas.IsPageDisplayMatch(PageDisplayMode.LastPageOnly, context).Should().BeFalse();
+    }
+
+    [Fact]
+    public void DynamicContext_Expressions_ResolvesGlobalsCorrectly()
+    {
+        var context = new BandContext
+        {
+            CurrentPageNumber = 1,
+            TotalPages = 5,
+            AvailableHeight = 350.5f,
+            Parameters = new Dictionary<string, object?> { ["Branch"] = "Bangkok HQ" }
+        };
+
+        context.ResolveExpressionOrValue(null, "@Globals.PageNumber").Should().Be(1);
+        context.ResolveExpressionOrValue(null, "@Globals.TotalPages").Should().Be(5);
+        context.ResolveExpressionOrValue(null, "@Globals.IsFirstPage").Should().Be(true);
+        context.ResolveExpressionOrValue(null, "@Globals.IsLastPage").Should().Be(false);
+        context.ResolveExpressionOrValue(null, "@Context.AvailableHeight").Should().Be(350.5f);
+        context.ResolveExpressionOrValue(null, "@Parameters.Branch").Should().Be("Bangkok HQ");
+
+        // Last page check
+        context.CurrentPageNumber = 5;
+        context.ResolveExpressionOrValue(null, "@Globals.IsFirstPage").Should().Be(false);
+        context.ResolveExpressionOrValue(null, "@Globals.IsLastPage").Should().Be(true);
+    }
+
+    [Fact]
+    public async Task Watermark_ForegroundLayer_RendersSuccessfully()
+    {
+        var report = new ReportDefinition
+        {
+            PageSetup = new PageSetup { PaperKind = PaperKind.A4 },
+            Watermark = new WatermarkDefinition
+            {
+                Text = "SAMPLE FOREGROUND",
+                Layer = WatermarkLayer.Foreground,
+                Opacity = 0.3f,
+                RotationAngle = -30.0f
+            },
+            Bands = new BandsDefinition
+            {
+                Detail = new BandDefinition
+                {
+                    Height = 20.0,
+                    Elements = [new ElementDefinition { Type = ElementType.Text, Text = "Underlying Content", X = 10, Y = 10, Width = 100, Height = 10 }]
+                }
+            }
+        };
+
+        var renderer = new SkiaPdfRenderer();
+        var pdfBytes = await renderer.RenderToPdfAsync(report);
+
+        pdfBytes.Should().NotBeNull();
+        pdfBytes.Length.Should().BeGreaterThan(500);
+    }
+
+    [Fact]
+    public async Task ContinuousHeight_ThirtyRows_GeneratesSinglePagePdf()
+    {
+        var report = new ReportDefinition
+        {
+            PageSetup = new PageSetup
+            {
+                Width = 80.0,
+                Unit = UnitType.Mm,
+                ContinuousHeight = true,
+                Margins = new MarginDefinition { Top = 5, Bottom = 5, Left = 5, Right = 5 }
+            },
+            Bands = new BandsDefinition
+            {
+                Detail = new BandDefinition
+                {
+                    Height = 8.0,
+                    Elements = [new ElementDefinition { Type = ElementType.Text, Expression = "@Row.name + ' - ' + @Row.qty", X = 0, Y = 0, Width = 70, Height = 7 }]
+                }
+            }
+        };
+
+        var rows = new List<IDictionary<string, object?>>();
+        for (int i = 1; i <= 30; i++)
+        {
+            rows.Add(new Dictionary<string, object?> { ["name"] = $"Item #{i}", ["qty"] = $"{i} pcs" });
+        }
+
+        var renderer = new SkiaPdfRenderer();
+        var pdfBytes = await renderer.RenderToPdfAsync(report, null, rows);
+
+        pdfBytes.Should().NotBeNull();
+        pdfBytes.Length.Should().BeGreaterThan(1000);
+    }
 }
