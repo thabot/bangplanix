@@ -38,6 +38,9 @@
     <PackageVersion Include="Google.Protobuf" Version="3.29.3" />
     <PackageVersion Include="Grpc.Tools" Version="2.69.0" />
 
+    <!-- Security & Cryptography -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.2" />
+
     <!-- Testing & Benchmarks -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />

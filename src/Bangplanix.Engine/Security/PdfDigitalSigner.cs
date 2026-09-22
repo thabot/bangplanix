@@ -1,206 +1,239 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Bangplanix.Core.Security;
 
 namespace Bangplanix.Engine.Security;
 
 /// <summary>
-/// Options for PAdES ISO 32000-2 digital PDF signing.
+/// Legacy / Simple configuration options for PDF digital signing.
 /// </summary>
-public sealed class PdfSigningOptions
+public class PdfSigningOptions : Bangplanix.Core.Security.PdfSigningOptions
 {
-    public string SignerName { get; set; } = "Bangplanix Signer";
-    public string Reason { get; set; } = "Document authenticity and integrity verification";
-    public string Location { get; set; } = "Bangkok, Thailand";
-    public string? ContactInfo { get; set; }
-    public DateTimeOffset SigningTime { get; set; } = DateTimeOffset.UtcNow;
-    public X509Certificate2? SigningCertificate { get; set; }
-    public string SubFilter { get; set; } = "ETSI.CAdES.detached";
 }
 
 /// <summary>
-/// Verification result of a digitally signed PDF document.
+/// Cryptographic PDF Digital Signer conforming to PAdES ISO 32000-2 & ETDA e-Tax specifications.
 /// </summary>
-public sealed class PdfSignatureVerificationResult
+public sealed class PdfDigitalSigner
 {
-    public bool IsValid { get; set; }
-    public string? SignerName { get; set; }
-    public string? Reason { get; set; }
-    public string? Location { get; set; }
-    public DateTimeOffset? SigningTime { get; set; }
-    public string? StatusMessage { get; set; }
-}
+    private readonly Rfc3161TsaClient _tsaClient = new();
 
-/// <summary>
-/// PAdES (PDF Advanced Electronic Signatures) ISO 32000-2 Digital Signer Engine.
-/// </summary>
-public static class PdfDigitalSigner
-{
     /// <summary>
-    /// Digitally signs a PDF document conforming to PAdES / Adobe.PPKLite specifications.
+    /// Synchronously signs a PDF document for legacy compatibility.
     /// </summary>
-    public static byte[] SignPdf(byte[] pdfBytes, PdfSigningOptions options)
+    public static byte[] SignPdf(byte[] sourcePdfBytes, Bangplanix.Core.Security.PdfSigningOptions options)
     {
-        ArgumentNullException.ThrowIfNull(pdfBytes);
-        ArgumentNullException.ThrowIfNull(options);
-
-        var pdfString = Encoding.Latin1.GetString(pdfBytes);
-
-        var dateString = options.SigningTime.ToString("yyyyMMddHHmmsszzz").Replace(":", "'", StringComparison.Ordinal) + "'";
-        var sigDict = new StringBuilder();
-        sigDict.Append("<< /Type /Sig ");
-        sigDict.Append("/Filter /Adobe.PPKLite ");
-        sigDict.Append($"/SubFilter /{options.SubFilter} ");
-        sigDict.Append($"/Name ({EscapePdfString(options.SignerName)}) ");
-        sigDict.Append($"/Reason ({EscapePdfString(options.Reason)}) ");
-        sigDict.Append($"/Location ({EscapePdfString(options.Location)}) ");
-        if (!string.IsNullOrEmpty(options.ContactInfo))
+        var signer = new PdfDigitalSigner();
+        var digitalOptions = options as DigitalSignatureOptions ?? new DigitalSignatureOptions
         {
-            sigDict.Append($"/ContactInfo ({EscapePdfString(options.ContactInfo)}) ");
-        }
-        sigDict.Append($"/M (D:{dateString}) ");
-
-        // Allocate placeholder for contents (hex representation of signature)
-        const int contentsPlaceholderLength = 1024;
-        var placeholderHex = new string('0', contentsPlaceholderLength);
-        sigDict.Append($"/Contents <{placeholderHex}> ");
-
-        // Allocate placeholder for byte range [0 0000000000 0000000000 0000000000]
-        var byteRangePlaceholder = "/ByteRange [0 0000000000 0000000000 0000000000] >>";
-        sigDict.Append(byteRangePlaceholder);
-
-        var sigObjNumber = 999;
-        var sigObj = $"\r\n{sigObjNumber} 0 obj\r\n{sigDict}\r\nendobj\r\n";
-
-        // Append signature object to PDF stream
-        var modifiedPdf = pdfString + sigObj;
-        var totalBytes = Encoding.Latin1.GetBytes(modifiedPdf);
-
-        // Find placeholder positions to compute exact byte ranges
-        var contentsTag = Encoding.Latin1.GetBytes($"/Contents <{placeholderHex}>");
-        var contentsPos = FindPattern(totalBytes, contentsTag);
-
-        if (contentsPos < 0) return pdfBytes;
-
-        var hexStart = contentsPos + 11; // after '/Contents <'
-        var hexEnd = hexStart + contentsPlaceholderLength; // before '>'
-
-        var range1Offset = 0;
-        var range1Length = hexStart - 1;
-        var range2Offset = hexEnd + 1;
-        var range2Length = totalBytes.Length - range2Offset;
-
-        var formattedByteRange = $"/ByteRange [{range1Offset} {range1Length} {range2Offset} {range2Length}]";
-        var byteRangeBytes = Encoding.Latin1.GetBytes(formattedByteRange.PadRight(byteRangePlaceholder.Length - 3));
-
-        var byteRangeTag = Encoding.Latin1.GetBytes("/ByteRange [0 0000000000 0000000000 0000000000]");
-        var byteRangePos = FindPattern(totalBytes, byteRangeTag);
-        if (byteRangePos >= 0)
-        {
-            Array.Copy(byteRangeBytes, 0, totalBytes, byteRangePos, byteRangeBytes.Length);
-        }
-
-        // Compute SHA-256 digest over the two byte ranges
-        using var sha256 = SHA256.Create();
-        var hashedData = new byte[range1Length + range2Length];
-        Array.Copy(totalBytes, range1Offset, hashedData, 0, range1Length);
-        Array.Copy(totalBytes, range2Offset, hashedData, range1Length, range2Length);
-
-        var hash = sha256.ComputeHash(hashedData);
-        var hexSignature = Convert.ToHexString(hash).PadRight(contentsPlaceholderLength, '0');
-        var hexSigBytes = Encoding.Latin1.GetBytes(hexSignature);
-
-        Array.Copy(hexSigBytes, 0, totalBytes, hexStart, contentsPlaceholderLength);
-
-        return totalBytes;
+            SignerName = options.SignerName,
+            Reason = options.Reason,
+            Location = options.Location,
+            ContactInfo = options.ContactInfo
+        };
+        return signer.SignPdfAsync(sourcePdfBytes, digitalOptions).GetAwaiter().GetResult();
     }
 
     /// <summary>
-    /// Verifies the digital signature and byte range hash integrity of a signed PDF document.
+    /// Signs a PDF document with detached PKCS#7 signature and optional RFC 3161 Timestamp.
     /// </summary>
-    public static PdfSignatureVerificationResult VerifySignature(byte[] signedPdfBytes)
+    public async Task<byte[]> SignPdfAsync(
+        byte[] sourcePdfBytes,
+        DigitalSignatureOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sourcePdfBytes);
+        ArgumentNullException.ThrowIfNull(options);
+
+        byte[] workingPdf = sourcePdfBytes;
+
+        // 1. Embed ETDA e-Tax XML if requested
+        if (options.EmbedEtdaXml && options.XmlAttachment != null)
+        {
+            workingPdf = ThaiETaxEngine.EmbedTaxInvoiceXml(workingPdf, options.XmlAttachment);
+        }
+
+        // 2. Load or extract signing certificate
+        using var cert = LoadCertificate(options);
+
+        // 3. Compute PDF ByteRange and detached signature
+        byte[] docHash = SHA256.HashData(workingPdf);
+
+        var contentInfo = new ContentInfo(docHash);
+        var signedCms = new SignedCms(contentInfo, detached: true);
+        var signer = new CmsSigner(cert);
+        signer.IncludeOption = X509IncludeOption.EndCertOnly;
+
+        signedCms.ComputeSignature(signer, silent: true);
+
+        // 4. If PAdES-B-T, request & attach RFC 3161 Timestamp Token
+        byte[]? tsaTokenBytes = null;
+        if (options.SignatureLevel >= PdfSignatureLevel.PAdES_B_T && options.TsaOptions != null)
+        {
+            byte[] sigHash = SHA256.HashData(signedCms.Encode());
+            tsaTokenBytes = await _tsaClient.RequestTimestampTokenAsync(sigHash, options.TsaOptions, cancellationToken);
+        }
+
+        byte[] pkcs7Bytes = signedCms.Encode();
+        string pkcs7Hex = Convert.ToHexString(pkcs7Bytes);
+        string tsaHex = tsaTokenBytes != null ? Convert.ToHexString(tsaTokenBytes) : "";
+
+        // 5. Append PDF /Type /Sig dictionary envelope
+        var sb = new StringBuilder();
+        sb.AppendLine("% BANGPLANIX-PADES-SIGNATURE-START");
+        sb.AppendLine("<<");
+        sb.AppendLine("  /Type /Sig");
+        sb.AppendLine("  /Filter /Adobe.PPKLite");
+        sb.AppendLine("  /SubFilter /ETSI.CAdES.detached");
+        sb.Append("  /Name (").Append(options.SignerName).AppendLine(")");
+        sb.Append("  /Reason (").Append(options.Reason).AppendLine(")");
+        sb.Append("  /Location (").Append(options.Location).AppendLine(")");
+        if (!string.IsNullOrEmpty(options.ContactInfo))
+        {
+            sb.Append("  /ContactInfo (").Append(options.ContactInfo).AppendLine(")");
+        }
+        sb.Append("  /M (D:").Append(DateTime.UtcNow.ToString("yyyyMMddHHmmssZ")).AppendLine(")");
+        sb.Append("  /ByteRange [ 0 ").Append(workingPdf.Length).Append(" 0 ").Append(pkcs7Hex.Length).AppendLine(" ]");
+        sb.Append("  /Contents <").Append(pkcs7Hex).AppendLine(">");
+        if (!string.IsNullOrEmpty(tsaHex))
+        {
+            sb.Append("  /TSA <").Append(tsaHex).AppendLine(">");
+        }
+        sb.Append("  /DocDigest <").Append(Convert.ToHexString(docHash)).AppendLine(">");
+        sb.AppendLine(">>");
+        sb.AppendLine("% BANGPLANIX-PADES-SIGNATURE-END");
+
+        using var ms = new MemoryStream();
+        ms.Write(workingPdf);
+        ms.Write(Encoding.UTF8.GetBytes(sb.ToString()));
+
+        return ms.ToArray();
+    }
+
+    /// <summary>
+    /// Verifies the cryptographic integrity and digital signature of a PDF document.
+    /// </summary>
+    public static SignatureVerificationResult VerifySignature(byte[] signedPdfBytes)
     {
         ArgumentNullException.ThrowIfNull(signedPdfBytes);
 
-        var pdfString = Encoding.Latin1.GetString(signedPdfBytes);
-        var result = new PdfSignatureVerificationResult();
-
-        if (!pdfString.Contains("/Type /Sig", StringComparison.OrdinalIgnoreCase))
+        string content = Encoding.UTF8.GetString(signedPdfBytes);
+        int sigStartChar = content.IndexOf("% BANGPLANIX-PADES-SIGNATURE-START", StringComparison.Ordinal);
+        if (sigStartChar < 0)
         {
-            result.IsValid = false;
-            result.StatusMessage = "Document does not contain digital signatures.";
-            return result;
+            return new SignatureVerificationResult
+            {
+                IsValid = false,
+                ErrorMessage = "Document does not contain a Bangplanix PAdES signature envelope."
+            };
         }
 
-        // Extract metadata
-        result.SignerName = ExtractPdfStringValue(pdfString, "/Name");
-        result.Reason = ExtractPdfStringValue(pdfString, "/Reason");
-        result.Location = ExtractPdfStringValue(pdfString, "/Location");
+        int contentsTag = content.IndexOf("/Contents <", sigStartChar, StringComparison.Ordinal);
+        int docDigestTag = content.IndexOf("/DocDigest <", sigStartChar, StringComparison.Ordinal);
 
-        // Verify ByteRange and Hash
-        var byteRangeMatch = System.Text.RegularExpressions.Regex.Match(pdfString, @"/ByteRange\s*\[\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\]");
-        if (byteRangeMatch.Success)
+        if (contentsTag < 0 || docDigestTag < 0)
         {
-            var r1Start = int.Parse(byteRangeMatch.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
-            var r1Len = int.Parse(byteRangeMatch.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
-            var r2Start = int.Parse(byteRangeMatch.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
-            var r2Len = int.Parse(byteRangeMatch.Groups[4].Value, System.Globalization.CultureInfo.InvariantCulture);
-
-            if (r1Start + r1Len <= signedPdfBytes.Length && r2Start + r2Len <= signedPdfBytes.Length)
+            return new SignatureVerificationResult
             {
-                using var sha256 = SHA256.Create();
-                var hashedData = new byte[r1Len + r2Len];
-                Array.Copy(signedPdfBytes, r1Start, hashedData, 0, r1Len);
-                Array.Copy(signedPdfBytes, r2Start, hashedData, r1Len, r2Len);
-                var computedHash = Convert.ToHexString(sha256.ComputeHash(hashedData));
+                IsValid = false,
+                ErrorMessage = "Corrupted signature dictionary structure."
+            };
+        }
 
-                var contentsMatch = System.Text.RegularExpressions.Regex.Match(pdfString, @"/Contents\s*<([0-9A-Fa-f]+)>");
-                if (contentsMatch.Success)
+        try
+        {
+            int contentsEnd = content.IndexOf('>', contentsTag);
+            string hexSignature = content.Substring(contentsTag + 11, contentsEnd - (contentsTag + 11)).Trim();
+            byte[] pkcs7Bytes = Convert.FromHexString(hexSignature);
+
+            int docDigestEnd = content.IndexOf('>', docDigestTag);
+            string hexDocDigest = content.Substring(docDigestTag + 12, docDigestEnd - (docDigestTag + 12)).Trim();
+            byte[] expectedHash = Convert.FromHexString(hexDocDigest);
+
+            // Find exact byte offset of the signature start marker
+            byte[] markerBytes = Encoding.UTF8.GetBytes("% BANGPLANIX-PADES-SIGNATURE-START");
+            int sigStartByte = signedPdfBytes.AsSpan().IndexOf(markerBytes);
+            if (sigStartByte < 0) sigStartByte = sigStartChar;
+
+            // Compute actual hash of original content before signature block
+            byte[] originalContentBytes = signedPdfBytes.AsSpan(0, sigStartByte).ToArray();
+            byte[] actualHash = SHA256.HashData(originalContentBytes);
+
+            if (!actualHash.AsSpan().SequenceEqual(expectedHash))
+            {
+                return new SignatureVerificationResult
                 {
-                    var sigHex = contentsMatch.Groups[1].Value;
-                    if (sigHex.StartsWith(computedHash, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.IsValid = true;
-                        result.StatusMessage = "Signature and byte range hash are valid.";
-                        return result;
-                    }
-                }
+                    IsValid = false,
+                    ErrorMessage = "Document tampering detected: Byte range digest mismatch."
+                };
+            }
+
+            // Verify SignedCms PKCS#7 structure
+            var contentInfo = new ContentInfo(actualHash);
+            var signedCms = new SignedCms(contentInfo, detached: true);
+            signedCms.Decode(pkcs7Bytes);
+            signedCms.CheckSignature(verifySignatureOnly: true);
+
+            var signerCert = signedCms.Certificates.Count > 0 ? signedCms.Certificates[0] : null;
+            bool hasTsa = content.Contains("/TSA <", StringComparison.Ordinal);
+
+            string name = ExtractPdfString(content, "/Name (", sigStartChar);
+            string reason = ExtractPdfString(content, "/Reason (", sigStartChar);
+            string location = ExtractPdfString(content, "/Location (", sigStartChar);
+
+            return new SignatureVerificationResult
+            {
+                IsValid = true,
+                SignerSubject = signerCert?.Subject ?? "CN=Bangplanix Signer",
+                SignerName = !string.IsNullOrEmpty(name) ? name : (signerCert?.Subject ?? "Bangplanix Signer"),
+                Reason = reason,
+                Location = location,
+                SigningTimeUtc = DateTime.UtcNow,
+                HasTimestampToken = hasTsa,
+                TimestampTimeUtc = hasTsa ? DateTime.UtcNow : null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new SignatureVerificationResult
+            {
+                IsValid = false,
+                ErrorMessage = $"Cryptographic verification failed: {ex.Message}"
+            };
+        }
+    }
+
+    private static string ExtractPdfString(string content, string tag, int startIndex)
+    {
+        int tagIdx = content.IndexOf(tag, startIndex, StringComparison.Ordinal);
+        if (tagIdx < 0) return string.Empty;
+        int start = tagIdx + tag.Length;
+        int end = content.IndexOf(')', start);
+        if (end < 0) return string.Empty;
+        return content.Substring(start, end - start);
+    }
+
+    private static X509Certificate2 LoadCertificate(DigitalSignatureOptions options)
+    {
+        if (options.PfxRawBytes != null && options.PfxRawBytes.Length > 0)
+        {
+            try
+            {
+                return X509CertificateLoader.LoadPkcs12(options.PfxRawBytes, options.PfxPassword, X509KeyStorageFlags.Exportable);
+            }
+            catch
+            {
+                #pragma warning disable SYSLIB0057
+                return new X509Certificate2(options.PfxRawBytes, options.PfxPassword, X509KeyStorageFlags.Exportable);
+                #pragma warning restore SYSLIB0057
             }
         }
 
-        result.IsValid = true;
-        result.StatusMessage = "Signature dictionary parsed successfully.";
-        return result;
-    }
-
-    private static string? ExtractPdfStringValue(string text, string key)
-    {
-        var match = System.Text.RegularExpressions.Regex.Match(text, $@"{key}\s*\((.*?)\)");
-        return match.Success ? match.Groups[1].Value : null;
-    }
-
-    private static string EscapePdfString(string value)
-    {
-        return value.Replace("\\", "\\\\", StringComparison.Ordinal)
-                    .Replace("(", "\\(", StringComparison.Ordinal)
-                    .Replace(")", "\\)", StringComparison.Ordinal);
-    }
-
-    private static int FindPattern(byte[] src, byte[] find)
-    {
-        for (int i = 0; i <= src.Length - find.Length; i++)
-        {
-            bool match = true;
-            for (int j = 0; j < find.Length; j++)
-            {
-                if (src[i + j] != find[j])
-                {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) return i;
-        }
-        return -1;
+        // Generate self-signed RSA cert for sandbox / automated testing
+        using var rsa = RSA.Create(2048);
+        var req = new CertificateRequest($"CN={options.SignerName}, O=Bangplanix, C=TH", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        return req.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
     }
 }

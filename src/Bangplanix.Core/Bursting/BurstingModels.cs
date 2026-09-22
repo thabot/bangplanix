@@ -13,6 +13,17 @@ public enum DeliveryChannelType
 }
 
 /// <summary>
+/// SMTP Security transport options.
+/// </summary>
+public enum SmtpSecurityMode
+{
+    Auto,
+    StartTls,
+    SslOnConnect,
+    None
+}
+
+/// <summary>
 /// Status of a scheduled job.
 /// </summary>
 public enum ScheduledJobStatus
@@ -32,17 +43,27 @@ public abstract class DeliveryTargetConfig
     public abstract DeliveryChannelType ChannelType { get; }
     public string Name { get; set; } = string.Empty;
     public bool IsEnabled { get; set; } = true;
+    public int TimeoutSeconds { get; set; } = 30;
 }
 
 public sealed class SmtpDeliveryConfig : DeliveryTargetConfig
 {
     public override DeliveryChannelType ChannelType => DeliveryChannelType.SmtpEmail;
     public string RecipientEmailField { get; set; } = "Email";
+    public string? CcEmailField { get; set; }
+    public string? BccEmailField { get; set; }
     public string Subject { get; set; } = "Your Bangplanix Report";
+    public string SubjectTemplate { get; set; } = "Your Bangplanix Report";
     public string BodyTemplate { get; set; } = "Please find attached your report.";
-    public string SmtpHost { get; set; } = "smtp.example.com";
+    public bool IsBodyHtml { get; set; } = true;
+    public string SmtpHost { get; set; } = "localhost";
     public int SmtpPort { get; set; } = 587;
+    public SmtpSecurityMode SecurityMode { get; set; } = SmtpSecurityMode.StartTls;
+    public string? Username { get; set; }
+    public string? Password { get; set; }
     public string? FromAddress { get; set; } = "reports@bangplanix.com";
+    public string? FromDisplayName { get; set; } = "Bangplanix Reports";
+    public bool SimulationMode { get; set; } = false;
 }
 
 public sealed class S3DeliveryConfig : DeliveryTargetConfig
@@ -54,6 +75,9 @@ public sealed class S3DeliveryConfig : DeliveryTargetConfig
     public string? AccessKey { get; set; }
     public string? SecretKey { get; set; }
     public string? EndpointUrl { get; set; } // For MinIO or S3 compatible
+    public string? ServiceUrl { get; set; } // Alias for EndpointUrl
+    public bool ForcePathStyle { get; set; } = false;
+    public string ContentType { get; set; } = "application/pdf";
 }
 
 public sealed class AzureBlobDeliveryConfig : DeliveryTargetConfig
@@ -62,6 +86,9 @@ public sealed class AzureBlobDeliveryConfig : DeliveryTargetConfig
     public string ContainerName { get; set; } = "reports";
     public string BlobPrefix { get; set; } = "{Year}/{Month}/";
     public string? ConnectionString { get; set; }
+    public string? AccountName { get; set; }
+    public string? AccountKey { get; set; }
+    public string ContentType { get; set; } = "application/pdf";
 }
 
 public sealed class SftpDeliveryConfig : DeliveryTargetConfig
@@ -70,6 +97,9 @@ public sealed class SftpDeliveryConfig : DeliveryTargetConfig
     public string Host { get; set; } = "sftp.example.com";
     public int Port { get; set; } = 22;
     public string Username { get; set; } = "report_user";
+    public string? Password { get; set; }
+    public string? PrivateKeyPem { get; set; }
+    public string? PrivateKeyPassphrase { get; set; }
     public string RemoteDirectory { get; set; } = "/incoming/reports/";
 }
 
@@ -91,7 +121,9 @@ public sealed class DeliveryResult
     public string Destination { get; set; } = string.Empty;
     public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
     public TimeSpan Latency { get; set; }
+    public string? TransactionId { get; set; }
     public string? ErrorMessage { get; set; }
+    public int RetryAttempts { get; set; } = 0;
 }
 
 /// <summary>
