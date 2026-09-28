@@ -215,33 +215,103 @@ npm install @bangplanix/designer
 ```
 
 ### การใช้งาน Visual Designer (`<bangplanix-designer>`)
-หากต้องการออกแบบรายงานแบบ Drag & Drop ผ่านหน้าจอเว็บ:
+หากต้องการออกแบบรายงานแบบ Drag & Drop พร้อมระบบ AI Copilot ผู้ช่วยออกแบบอัจฉริยะผ่านหน้าจอเว็บ:
 1. ติดตั้ง `@bangplanix/designer`:
    ```bash
    npm install @bangplanix/designer
    ```
 2. ฝังลงในหน้าเว็บ:
    ```html
-   <bangplanix-designer></bangplanix-designer>
+   <bangplanix-designer api-url="http://localhost:5000"></bangplanix-designer>
    ```
 
 ---
 
-## 🤖 บทที่ 3: การใช้ AI Suite สั่งสร้างรายงานด้วยภาษาพูด
+## 🤖 บทที่ 3: การใช้ AI Suite & Visual AI Designer สั่งสร้างรายงานด้วยเสียงและข้อความ
 
-> 💡 *หมายเหตุ: Core AI Engine (`ReportAiGenerator`, `HybridLlmGateway`, `AiSqlSafetyValidator`) สามารถเรียกใช้งานผ่าน C# และ JavaScript SDK ได้ในปัจจุบัน ส่วนปุ่มสั่งการ Visual AI Designer บนหน้าจอ Ribbon และหน้าต่างแชทอยู่ใน [Roadmap v1.1.0](./ROADMAP.md)*
+Bangplanix มาพร้อมกับ **Bangplanix AI Suite** เต็มรูปแบบ ทั้งระบบ Server-Side REST AI Proxy, Model Context Protocol (MCP) Server, และ Visual AI Designer บนหน้าเว็บ
 
-Bangplanix มาพร้อมกับ **Bangplanix AI Suite** ช่วยให้สร้างเทมเพลต `.bpx` ได้จาก Natural Language ทั้งภาษาไทยและภาษาอังกฤษ
-
-### ตัวอย่างการสั่งงานด้วยภาษาไทย:
-> *"สร้างใบเสร็จรับเงินสำหรับบริษัทไอที มีรหัสสินค้า ชื่อสินค้า จำนวน ราคา และยอดรวม ด้านล่างใส่ PromptPay QR Code และยอดเงินบาทถ้วน"*
-
-AI จะสร้างโครงสร้าง `.bpx` ที่ประกอบด้วย:
-1. **Header:** โลโก้และข้อมูลผู้ขาย
-2. **Detail Band:** ตารางสินค้าพร้อม Expression เชื่อมโยงข้อมูล
-3. **Footer:** สรุปยอดเงินพร้อมฟังก์ชัน `=BahtText(Sum(Fields.Amount))` และ QR Code EMVCo PromptPay
+### 3.1 ฟีเจอร์ AI บน Visual Designer (`<bangplanix-designer>`)
+* **✨ AI Assistant (Interactive Modal):** สั่งสร้างหรือปรับปรุงรายงานผ่านกล่องแชท พร้อมระบบ Real-time Shimmer Animation และปุ่ม **⏹️ Cancel Generation**
+* **🎤 Multi-Language Voice-to-Text (ไมโครโฟนสั่งการด้วยเสียง):** รองรับการพูดสั่งการกว่า 12 ภาษา (ไทย, English, 中文, 日本語, Español, Deutsch, Français, العربية ฯลฯ) ผ่าน Web Speech API
+* **💡 Dynamic Starter Prompt Cards:** การ์ดตัวอย่างคำสั่งเริ่มต้นที่ปรับเปลี่ยนภาษาอัตโนมัติตามภาษาที่เลือก
+* **📜 Persistent AI History & Undo/Rollback:** บันทึกประวัติคำสั่ง Prompt และ Snapshots ของเทมเพลตลงฐานข้อมูล SQLite (`portal.db`) สามารถกด Rollback ย้อนคืนสถานะก่อน AI แก้ไขได้ทันที
+* **⚙️ Client BYOK (Bring Your Own Key):** ผู้ใช้สามารถกรอก API Key และพิมพ์ระบุชื่อโมเดล AI เองได้อย่างอิสระ (Free-Text Model Name) พร้อมปุ่ม Test Connection ตรวจสอบความถูกต้อง
 
 ---
+
+### 3.2 Server-Side REST AI Proxy Endpoints
+
+Bangplanix Server มี REST API สำหรับเรียกใช้งาน AI Suite ผ่าน HTTP:
+
+| Endpoint | Method | รายละเอียด (Description) |
+| :--- | :---: | :--- |
+| `/api/v1/ai/generate` | `POST` | สั่ง AI สร้างโครงสร้าง `.bpx` จาก Prompt พร้อมระบบ Auto-Repair และ Schema Validation |
+| `/api/v1/ai/expression` | `POST` | แปลงภาษาพูดเป็นสูตรคำนวณ C# Roslyn Expression (เช่น `=BahtText(Sum(Fields.Amount))`) |
+| `/api/v1/ai/diagnose-repair` | `POST` | ตรวจสอบและซ่อมแซมเทมเพลต `.bpx` ที่ชำรุดหรือ Syntax ผิดพลาดอัตโนมัติ |
+| `/api/v1/ai/executive-summary` | `POST` | สรุปบทวิเคราะห์เชิงบริหาร (Executive Summary) จากข้อมูลตัวเลขในรายงาน |
+| `/api/v1/ai/test-connection` | `POST` | ทดสอบการเชื่อมต่อ API Key และโมเดล AI ของผู้ใช้ |
+| `/api/v1/ai/history` | `GET` | ดึงประวัติคำสั่ง Prompt และผลลัพธ์ที่บันทึกไว้ใน SQLite |
+| `/api/v1/ai/history/undo` | `POST` | ดึง Snapshot ของเทมเพลตเพื่อทำการ Rollback/Undo |
+
+#### ตัวอย่าง BYOK Headers (Bring Your Own Key):
+```http
+POST /api/v1/ai/generate HTTP/1.1
+Host: localhost:5000
+Content-Type: application/json
+X-Bangplanix-Ai-Provider: OpenAI
+X-Bangplanix-Ai-Key: sk-proj-xxxxxxxxxxxxxxxxxxxx
+X-Bangplanix-Ai-Model: gpt-4o-mini
+
+{
+  "prompt": "สร้างใบเสร็จรับเงินสำหรับบริษัทไอที มีตารางสินค้า QR PromptPay และยอดเงินบาทถ้วน",
+  "language": "th-TH"
+}
+```
+
+---
+
+### 3.3 การเชื่อมต่อ Model Context Protocol (MCP) Server
+
+Bangplanix ทำหน้าที่เป็น **MCP Server มาตรฐานสากล** ช่วยให้เครื่องมือ AI เช่น **Claude Desktop**, **Cursor AI**, หรือ Agentic Frameworks สามารถเรียกใช้งานเครื่องมือรายงานของ Bangplanix ได้โดยตรง
+
+#### MCP Tools ที่ให้บริการ (6 เครื่องมือ):
+1. `generate_report_bpx`: สั่ง AI สร้างโครงสร้างเทมเพลต `.bpx`
+2. `validate_report_bpx`: ตรวจสอบความถูกต้องของ Schema `.bpx`
+3. `render_report_pdf`: สั่งเรนเดอร์รายงานเป็นไฟล์ PDF ทันที
+4. `render_report_xlsx`: สั่งเรนเดอร์รายงานเป็นไฟล์ Excel (XLSX)
+5. `repair_report_bpx`: วินิจฉัยและซ่อมแซมเทมเพลตรายงานที่เสียหาย
+6. `list_container_templates`: เรียกดูรายชื่อเทมเพลตรายงานที่มีอยู่ในระบบ
+
+#### การตั้งค่าใน Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "bangplanix": {
+      "command": "dotnet",
+      "args": ["run", "--project", "src/Bangplanix.Server/Bangplanix.Server.csproj", "--", "--mcp-stdio"],
+      "env": {
+        "BANGPLANIX_AI_PROVIDER": "OpenAI",
+        "BANGPLANIX_AI_API_KEY": "sk-your-openai-api-key"
+      }
+    }
+  }
+}
+```
+
+#### การตั้งค่าใน Cursor AI (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "bangplanix-http": {
+      "url": "http://localhost:5000/api/v1/mcp"
+    }
+  }
+}
+```
+
+---
+
 
 ## 💾 บทที่ 4: การป้อนข้อมูล (JSON Data Push & SQL Databases)
 

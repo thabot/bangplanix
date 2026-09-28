@@ -50,8 +50,8 @@ export const PRICING_TIERS: PricingTierData[] = [
       'Royalty-Free Runtime Redistribution',
       'Email Support (24-hour SLA)'
     ],
-    checkoutUrlAnnual: 'https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0',
-    checkoutUrlMonthly: 'https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0'
+    checkoutUrlAnnual: 'https://nowpayments.io/payment/?iid=bpx_pro_annual&tier=PRO&amount=699',
+    checkoutUrlMonthly: 'https://nowpayments.io/payment/?iid=bpx_pro_monthly&tier=PRO&amount=59'
   },
   {
     id: 'enterprise',
@@ -72,8 +72,8 @@ export const PRICING_TIERS: PricingTierData[] = [
       'Formal Thai Tax Invoice (ภ.พ.20 & WHT 3%)',
       'Dedicated Slack / Teams Channel (4-hour SLA)'
     ],
-    checkoutUrlAnnual: 'https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4',
-    checkoutUrlMonthly: 'https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4'
+    checkoutUrlAnnual: 'https://nowpayments.io/payment/?iid=bpx_enterprise_annual&tier=ENTERPRISE&amount=1999',
+    checkoutUrlMonthly: 'https://nowpayments.io/payment/?iid=bpx_enterprise_monthly&tier=ENTERPRISE&amount=199'
   },
   {
     id: 'oem',

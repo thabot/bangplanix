@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bangplanix — Commercial Pricing & Enterprise Licensing</title>
   <link rel="stylesheet" href="src/playground.css">
-  <script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
   <style>
     :root {
       --primary: #2563eb;
@@ -444,7 +443,7 @@
         <tr>
           <td><strong>Corporate Billing & Invoicing</strong></td>
           <td>GitHub Receipt</td>
-          <td>Lemon Squeezy MoR Invoice</td>
+          <td>NOWPayments Invoice (Card & Crypto)</td>
           <td><strong>Formal PO, Thai Tax ภ.พ.20, WHT 3%</strong></td>
           <td><strong>Formal PO, Thai Tax ภ.พ.20, Escrow</strong></td>
         </tr>
@@ -553,11 +552,11 @@
     <h2 id="faq-title" data-i18n="faqTitle">Frequently Asked Questions</h2>
     <div class="faq-item">
       <div class="faq-question">💳 How do I receive my License Key after purchase?</div>
-      <div class="faq-answer">Upon completing checkout via Lemon Squeezy, a cryptographically signed Ed25519 / NIST ML-DSA-65 license token is generated and delivered instantly to your email. You can activate it by setting the <code>LICENSE_KEY</code> environment variable.</div>
+      <div class="faq-answer">Upon completing checkout via NOWPayments (Credit/Debit Card or 300+ Cryptocurrencies), a cryptographically signed Ed25519 / NIST ML-DSA-65 license token is generated and delivered instantly to your email. You can activate it by setting the <code>LICENSE_KEY</code> environment variable.</div>
     </div>
     <div class="faq-item">
       <div class="faq-question">🌍 How do you handle corporate purchasing, VAT, and Global Invoicing?</div>
-      <div class="faq-answer">Lemon Squeezy acts as Merchant of Record handling sales tax, EU VAT reverse-charge, and US tax compliance automatically. For formal enterprise POs, vendor onboarding, or Thai corporate 3% withholding tax forms, contact <code>thabot47@gmail.com</code>.</div>
+      <div class="faq-answer">NOWPayments acts as our Autonomous Global Payment Gateway supporting Visa, Mastercard, Apple Pay, Google Pay, and 300+ Crypto assets (USDT, USDC, BTC, ETH, SOL, MATIC, BNB). For formal enterprise POs, vendor onboarding, or Thai corporate 3% withholding tax forms (ภ.พ.20 / ภ.ง.ด. 53), contact <code>thabot47@gmail.com</code>.</div>
     </div>
     <div class="faq-item">
       <div class="faq-question">🔒 Does Bangplanix require an internet connection to validate licenses?</div>
@@ -600,9 +599,6 @@
           const checkoutUrl = cycle === 'annual' ? tier.checkoutUrlAnnual : tier.checkoutUrlMonthly;
           const isFeatured = tier.isPopular ? 'featured' : '';
           const popularBadge = tier.isPopular ? `<div class="popular-badge">${trans.popularBadge}</div>` : '';
-          const btnClass = tier.isPopular ? 'buy-btn featured-btn' : (tier.id === 'enterprise' ? 'buy-btn primary' : 'buy-btn secondary');
-          const isLemon = checkoutUrl.includes('lemonsqueezy.com');
-          const lemonClass = isLemon ? 'lemonsqueezy-button' : '';
           const btnLabel = isFree ? trans.downloadGithub : (tier.id === 'oem' ? trans.contactSales : `💳 ${trans.buyBtnLabel} ${tier.name}`);
 
           return `
@@ -615,7 +611,7 @@
               <ul class="plan-features">
                 ${tier.features.map(f => `<li>${f}</li>`).join('')}
               </ul>
-              <a href="${checkoutUrl}" class="${btnClass} ${lemonClass}">${btnLabel}</a>
+              <a href="${checkoutUrl}" target="${isFree ? '_self' : '_blank'}" class="${btnClass}">${btnLabel}</a>
             </div>
           `;
         }).join('');

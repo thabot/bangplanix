@@ -11,8 +11,8 @@ Our commercial pricing is structured with direct price-point parity against **Qu
 | Tier | Target Audience | Pricing & Billing | CPU Core Quota | Entitlements & Features | Support SLA |
 | :--- | :--- | :---: | :---: | :--- | :--- |
 | **Community Edition** | Developers, Startups (< $1M Annual Revenue) | **Free ($0)**<br>[Download / GitHub](https://github.com/thabot/bangplanix) | Up to 4 Cores | • **Unwatermarked** Production Documents<br>• Web Visual Designer (`<bangplanix-designer>`)<br>• Sub-millisecond Native AOT Server<br>• All 5 SDKs (C#, Node.js, Python, Go, Java)<br>• HarfBuzz Thai & Global Typography | Community GitHub Discussions |
-| **Professional** | Growing SaaS, Indie Hackers, Internal Tools | **$699 / year** *(or $59 / mo)*<br><br>[👉 **💳 Buy Professional**](https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0) | Up to 16 Cores | • **Everything in Community**<br>• Scheduled Multi-Channel Report Bursting<br>• Direct S3 / MinIO / SFTP Object Delivery<br>• Commercial Non-Open-Source Indemnity<br>• Royalty-Free Runtime Redistribution | Email Support (24-hour SLA) |
-| **Enterprise Sovereign** | Fintech, Banking, Healthcare, Global Platforms | **$1,999 / year** *(or $199 / mo)*<br><br>[👉 **🚀 Buy Enterprise Sovereign**](https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4) | **Unlimited Cores** | • **Everything in Professional**<br>• Unlimited CPU Cores & Kubernetes Pods<br>• Thai e-Tax Invoice & RFC 3161 TSA Timestamps<br>• PKCS#7 PAdES Cryptographic Signatures<br>• True Vector Redaction (Sanitization)<br>• Legacy SSRS & Crystal Reports Migration | Dedicated Slack / Teams (4-hour SLA) |
+| **Professional** | Growing SaaS, Indie Hackers, Internal Tools | **$699 / year** *(or $59 / mo)*<br><br>[👉 **💳 Buy Professional**](https://nowpayments.io/payment/?iid=bpx_pro_annual&tier=PRO&amount=699) | Up to 16 Cores | • **Everything in Community**<br>• Scheduled Multi-Channel Report Bursting<br>• Direct S3 / MinIO / SFTP Object Delivery<br>• Commercial Non-Open-Source Indemnity<br>• Royalty-Free Runtime Redistribution | Email Support (24-hour SLA) |
+| **Enterprise Sovereign** | Fintech, Banking, Healthcare, Global Platforms | **$1,999 / year** *(or $199 / mo)*<br><br>[👉 **🚀 Buy Enterprise Sovereign**](https://nowpayments.io/payment/?iid=bpx_enterprise_annual&tier=ENTERPRISE&amount=1999) | **Unlimited Cores** | • **Everything in Professional**<br>• Unlimited CPU Cores & Kubernetes Pods<br>• Thai e-Tax Invoice & RFC 3161 TSA Timestamps<br>• PKCS#7 PAdES Cryptographic Signatures<br>• True Vector Redaction (Sanitization)<br>• Legacy SSRS & Crystal Reports Migration | Dedicated Slack / Teams (4-hour SLA) |
 | **OEM Sovereign** | ISVs, Defense, Air-Gapped Appliances | **$3,999 / year**<br><br>[👉 **🏢 Contact Enterprise Sales**](mailto:thabot47@gmail.com?subject=Bangplanix%20OEM%20Sovereign%20Licensing%20Inquiry) | **Unlimited Cores** | • **Everything in Enterprise Sovereign**<br>• White-label OEM Redistribution Rights<br>• **100% Offline Air-Gapped Validation**<br>• **NIST FIPS 204 Quantum-Ready ML-DSA-65 (Dilithium)**<br>• Source Code Escrow Agreement Option | 24/7 Phone & Incident (1-hour SLA) |
 
 ---
@@ -46,10 +46,10 @@ Our commercial pricing is structured with direct price-point parity against **Qu
 
 ---
 
-## 💳 Global Corporate Invoicing & Lemon Squeezy Store
+## 💳 Global Corporate Invoicing & NOWPayments Autonomous Gateway
 
-Commercial licenses can be purchased with instant cryptographic key delivery via our **Lemon Squeezy Store**:
-- 🔗 **Professional Checkout:** [Buy Professional ($699/year or $59/month)](https://bangplanix.lemonsqueezy.com/checkout/buy/99f67d3d-d04f-40de-be6f-a28c06c6624e?discount=0)
-- 🔗 **Enterprise Sovereign Checkout:** [Buy Enterprise Sovereign ($1,999/year or $199/month)](https://bangplanix.lemonsqueezy.com/checkout/buy/e585b5a6-a630-4eeb-ab80-db0553bf35b4)
-- **Global Corporate Billing:** Lemon Squeezy acts as our Global Merchant of Record (MoR), handling automatic sales tax, EU VAT reverse-charge, W-8BEN compliance, Apple Pay, Google Pay, and international wire transfers across 130+ countries.
+Commercial licenses can be purchased with instant cryptographic key delivery via our **NOWPayments Gateway**:
+- 🔗 **Professional Checkout:** [Buy Professional ($699/year or $59/month)](https://nowpayments.io/payment/?iid=bpx_pro_annual&tier=PRO&amount=699)
+- 🔗 **Enterprise Sovereign Checkout:** [Buy Enterprise Sovereign ($1,999/year or $199/month)](https://nowpayments.io/payment/?iid=bpx_enterprise_annual&tier=ENTERPRISE&amount=1999)
+- **Global Corporate Billing:** NOWPayments acts as our Autonomous Global Payment Gateway, supporting Credit/Debit Cards (Visa, Mastercard, Apple Pay, Google Pay) and 300+ Cryptocurrencies (USDT, USDC, BTC, ETH, SOL, MATIC, BNB) with instant Ed25519 key provisioning upon on-chain / card confirmation.
 - **Thai Corporate Invoicing:** For formal Purchase Orders (PO), Thai Tax Invoices (ภ.พ.20), or 3% withholding tax certificates (ภ.ง.ด. 53), contact `thabot47@gmail.com`.

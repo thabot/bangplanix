@@ -170,33 +170,104 @@ bangplanix render -t samples/templates/shipping-logistics-label-4x6.bpx -d sampl
 ```
 
 ### Visual Drag & Drop Designer (`<bangplanix-designer>`)
-Design templates visually without writing raw JSON:
+Design templates visually with an intelligent AI Copilot assistant directly in your browser:
 ```bash
 npm install @bangplanix/designer
 ```
 ```html
-<bangplanix-designer></bangplanix-designer>
+<bangplanix-designer api-url="http://localhost:5000"></bangplanix-designer>
 ```
 * **No-Code Layout:** Drag text, tables, barcodes, and charts directly onto the canvas.
+* **AI Copilot:** Ribbon AI Assistant modal with real-time prompt generation, starter prompt cards, and voice recognition.
 * **Export .bpx:** Click **Export** to download the compiled `.bpx` schema for your C# code or CLI pipelines.
 
 ---
 
-## 🤖 Part 3: Bangplanix AI Suite Natural Language Generation
+## 🤖 Part 3: Bangplanix AI Suite, REST Proxy & Model Context Protocol (MCP)
 
-> 💡 *Note: The core AI engine (`ReportAiGenerator`, `HybridLlmGateway`, `AiSqlSafetyValidator`) is available via .NET and JS SDKs. The interactive Visual AI Designer ribbon buttons and chat dialog are in [Roadmap v1.1.0](./ROADMAP.md).*
+Bangplanix provides a comprehensive AI reporting suite featuring a Server-Side REST AI Proxy, Model Context Protocol (MCP) Server for external LLM tools, and an interactive Visual AI Designer.
 
-Generate complex `.bpx` layouts, calculations, and dataset schemas directly from natural language prompts:
-
-### English Example Prompt:
-> *"Generate an executive sales report with a monthly summary chart, tabular line items (SKU, Description, Quantity, UnitPrice, LineTotal), and a footer displaying subtotal, 7% VAT, and grand total."*
-
-The AI engine automatically outputs:
-1. Valid `.bpx` schema hierarchy (Page Header, Group Bands, Detail, and Page Footer).
-2. Compiled Roslyn formulas (`=Sum(Fields.Quantity * Fields.UnitPrice)`).
-3. Barcode and EMVCo QR code visuals.
+### 3.1 Visual Designer AI Capabilities (`<bangplanix-designer>`)
+* **✨ AI Assistant (Interactive Modal):** Prompt-based report generation and iterative editing with real-time shimmer loading state and an instant **⏹️ Cancel Generation** button.
+* **🎤 Multi-Language Voice-to-Text:** Speak prompts naturally in over 12 languages (English, Thai, Chinese, Japanese, Spanish, German, French, Arabic, etc.) via Web Speech API.
+* **💡 Dynamic Starter Prompt Cards:** Curated starter prompts that dynamically switch language based on your selection.
+* **📜 Persistent AI History & Snapshot Undo/Rollback:** Retain prompt history and template snapshots in SQLite (`portal.db`), enabling instant 1-click rollbacks.
+* **⚙️ Client BYOK (Bring Your Own Key):** Secure client-side credentials with free-text custom model names (e.g., `gpt-4o`, `claude-3-5-sonnet`, `gemini-1.5-pro`) and connection health checks.
 
 ---
+
+### 3.2 Server-Side REST AI Proxy Endpoints
+
+The ASP.NET Core REST API Server exposes dedicated endpoints for AI operations:
+
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/v1/ai/generate` | `POST` | Generate valid `.bpx` schemas from natural language prompts with automatic self-repair. |
+| `/api/v1/ai/expression` | `POST` | Convert plain language into C# Roslyn formulas (e.g., `=BahtText(Sum(Fields.Amount))`). |
+| `/api/v1/ai/diagnose-repair` | `POST` | Inspect and auto-fix malformed `.bpx` templates and broken syntax. |
+| `/api/v1/ai/executive-summary` | `POST` | Generate executive summaries and narrative insights from report data series. |
+| `/api/v1/ai/test-connection` | `POST` | Verify API Key validity and LLM provider responsiveness. |
+| `/api/v1/ai/history` | `GET` | Retrieve persistent prompt logs and execution metadata from SQLite. |
+| `/api/v1/ai/history/undo` | `POST` | Fetch historical template snapshots for instant rollback. |
+
+#### Client BYOK (Bring Your Own Key) Headers:
+```http
+POST /api/v1/ai/generate HTTP/1.1
+Host: localhost:5000
+Content-Type: application/json
+X-Bangplanix-Ai-Provider: OpenAI
+X-Bangplanix-Ai-Key: sk-proj-xxxxxxxxxxxxxxxxxxxx
+X-Bangplanix-Ai-Model: gpt-4o-mini
+
+{
+  "prompt": "Create an executive sales report with a monthly chart, product table, and tax totals.",
+  "language": "en-US"
+}
+```
+
+---
+
+### 3.3 Model Context Protocol (MCP) Server Integration
+
+Bangplanix functions as a standard **MCP Server**, allowing tools like **Claude Desktop**, **Cursor AI**, and Agentic frameworks to control the report engine directly.
+
+#### Available MCP Tools (6 Tools):
+1. `generate_report_bpx`: Generate complete `.bpx` report definition schemas.
+2. `validate_report_bpx`: Validate `.bpx` template structure and Roslyn expressions.
+3. `render_report_pdf`: Compile and render templates to vector PDF documents.
+4. `render_report_xlsx`: Render structured reports into Excel spreadsheets.
+5. `repair_report_bpx`: Diagnose and auto-repair broken template definitions.
+6. `list_container_templates`: Discover available template files stored on the server.
+
+#### Claude Desktop Configuration (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "bangplanix": {
+      "command": "dotnet",
+      "args": ["run", "--project", "src/Bangplanix.Server/Bangplanix.Server.csproj", "--", "--mcp-stdio"],
+      "env": {
+        "BANGPLANIX_AI_PROVIDER": "OpenAI",
+        "BANGPLANIX_AI_API_KEY": "sk-your-openai-api-key"
+      }
+    }
+  }
+}
+```
+
+#### Cursor AI Configuration (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "bangplanix-http": {
+      "url": "http://localhost:5000/api/v1/mcp"
+    }
+  }
+}
+```
+
+---
+
 
 ## 💾 Part 4: Data Push & SQL Database Binding
 

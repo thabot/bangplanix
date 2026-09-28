@@ -297,7 +297,264 @@ export class BangplanixDesigner extends LitElement {
   // --- Handlers ---
   private handleToolDragStart(e: DragEvent, type: string) {
     if (e.dataTransfer) {
-      e.dataTransfer.setData('text/plain', type);
+  @state() private showAiModal: boolean = false;
+  @state() private showAiSettingsModal: boolean = false;
+  @state() private showHistoryDrawer: boolean = false;
+  @state() private aiPrompt: string = '';
+  @state() private aiLanguage: string = 'th-TH';
+  @state() private isListening: boolean = false;
+  @state() private isAiGenerating: boolean = false;
+  @state() private aiLoadingStep: string = '';
+  @state() private aiError: string | null = null;
+  @state() private aiGeneratedBpx: string = '';
+  @state() private abortController: AbortController | null = null;
+  @state() private aiHistoryList: any[] = [];
+
+  // BYOK Settings State
+  @state() private aiProvider: string = 'gemini';
+  @state() private aiModelName: string = 'gemini-2.5-flash';
+  @state() private aiApiKey: string = '';
+  @state() private aiEndpointUrl: string = '';
+  @state() private testPingStatus: string = '';
+  @state() private isPinging: boolean = false;
+
+  private recognition: any = null;
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.loadSavedAiSettings();
+    this.initSpeechRecognition();
+  }
+
+  private loadSavedAiSettings() {
+    try {
+      this.aiProvider = localStorage.getItem('bpx_ai_provider') || 'gemini';
+      this.aiModelName = localStorage.getItem('bpx_ai_model') || 'gemini-2.5-flash';
+      this.aiApiKey = localStorage.getItem('bpx_ai_key') || '';
+      this.aiEndpointUrl = localStorage.getItem('bpx_ai_endpoint') || '';
+      this.aiLanguage = localStorage.getItem('bpx_ai_voice_lang') || 'th-TH';
+    } catch (_) {}
+  }
+
+  private saveAiSettings() {
+    try {
+      localStorage.setItem('bpx_ai_provider', this.aiProvider);
+      localStorage.setItem('bpx_ai_model', this.aiModelName);
+      localStorage.setItem('bpx_ai_key', this.aiApiKey);
+      localStorage.setItem('bpx_ai_endpoint', this.aiEndpointUrl);
+      localStorage.setItem('bpx_ai_voice_lang', this.aiLanguage);
+      this.showAiSettingsModal = false;
+      this.requestUpdate();
+    } catch (_) {}
+  }
+
+  private initSpeechRecognition() {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRec) {
+      this.recognition = new SpeechRec();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = true;
+
+      this.recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          this.aiPrompt = transcript;
+          this.requestUpdate();
+        }
+      };
+
+      this.recognition.onerror = () => {
+        this.isListening = false;
+        this.requestUpdate();
+      };
+
+      this.recognition.onend = () => {
+        this.isListening = false;
+        this.requestUpdate();
+      };
+    }
+  }
+
+  private toggleVoiceRecognition() {
+    if (!this.recognition) {
+      alert('Speech Recognition is not supported in this browser. Please use Chrome/Edge or type your prompt.');
+      return;
+    }
+
+    if (this.isListening) {
+      this.recognition.stop();
+      this.isListening = false;
+    } else {
+      this.recognition.lang = this.aiLanguage;
+      this.recognition.start();
+      this.isListening = true;
+    }
+    this.requestUpdate();
+  }
+
+  private getStarterPrompts() {
+    const lang = this.aiLanguage.toLowerCase();
+    if (lang.startsWith('th')) {
+      return [
+        { icon: '🧾', title: 'ใบเสร็จรับเงิน', text: 'สร้างรายงานใบเสร็จรับเงิน มีรหัสสินค้า ชื่อสินค้า จำนวน ราคา ยอดรวม พร้อม QR Code PromptPay และยอดเงินบาทถ้วน' },
+        { icon: '📊', title: 'แดชบอร์ดสรุปยอดขาย', text: 'สร้างแดชบอร์ดสรุปยอดขายรายเดือน พร้อมกราฟแท่ง Column Chart และการเปรียบเทียบ KPI' },
+        { icon: '🏷️', title: 'ใบปะหน้าพัสดุ', text: 'สร้างฉลากติดกล่องพัสดุและบาร์โค้ด Code 128 พร้อมที่อยู่ผู้รับและผู้ส่ง' },
+        { icon: '📑', title: 'ใบกำกับภาษีเต็มรูป', text: 'สร้างใบกำกับภาษี/ใบส่งของ มีชื่อผู้ซื้อ-ผู้ขาย เลขประจำตัวผู้เสียภาษี และคำนวณภาษี VAT 7%' }
+      ];
+    } else if (lang.startsWith('zh')) {
+      return [
+        { icon: '🧾', title: '销售收据', text: '生成包含商品明细表与二维码的销售收据' },
+        { icon: '📊', title: '销售仪表盘', text: '创建月度销售执行仪表盘，包含柱状图与关键指标' }
+      ];
+    } else if (lang.startsWith('ja')) {
+      return [
+        { icon: '🧾', title: '領収書', text: '商品明細表とQRコード付きの領収書・レシートを作成' },
+        { icon: '📊', title: '売上ダッシュボード', text: '売上カラムチャートとKPIカードを含む月次ダッシュボード作成' }
+      ];
+    } else if (lang.startsWith('es')) {
+      return [
+        { icon: '🧾', title: 'Recibo de Venta', text: 'Generar recibo de venta con tabla de productos y código QR' },
+        { icon: '📊', title: 'Panel de Ventas', text: 'Crear panel de ventas mensual con gráfico de columnas' }
+      ];
+    }
+    return [
+      { icon: '🧾', title: 'Sales Receipt', text: 'Generate a sales receipt with payment QR, itemized table, and tax summary.' },
+      { icon: '📊', title: 'Executive Dashboard', text: 'Create monthly executive sales dashboard with revenue column chart and KPIs.' },
+      { icon: '🏷️', title: 'Shipping Label', text: 'Generate shipping logistics label with Code 128 barcode and recipient address.' },
+      { icon: '📑', title: 'Commercial Invoice', text: 'Create commercial VAT invoice with subtotal, tax 7%, and total amount.' }
+    ];
+  }
+
+  private async executeAiGeneration() {
+    if (!this.aiPrompt.trim()) return;
+
+    this.isAiGenerating = true;
+    this.aiError = null;
+    this.aiGeneratedBpx = '';
+    this.aiLoadingStep = 'กำลังวิเคราะห์คำสั่งและโครงสร้างรายงาน...';
+    this.abortController = new AbortController();
+
+    const snapshot = this.core.getBpxJson();
+
+    try {
+      setTimeout(() => {
+        if (this.isAiGenerating) this.aiLoadingStep = 'กำลังจัดวางองค์ประกอบและคำนวณ Bands...';
+      }, 1000);
+
+      setTimeout(() => {
+        if (this.isAiGenerating) this.aiLoadingStep = 'กำลังตรวจสอบความปลอดภัยของ SQL & Roslyn expressions...';
+      }, 2000);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'X-Bangplanix-Ai-Provider': this.aiProvider,
+        'X-Bangplanix-Ai-Model': this.aiModelName
+      };
+      if (this.aiApiKey) headers['X-Bangplanix-Ai-Key'] = this.aiApiKey;
+      if (this.aiEndpointUrl) headers['X-Bangplanix-Ai-Endpoint'] = this.aiEndpointUrl;
+
+      const res = await fetch(`${this.serverUrl}/api/v1/ai/generate`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          prompt: this.aiPrompt,
+          originalBpxSnapshot: snapshot
+        }),
+        signal: this.abortController.signal
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.aiGeneratedBpx = data.bpxJson;
+        this.aiLoadingStep = 'สร้างสำเร็จ พร้อมตรวจสอบก่อน Apply!';
+      } else {
+        this.aiError = data.error || 'Failed to generate report schema.';
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        this.aiError = 'การประมวลผลถูกยกเลิก (Cancelled by user)';
+      } else {
+        this.aiError = `Error: ${err.message}`;
+      }
+    } finally {
+      this.isAiGenerating = false;
+      this.abortController = null;
+      this.requestUpdate();
+    }
+  }
+
+  private cancelAiGeneration() {
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+  }
+
+  private applyGeneratedSchema() {
+    if (!this.aiGeneratedBpx) return;
+    this.core.applyAiGeneratedReport(this.aiGeneratedBpx);
+    this.showAiModal = false;
+    this.requestUpdate();
+  }
+
+  private async testAiConnection() {
+    this.isPinging = true;
+    this.testPingStatus = 'Testing connection...';
+    try {
+      const res = await fetch(`${this.serverUrl}/api/v1/ai/test-connection`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: this.aiProvider,
+          apiKey: this.aiApiKey,
+          modelName: this.aiModelName,
+          endpointUrl: this.aiEndpointUrl
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.testPingStatus = `✓ Connected successfully! Latency: ${data.latencyMs.toFixed(1)} ms`;
+      } else {
+        this.testPingStatus = `✗ Connection failed: ${data.error || 'Check key & endpoint'}`;
+      }
+    } catch (err: any) {
+      this.testPingStatus = `✗ Error: ${err.message}`;
+    } finally {
+      this.isPinging = false;
+      this.requestUpdate();
+    }
+  }
+
+  private async loadAiHistory() {
+    try {
+      const res = await fetch(`${this.serverUrl}/api/v1/ai/history?limit=30`);
+      if (res.ok) {
+        this.aiHistoryList = await res.json();
+      }
+    } catch (_) {}
+    this.showHistoryDrawer = true;
+    this.requestUpdate();
+  }
+
+  private async rollbackHistory(historyId: number) {
+    try {
+      const res = await fetch(`${this.serverUrl}/api/v1/ai/history/undo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ historyId })
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.restoredBpxJson) {
+        this.core.loadBpxJson(data.restoredBpxJson);
+        this.showHistoryDrawer = false;
+        this.requestUpdate();
+      } else {
+        alert(data.error || 'Failed to rollback.');
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
     }
   }
 
@@ -341,6 +598,12 @@ export class BangplanixDesigner extends LitElement {
     this.requestUpdate();
   }
 
+  private handleToolDragStart(e: DragEvent, type: string) {
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', type);
+    }
+  }
+
   override render() {
     const report = this.core.report;
     const selectedInfo = this.core.selectedElementIds.length === 1 
@@ -364,6 +627,19 @@ export class BangplanixDesigner extends LitElement {
           <button class="bpx-btn ${this.core.viewMode === 'design' ? 'active' : ''}" @click=${() => { this.core.setViewMode('design'); this.requestUpdate(); }}>Design</button>
           <button class="bpx-btn ${this.core.viewMode === 'preview' ? 'active' : ''}" @click=${() => { this.core.setViewMode('preview'); this.requestUpdate(); }}>Live Preview</button>
           <button class="bpx-btn ${this.core.viewMode === 'code' ? 'active' : ''}" @click=${() => { this.core.setViewMode('code'); this.requestUpdate(); }}>Schema Code</button>
+        </div>
+
+        <!-- AI Assistant & Actions -->
+        <div class="bpx-toolbar-group">
+          <button class="bpx-btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border-color: #6366f1; color: white;" @click=${() => { this.showAiModal = true; this.requestUpdate(); }}>
+            ✨ AI Assistant
+          </button>
+          <button class="bpx-btn" style="background: #1e293b; border-color: #3b82f6; color: #38bdf8;" @click=${() => { this.loadAiHistory(); }}>
+            📜 AI History
+          </button>
+          <button class="bpx-btn" @click=${() => { this.showAiSettingsModal = true; this.requestUpdate(); }} title="Configure AI Provider & API Key">
+            ⚙️ AI Settings
+          </button>
         </div>
 
         <div class="bpx-toolbar-group">
@@ -472,7 +748,7 @@ export class BangplanixDesigner extends LitElement {
         </div>
       </div>
 
-      <!-- Bottom Monaco Editor / Code Area -->
+      <!-- Bottom Editor Area -->
       <div class="bpx-bottom-editor">
         <div class="bpx-editor-tabs">
           <div class="bpx-tab ${this.core.bottomEditorTab === 'expression' ? 'active' : ''}" @click=${() => { this.core.setBottomEditorTab('expression'); this.requestUpdate(); }}>Expression Assist</div>
@@ -487,6 +763,239 @@ export class BangplanixDesigner extends LitElement {
                 : html`<div style="color: #cbd5e1;">💡 Type C# formulas: e.g. <span style="color: #38bdf8;">FormatCurrency(Fields.Amount * (1.0 - Fields.Discount))</span></div>`)}
         </div>
       </div>
+
+      <!-- AI Assistant Modal Dialog -->
+      ${this.showAiModal ? html`
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+          <div style="background: #1e293b; border: 1px solid #475569; border-radius: 12px; width: 720px; max-width: 95vw; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+            <div style="padding: 16px 20px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-weight: 700; font-size: 16px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+                <span>✨ Bangplanix AI Report Assistant</span>
+              </div>
+              <button class="bpx-btn" @click=${() => { this.showAiModal = false; }}>✕</button>
+            </div>
+
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 75vh; overflow-y: auto;">
+              <!-- Starter Prompt Cards -->
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">💡 Quick Starter Prompts (เลือกคำสั่งสำเร็จรูป):</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  ${this.getStarterPrompts().map(p => html`
+                    <div 
+                      style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 10px; cursor: pointer; transition: all 0.15s ease; font-size: 12px;"
+                      @click=${() => { this.aiPrompt = p.text; this.requestUpdate(); }}
+                    >
+                      <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 2px;">${p.icon} ${p.title}</div>
+                      <div style="color: #64748b; font-size: 11px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.text}</div>
+                    </div>
+                  `)}
+                </div>
+              </div>
+
+              <!-- Prompt Input Area with Mic -->
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label style="font-size: 12px; font-weight: 600; color: #94a3b8;">Describe your report in Thai or English:</label>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <select class="bpx-input" style="width: 110px; padding: 2px 4px; font-size: 11px;" .value=${this.aiLanguage} @change=${(e: any) => { this.aiLanguage = e.target.value; this.requestUpdate(); }}>
+                      <option value="th-TH">🇹🇭 ไทย (Thai)</option>
+                      <option value="en-US">🇺🇸 English (US)</option>
+                      <option value="zh-CN">🇨🇳 中文 (Chinese)</option>
+                      <option value="ja-JP">🇯🇵 日本語 (Japanese)</option>
+                      <option value="es-ES">🇪🇸 Español</option>
+                      <option value="de-DE">🇩🇪 Deutsch</option>
+                      <option value="fr-FR">🇫🇷 Français</option>
+                      <option value="ar-SA">🇸🇦 العربية</option>
+                    </select>
+                    <button 
+                      class="bpx-btn ${this.isListening ? 'active' : ''}" 
+                      style="${this.isListening ? 'background: #ef4444; border-color: #dc2626; animation: pulse 1s infinite;' : ''}"
+                      @click=${() => this.toggleVoiceRecognition()}
+                      title="Speech-to-Text Microphone"
+                    >
+                      ${this.isListening ? '⏹️ Listening...' : '🎙️ Mic'}
+                    </button>
+                  </div>
+                </div>
+                <textarea 
+                  class="bpx-input" 
+                  style="width: 100%; height: 90px; resize: vertical; font-family: inherit; font-size: 13px;" 
+                  placeholder="e.g. สร้างรายงานสรุปยอดขายรายสัปดาห์ มีตารางสินค้า ยอดเงิน และ QR PromptPay..."
+                  .value=${this.aiPrompt}
+                  @input=${(e: any) => { this.aiPrompt = e.target.value; }}
+                ></textarea>
+              </div>
+
+              <!-- Loading & Cancellation State -->
+              ${this.isAiGenerating ? html`
+                <div style="background: #0f172a; border: 1px solid #3b82f6; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 18px; height: 18px; border: 2px solid #38bdf8; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span style="font-size: 13px; color: #38bdf8;">${this.aiLoadingStep}</span>
+                  </div>
+                  <button class="bpx-btn" style="background: #ef4444; border-color: #dc2626; color: white;" @click=${() => this.cancelAiGeneration()}>
+                    ⏹️ Cancel Generation
+                  </button>
+                </div>
+              ` : ''}
+
+              <!-- Error Alert -->
+              ${this.aiError ? html`
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 12px; color: #fca5a5; font-size: 13px;">
+                  ⚠️ ${this.aiError}
+                </div>
+              ` : ''}
+
+              <!-- Generated Preview Result -->
+              ${this.aiGeneratedBpx ? html`
+                <div style="background: #0f172a; border: 1px solid #22c55e; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 12px; font-weight: 700; color: #4ade80; margin-bottom: 6px;">✓ Generated .bpx Schema Ready:</div>
+                  <pre style="margin: 0; max-height: 120px; overflow-y: auto; font-size: 11px; color: #94a3b8;">${this.aiGeneratedBpx}</pre>
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="padding: 14px 20px; background: #0f172a; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 8px;">
+              <button class="bpx-btn" @click=${() => { this.showAiModal = false; }}>Close</button>
+              ${this.aiGeneratedBpx ? html`
+                <button class="bpx-btn" style="background: #22c55e; border-color: #16a34a; color: white; font-weight: 600;" @click=${() => this.applyGeneratedSchema()}>
+                  ✓ Apply to Canvas
+                </button>
+              ` : html`
+                <button class="bpx-btn active" ?disabled=${this.isAiGenerating || !this.aiPrompt.trim()} @click=${() => this.executeAiGeneration()}>
+                  🚀 Generate Report
+                </button>
+              `}
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- AI Settings Modal (BYOK & Free-Text Model) -->
+      ${this.showAiSettingsModal ? html`
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+          <div style="background: #1e293b; border: 1px solid #475569; border-radius: 12px; width: 520px; max-width: 95vw; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+            <div style="padding: 16px 20px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-weight: 700; font-size: 15px; color: #38bdf8;">⚙️ AI Provider & BYOK Settings</div>
+              <button class="bpx-btn" @click=${() => { this.showAiSettingsModal = false; }}>✕</button>
+            </div>
+
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+              <div class="bpx-prop-row">
+                <label>Provider</label>
+                <select class="bpx-input" style="width: 220px;" .value=${this.aiProvider} @change=${(e: any) => { this.aiProvider = e.target.value; this.requestUpdate(); }}>
+                  <option value="gemini">Google Gemini</option>
+                  <option value="openai">OpenAI / ChatGPT</option>
+                  <option value="azure">Azure OpenAI</option>
+                  <option value="claude">Anthropic Claude</option>
+                  <option value="ollama">Ollama (Local / On-Premise)</option>
+                </select>
+              </div>
+
+              <!-- Free-Text Model Input with Datalist -->
+              <div class="bpx-prop-row">
+                <label>Model Name</label>
+                <input 
+                  list="bpx-model-suggestions"
+                  class="bpx-input" 
+                  style="width: 220px;" 
+                  type="text" 
+                  placeholder="e.g. gemini-2.5-flash, gpt-4o"
+                  .value=${this.aiModelName}
+                  @input=${(e: any) => { this.aiModelName = e.target.value; }}
+                />
+                <datalist id="bpx-model-suggestions">
+                  <option value="gemini-2.5-flash"></option>
+                  <option value="gemini-2.5-pro"></option>
+                  <option value="gpt-4o"></option>
+                  <option value="gpt-4o-mini"></option>
+                  <option value="claude-3-5-sonnet-20241022"></option>
+                  <option value="deepseek-r1"></option>
+                  <option value="llama3.3"></option>
+                  <option value="qwen2.5"></option>
+                </datalist>
+              </div>
+
+              <div class="bpx-prop-row">
+                <label>API Key (BYOK)</label>
+                <input 
+                  class="bpx-input" 
+                  style="width: 220px;" 
+                  type="password" 
+                  placeholder="AI Key (Saved locally)"
+                  .value=${this.aiApiKey}
+                  @input=${(e: any) => { this.aiApiKey = e.target.value; }}
+                />
+              </div>
+
+              <div class="bpx-prop-row">
+                <label>Custom Endpoint (Optional)</label>
+                <input 
+                  class="bpx-input" 
+                  style="width: 220px;" 
+                  type="text" 
+                  placeholder="http://localhost:11434"
+                  .value=${this.aiEndpointUrl}
+                  @input=${(e: any) => { this.aiEndpointUrl = e.target.value; }}
+                />
+              </div>
+
+              ${this.testPingStatus ? html`
+                <div style="font-size: 12px; padding: 8px 10px; border-radius: 6px; background: #0f172a; color: ${this.testPingStatus.startsWith('✓') ? '#4ade80' : '#f87171'};">
+                  ${this.testPingStatus}
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="padding: 14px 20px; background: #0f172a; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+              <button class="bpx-btn" ?disabled=${this.isPinging} @click=${() => this.testAiConnection()}>
+                ${this.isPinging ? 'Pinging...' : '⚡ Test Connection'}
+              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="bpx-btn" @click=${() => { this.showAiSettingsModal = false; }}>Cancel</button>
+                <button class="bpx-btn active" @click=${() => this.saveAiSettings()}>Save Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- AI History & Undo Drawer -->
+      ${this.showHistoryDrawer ? html`
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: flex-end; z-index: 1000;">
+          <div style="background: #1e293b; border-left: 1px solid #475569; width: 440px; max-width: 90vw; height: 100%; display: flex; flex-direction: column;">
+            <div style="padding: 16px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-weight: 700; color: #38bdf8;">📜 SQLite AI Prompt History</div>
+              <button class="bpx-btn" @click=${() => { this.showHistoryDrawer = false; }}>✕</button>
+            </div>
+
+            <div style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+              ${this.aiHistoryList.length === 0 ? html`
+                <div style="text-align: center; color: #64748b; padding: 30px;">No AI history recorded in SQLite yet.</div>
+              ` : this.aiHistoryList.map(h => html`
+                <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 4px;">
+                    <span>${h.provider} (${h.modelName})</span>
+                    <span>${new Date(h.createdAtUtc).toLocaleTimeString()}</span>
+                  </div>
+                  <div style="font-size: 13px; color: #e2e8f0; margin-bottom: 8px;">"${h.prompt}"</div>
+                  <div style="display: flex; justify-content: flex-end; gap: 6px;">
+                    <button class="bpx-btn" style="font-size: 11px; padding: 2px 8px;" @click=${() => { this.aiPrompt = h.prompt; this.showAiModal = true; this.showHistoryDrawer = false; }}>
+                      Re-run
+                    </button>
+                    ${h.hasSnapshot ? html`
+                      <button class="bpx-btn" style="font-size: 11px; padding: 2px 8px; color: #38bdf8; border-color: #0284c7;" @click=${() => this.rollbackHistory(h.id)}>
+                        ↺ Rollback Snapshot
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `)}
+            </div>
+          </div>
+        </div>
+      ` : ''}
     `;
   }
 }
+

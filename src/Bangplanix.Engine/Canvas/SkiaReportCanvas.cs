@@ -23,6 +23,11 @@ public sealed class SkiaReportCanvas
             return;
         }
 
+        if (!IsPageDisplayMatch(band.ShowOnPages, context))
+        {
+            return;
+        }
+
         foreach (var element in band.Elements)
         {
             RenderElement(element, offsetYPt, context);
@@ -33,6 +38,11 @@ public sealed class SkiaReportCanvas
     {
         ArgumentNullException.ThrowIfNull(element);
         ArgumentNullException.ThrowIfNull(context);
+
+        if (!IsPageDisplayMatch(element.ShowOnPages, context))
+        {
+            return;
+        }
 
         var xPt = UnitConverter.ToPoints(element.X, _unit);
         var yPt = offsetYPt + UnitConverter.ToPoints(element.Y, _unit);
@@ -67,6 +77,10 @@ public sealed class SkiaReportCanvas
 
             case ElementType.Sparkline:
                 RenderSparklineElement(element, xPt, yPt, wPt, hPt, context);
+                break;
+
+            case ElementType.Table:
+                RenderTableElement(element, xPt, yPt, wPt, hPt, context);
                 break;
         }
     }
@@ -112,6 +126,41 @@ public sealed class SkiaReportCanvas
         Visuals.ImageRenderer.RenderImage(_canvas, source, xPt, yPt, wPt, hPt, Visuals.ImageFitMode.Fit, 1.0f, 0.0f, element.MaxDpi, element.ImageQuality);
     }
 
+    private void RenderTableElement(ElementDefinition element, float xPt, float yPt, float wPt, float hPt, BandContext context)
+    {
+        if (element.Table == null) return;
+        var colWidths = Visuals.TableRenderer.CalculateColumnWidths(element.Table.Columns, wPt, _unit);
+        float currentY = yPt;
+
+        // Header
+        if (element.Table.Header != null)
+        {
+            var headerHeight = Visuals.TableRenderer.MeasureRowHeight(element.Table.Header, colWidths, _unit, context, context.Report);
+            Visuals.TableRenderer.RenderRow(_canvas, element.Table.Header, xPt, currentY, colWidths, headerHeight, _unit, context, context.Report);
+            currentY += headerHeight;
+        }
+
+        // Rows
+        for (int i = 0; i < element.Table.Rows.Count; i++)
+        {
+            var row = element.Table.Rows[i];
+            var rowHeight = Visuals.TableRenderer.MeasureRowHeight(row, colWidths, _unit, context, context.Report);
+            var bg = (i % 2 == 1 && !string.IsNullOrWhiteSpace(element.Table.AlternatingRowBackground))
+                ? element.Table.AlternatingRowBackground
+                : null;
+
+            Visuals.TableRenderer.RenderRow(_canvas, row, xPt, currentY, colWidths, rowHeight, _unit, context, context.Report, bg);
+            currentY += rowHeight;
+        }
+
+        // Footer
+        if (element.Table.Footer != null)
+        {
+            var footerHeight = Visuals.TableRenderer.MeasureRowHeight(element.Table.Footer, colWidths, _unit, context, context.Report);
+            Visuals.TableRenderer.RenderRow(_canvas, element.Table.Footer, xPt, currentY, colWidths, footerHeight, _unit, context, context.Report);
+        }
+    }
+
     private void RenderTextElement(ElementDefinition element, float xPt, float yPt, float wPt, float hPt, BandContext context)
     {
         var style = ResolveStyle(element, context.Report);
@@ -122,17 +171,208 @@ public sealed class SkiaReportCanvas
             return;
         }
 
-        var typeface = FontManager.Instance.GetTypeface(style?.FontFamily);
+        if (element.CanGrow || textValue.Contains('\n'))
+        {
+            DrawMultiLineText(_canvas, textValue, xPt, yPt, wPt, hPt, style);
+        }
+        else
+        {
+            var typeface = FontManager.Instance.GetTypeface(style?.FontFamily);
+            using var paint = new SKPaint
+            {
+                IsAntialias = true,
+                Color = ParseColor(style?.Color ?? "#000000"),
+                TextSize = (float)(style?.FontSize ?? 10.0),
+                Typeface = typeface
+            };
 
+            var fontMetrics = paint.FontMetrics;
+            var baselineY = yPt + hPt - fontMetrics.Descent;
+
+            var align = style?.Align ?? HorizontalAlign.Left;
+            float textX = xPt;
+
+            if (align == HorizontalAlign.Center)
+            {
+                paint.TextAlign = SKTextAlign.Center;
+                textX = xPt + (wPt / 2.0f);
+            }
+            else if (align == HorizontalAlign.Right)
+            {
+                paint.TextAlign = SKTextAlign.Right;
+                textX = xPt + wPt;
+            }
+            else
+            {
+                paint.TextAlign = SKTextAlign.Left;
+            }
+
+            using var shaper = new Fonts.HarfBuzzTextShaper();
+            shaper.ShapeAndDrawText(_canvas, textValue, textX, baselineY, paint, typeface);
+        }
+    }
+
+    public static void DrawMultiLineText(SKCanvas canvas, string text, float xPt, float yPt, float wPt, float hPt, StyleDefinition? style)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        var typeface = FontManager.Instance.GetTypeface(style?.FontFamily);
         using var paint = new SKPaint
         {
             IsAntialias = true,
             Color = ParseColor(style?.Color ?? "#000000"),
-            TextSize = (float)(style?.FontSize ?? 10.0),
+            TextSize = (float)(style?.FontSize > 0 ? style.FontSize : 10.0),
             Typeface = typeface
         };
 
-        // Text positioning
+        var fontMetrics = paint.FontMetrics;
+        var lineHeight = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
+        if (lineHeight <= 0) lineHeight = paint.TextSize * 1.25f;
+
+        var lines = WrapTextLines(text, paint, wPt);
+        var align = style?.Align ?? HorizontalAlign.Left;
+
+        using var shaper = new Fonts.HarfBuzzTextShaper();
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            float textX = xPt;
+
+            if (align == HorizontalAlign.Center)
+            {
+                paint.TextAlign = SKTextAlign.Center;
+                textX = xPt + (wPt / 2.0f);
+            }
+            else if (align == HorizontalAlign.Right)
+            {
+                paint.TextAlign = SKTextAlign.Right;
+                textX = xPt + wPt;
+            }
+            else
+            {
+                paint.TextAlign = SKTextAlign.Left;
+            }
+
+            var lineY = yPt + (i + 1) * lineHeight - fontMetrics.Descent;
+            shaper.ShapeAndDrawText(canvas, line, textX, lineY, paint, typeface);
+        }
+    }
+
+    public static float MeasureTextHeight(string text, float widthPt, StyleDefinition? style)
+    {
+        if (string.IsNullOrEmpty(text) || widthPt <= 0) return 0f;
+
+        var typeface = FontManager.Instance.GetTypeface(style?.FontFamily);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            TextSize = (float)(style?.FontSize > 0 ? style.FontSize : 10.0),
+            Typeface = typeface
+        };
+
+        var fontMetrics = paint.FontMetrics;
+        var lineHeight = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
+        if (lineHeight <= 0) lineHeight = paint.TextSize * 1.25f;
+
+        var lines = WrapTextLines(text, paint, widthPt);
+        return Math.Max(lineHeight, lines.Count * lineHeight);
+    }
+
+    public static List<string> WrapTextLines(string text, SKPaint paint, float maxWidthPt)
+    {
+        var lines = new List<string>();
+        if (string.IsNullOrEmpty(text)) return lines;
+
+        var rawParagraphs = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        foreach (var paragraph in rawParagraphs)
+        {
+            if (string.IsNullOrEmpty(paragraph))
+            {
+                lines.Add(string.Empty);
+                continue;
+            }
+
+            var words = paragraph.Split(' ');
+            var currentLine = new System.Text.StringBuilder();
+
+            foreach (var word in words)
+            {
+                var testLine = currentLine.Length == 0 ? word : currentLine.ToString() + " " + word;
+                var measuredWidth = paint.MeasureText(testLine);
+
+                if (measuredWidth > maxWidthPt && currentLine.Length > 0)
+                {
+                    lines.Add(currentLine.ToString());
+                    currentLine.Clear();
+
+                    if (paint.MeasureText(word) > maxWidthPt)
+                    {
+                        var wordChars = word.ToCharArray();
+                        var charLine = new System.Text.StringBuilder();
+                        foreach (var ch in wordChars)
+                        {
+                            if (paint.MeasureText(charLine.ToString() + ch) > maxWidthPt && charLine.Length > 0)
+                            {
+                                lines.Add(charLine.ToString());
+                                charLine.Clear();
+                            }
+                            charLine.Append(ch);
+                        }
+                        if (charLine.Length > 0)
+                        {
+                            currentLine.Append(charLine.ToString());
+                        }
+                    }
+                    else
+                    {
+                        currentLine.Append(word);
+                    }
+                }
+                else if (measuredWidth > maxWidthPt && currentLine.Length == 0)
+                {
+                    var wordChars = word.ToCharArray();
+                    var charLine = new System.Text.StringBuilder();
+                    foreach (var ch in wordChars)
+                    {
+                        if (paint.MeasureText(charLine.ToString() + ch) > maxWidthPt && charLine.Length > 0)
+                        {
+                            lines.Add(charLine.ToString());
+                            charLine.Clear();
+                        }
+                        charLine.Append(ch);
+                    }
+                    if (charLine.Length > 0)
+                    {
+                        currentLine.Append(charLine.ToString());
+                    }
+                }
+                else
+                {
+                    currentLine.Append(currentLine.Length == 0 ? word : " " + word);
+                }
+            }
+
+            if (currentLine.Length > 0)
+            {
+                lines.Add(currentLine.ToString());
+            }
+        }
+
+        return lines;
+    }
+
+    public void DrawDirectText(string text, float xPt, float yPt, float wPt, float hPt, StyleDefinition? style)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        var typeface = FontManager.Instance.GetTypeface(style?.FontFamily);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = ParseColor(style?.Color ?? "#666666"),
+            TextSize = (float)(style?.FontSize > 0 ? style.FontSize : 9.0),
+            Typeface = typeface
+        };
+
         var fontMetrics = paint.FontMetrics;
         var baselineY = yPt + hPt - fontMetrics.Descent;
 
@@ -154,9 +394,23 @@ public sealed class SkiaReportCanvas
             paint.TextAlign = SKTextAlign.Left;
         }
 
-        // Shape with HarfBuzz to ensure Thai vowels and tone marks never overlap or float
         using var shaper = new Fonts.HarfBuzzTextShaper();
-        shaper.ShapeAndDrawText(_canvas, textValue, textX, baselineY, paint, typeface);
+        shaper.ShapeAndDrawText(_canvas, text, textX, baselineY, paint, typeface);
+    }
+
+    public static bool IsPageDisplayMatch(PageDisplayMode mode, BandContext context)
+    {
+        return mode switch
+        {
+            PageDisplayMode.All => true,
+            PageDisplayMode.FirstPageOnly => context.CurrentPageNumber == 1,
+            PageDisplayMode.NotFirstPage => context.CurrentPageNumber > 1,
+            PageDisplayMode.LastPageOnly => context.CurrentPageNumber == context.TotalPages,
+            PageDisplayMode.NotLastPage => context.CurrentPageNumber < context.TotalPages,
+            PageDisplayMode.OddPages => (context.CurrentPageNumber % 2) != 0,
+            PageDisplayMode.EvenPages => (context.CurrentPageNumber % 2) == 0,
+            _ => true
+        };
     }
 
     private void RenderShapeElement(ElementDefinition element, float xPt, float yPt, float wPt, float hPt)
