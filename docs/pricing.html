@@ -250,6 +250,170 @@
     .lang-select:hover, .lang-select:focus {
       border-color: #3b82f6;
     }
+
+    /* Checkout Modal Styles */
+    .checkout-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 16px;
+      box-sizing: border-box;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .checkout-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .checkout-modal {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 28px;
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.7);
+      position: relative;
+      color: #f8fafc;
+      transform: translateY(20px);
+      transition: transform 0.25s ease;
+    }
+    .checkout-backdrop.active .checkout-modal {
+      transform: translateY(0);
+    }
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .modal-close:hover {
+      background: #1f2937;
+      color: #fff;
+    }
+    .modal-header {
+      margin-bottom: 20px;
+    }
+    .modal-header h3 {
+      margin: 0 0 6px 0;
+      font-size: 1.3rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-header p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .tier-summary-box {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-title { font-weight: 700; color: #38bdf8; font-size: 14px; }
+    .summary-desc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .summary-price { font-size: 1.4rem; font-weight: 800; color: #10b981; }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input {
+      width: 100%;
+      background: #030712;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    .form-hint {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 5px;
+    }
+    .payment-methods-badge {
+      background: #0a0f1d;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .modal-submit-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+    .modal-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .modal-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -564,6 +728,50 @@
     </div>
   </div>
 
+  <!-- Dynamic Checkout Modal -->
+  <div class="checkout-backdrop" id="checkout-modal-backdrop" aria-hidden="true">
+    <div class="checkout-modal" role="dialog" aria-labelledby="modal-tier-title">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-tier-title">🚀 Complete Your Purchase</h3>
+        <p>Your cryptographically signed license key will be delivered instantly to your email.</p>
+      </div>
+
+      <div class="tier-summary-box">
+        <div>
+          <div class="summary-title" id="modal-summary-tier">Bangplanix Professional</div>
+          <div class="summary-desc" id="modal-summary-desc">Instant delivery • Air-gapped Ed25519 Token</div>
+        </div>
+        <div class="summary-price" id="modal-summary-price">$699</div>
+      </div>
+
+      <div class="modal-error" id="modal-error-box"></div>
+
+      <form id="checkout-form">
+        <div class="form-group">
+          <label for="checkout-email">Your Work Email Address *</label>
+          <input type="email" id="checkout-email" placeholder="name@company.com" required autocomplete="email">
+          <div class="form-hint">Used for cryptographic license delivery and tax invoice receipt.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="checkout-name">Full Name / Company Name (Optional)</label>
+          <input type="text" id="checkout-name" placeholder="Acme Corporation Ltd." autocomplete="name">
+        </div>
+
+        <div class="payment-methods-badge">
+          <span>🔒</span>
+          <span><b>Accepted Payments:</b> Cards (Visa/Mastercard), Apple Pay, Google Pay &amp; 300+ Crypto Assets</span>
+        </div>
+
+        <button type="submit" class="modal-submit-btn" id="modal-submit-btn">
+          <span id="modal-btn-text">Proceed to Secure Checkout</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script type="module">
     import { BangplanixPricingController } from './src/dist/pricing/pricing-controller.js';
 
@@ -575,12 +783,85 @@
       const annualLabel = document.getElementById('annual-label');
       const langSelect = document.getElementById('pricing-lang-select');
 
+      // Modal elements
+      const backdrop = document.getElementById('checkout-modal-backdrop');
+      const modalCloseBtn = document.getElementById('modal-close-btn');
+      const checkoutForm = document.getElementById('checkout-form');
+      const modalEmailInput = document.getElementById('checkout-email');
+      const modalNameInput = document.getElementById('checkout-name');
+      const modalSummaryTier = document.getElementById('modal-summary-tier');
+      const modalSummaryPrice = document.getElementById('modal-summary-price');
+      const modalErrorBox = document.getElementById('modal-error-box');
+      const modalSubmitBtn = document.getElementById('modal-submit-btn');
+      const modalBtnText = document.getElementById('modal-btn-text');
+
+      let activeTierId = 'professional';
+
       function applyTranslations() {
         const trans = controller.getTranslation();
         document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
           if (key && trans[key]) {
             el.textContent = trans[key];
+          }
+        });
+      }
+
+      function openModal(tierId) {
+        activeTierId = tierId;
+        const tiers = controller.getTiers();
+        const tier = tiers.find(t => t.id === tierId) || tiers[1];
+        const display = controller.getDisplayPrice(tier);
+
+        modalSummaryTier.textContent = `Bangplanix ${tier.name}`;
+        modalSummaryPrice.textContent = `$${display.usd} ${display.period}`;
+        modalErrorBox.style.display = 'none';
+        modalErrorBox.textContent = '';
+        modalSubmitBtn.disabled = false;
+        modalBtnText.textContent = 'Proceed to Secure Checkout';
+
+        backdrop.classList.add('active');
+        backdrop.setAttribute('aria-hidden', 'false');
+        setTimeout(() => modalEmailInput.focus(), 100);
+      }
+
+      function closeModal() {
+        backdrop.classList.remove('active');
+        backdrop.setAttribute('aria-hidden', 'true');
+      }
+
+      if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+      if (backdrop) {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) closeModal();
+        });
+      }
+
+      if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = modalEmailInput.value.trim();
+          const name = modalNameInput.value.trim();
+
+          if (!email || !email.includes('@')) {
+            modalErrorBox.textContent = 'Please enter a valid work email address.';
+            modalErrorBox.style.display = 'block';
+            return;
+          }
+
+          modalErrorBox.style.display = 'none';
+          modalSubmitBtn.disabled = true;
+          modalBtnText.textContent = '⚡ Initializing Secure Session...';
+
+          const res = await controller.createCheckoutSession(activeTierId, email, name);
+          if (res.success && res.checkoutUrl) {
+            modalBtnText.textContent = 'Redirecting to NOWPayments...';
+            window.location.href = res.checkoutUrl;
+          } else {
+            modalSubmitBtn.disabled = false;
+            modalBtnText.textContent = 'Proceed to Secure Checkout';
+            modalErrorBox.textContent = res.error || 'Failed to initialize checkout. Please try again.';
+            modalErrorBox.style.display = 'block';
           }
         });
       }
@@ -596,10 +877,19 @@
           const priceText = isFree ? '$0' : `$${display.usd}`;
           const periodText = isFree ? `<span>${trans.forever}</span>` : `<span>${display.period}</span>`;
           const thbText = isFree ? trans.freeRevText : `≈ ${display.thb.toLocaleString()} THB ${display.period}`;
-          const checkoutUrl = cycle === 'annual' ? tier.checkoutUrlAnnual : tier.checkoutUrlMonthly;
           const isFeatured = tier.isPopular ? 'featured' : '';
           const popularBadge = tier.isPopular ? `<div class="popular-badge">${trans.popularBadge}</div>` : '';
+          const btnClass = isFree ? 'buy-btn secondary' : (tier.isPopular ? 'buy-btn featured-btn' : 'buy-btn primary');
           const btnLabel = isFree ? trans.downloadGithub : (tier.id === 'oem' ? trans.contactSales : `💳 ${trans.buyBtnLabel} ${tier.name}`);
+
+          let actionHtml = '';
+          if (isFree) {
+            actionHtml = `<a href="https://github.com/thabot/bangplanix" target="_blank" class="${btnClass}">${btnLabel}</a>`;
+          } else if (tier.id === 'oem') {
+            actionHtml = `<a href="mailto:thabot47@gmail.com?subject=Bangplanix%20OEM%20Licensing%20Inquiry" class="${btnClass}">${btnLabel}</a>`;
+          } else {
+            actionHtml = `<button type="button" class="${btnClass}" data-checkout-tier="${tier.id}">${btnLabel}</button>`;
+          }
 
           return `
             <div class="pricing-card ${isFeatured}">
@@ -611,10 +901,18 @@
               <ul class="plan-features">
                 ${tier.features.map(f => `<li>${f}</li>`).join('')}
               </ul>
-              <a href="${checkoutUrl}" target="${isFree ? '_self' : '_blank'}" class="${btnClass}">${btnLabel}</a>
+              ${actionHtml}
             </div>
           `;
         }).join('');
+
+        // Wire click handlers for dynamic checkout buttons
+        container.querySelectorAll('[data-checkout-tier]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const tierId = e.currentTarget.getAttribute('data-checkout-tier');
+            openModal(tierId);
+          });
+        });
       }
 
       toggleBtn.addEventListener('click', () => {
@@ -649,3 +947,4 @@
   </script>
 </body>
 </html>
+

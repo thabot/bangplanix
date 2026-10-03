@@ -146,5 +146,50 @@ export class BangplanixPricingController {
       };
     }
   }
+
+  async createCheckoutSession(
+    tierId: string,
+    customerEmail: string,
+    customerName: string = '',
+    apiBase: string = 'https://bangplanix.95459654.xyz'
+  ): Promise<{ success: boolean; checkoutUrl?: string; invoiceId?: string; error?: string }> {
+    const cleanEmail = customerEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, error: 'Please enter a valid customer email address.' };
+    }
+
+    const tierCode = tierId === 'enterprise' ? 'ENTERPRISE' : 'PRO';
+    const durationDays = this.billingCycle === 'annual' ? 365 : 30;
+
+    try {
+      const res = await fetch(`${apiBase}/api/v1/checkout/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier: tierCode,
+          customerEmail: cleanEmail,
+          customerName: customerName.trim(),
+          durationDays,
+          successUrl: typeof window !== 'undefined' ? `${window.location.origin}/lookup?payment=success` : undefined,
+          cancelUrl: typeof window !== 'undefined' ? `${window.location.origin}/pricing.html` : undefined
+        })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        return { success: false, error: `Checkout initialization failed: ${errText}` };
+      }
+
+      const data: any = await res.json();
+      return {
+        success: true,
+        checkoutUrl: data.checkoutUrl,
+        invoiceId: data.invoiceId
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error connecting to payment gateway.' };
+    }
+  }
 }
+
 
