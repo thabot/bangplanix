@@ -50,8 +50,8 @@ export const PRICING_TIERS: PricingTierData[] = [
       'Royalty-Free Runtime Redistribution',
       'Email Support (24-hour SLA)'
     ],
-    checkoutUrlAnnual: 'https://nowpayments.io/payment/?iid=bpx_pro_annual&tier=PRO&amount=699',
-    checkoutUrlMonthly: 'https://nowpayments.io/payment/?iid=bpx_pro_monthly&tier=PRO&amount=59'
+    checkoutUrlAnnual: '#checkout-pro',
+    checkoutUrlMonthly: '#checkout-pro'
   },
   {
     id: 'enterprise',
@@ -72,8 +72,8 @@ export const PRICING_TIERS: PricingTierData[] = [
       'Formal Thai Tax Invoice (ภ.พ.20 & WHT 3%)',
       'Dedicated Slack / Teams Channel (4-hour SLA)'
     ],
-    checkoutUrlAnnual: 'https://nowpayments.io/payment/?iid=bpx_enterprise_annual&tier=ENTERPRISE&amount=1999',
-    checkoutUrlMonthly: 'https://nowpayments.io/payment/?iid=bpx_enterprise_monthly&tier=ENTERPRISE&amount=199'
+    checkoutUrlAnnual: '#checkout-enterprise',
+    checkoutUrlMonthly: '#checkout-enterprise'
   },
   {
     id: 'oem',

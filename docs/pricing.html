@@ -943,8 +943,18 @@
 
       applyTranslations();
       renderPricingCards();
+
+      // Check URL query parameters or hash to auto-open checkout modal
+      const urlParams = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      if (urlParams.get('checkout') === 'pro' || hash === '#checkout-pro' || urlParams.get('tier') === 'PRO' || urlParams.get('tier') === 'professional') {
+        openModal('professional');
+      } else if (urlParams.get('checkout') === 'enterprise' || hash === '#checkout-enterprise' || urlParams.get('tier') === 'ENTERPRISE' || urlParams.get('tier') === 'enterprise') {
+        openModal('enterprise');
+      }
     });
   </script>
 </body>
 </html>
+
 
