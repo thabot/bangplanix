@@ -151,6 +151,7 @@ export class BangplanixPricingController {
     tierId: string,
     customerEmail: string,
     customerName: string = '',
+    payCurrency: string = 'usdttrc20',
     apiBase: string = 'https://bangplanix.95459654.xyz'
   ): Promise<{ success: boolean; checkoutUrl?: string; invoiceId?: string; error?: string }> {
     const cleanEmail = customerEmail.trim().toLowerCase();
@@ -170,6 +171,7 @@ export class BangplanixPricingController {
           customerEmail: cleanEmail,
           customerName: customerName.trim(),
           durationDays,
+          payCurrency: payCurrency.trim().toLowerCase(),
           successUrl: typeof window !== 'undefined' ? `${window.location.origin}/lookup?payment=success` : undefined,
           cancelUrl: typeof window !== 'undefined' ? `${window.location.origin}/pricing.html` : undefined
         })

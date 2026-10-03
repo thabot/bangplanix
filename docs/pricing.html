@@ -759,6 +759,21 @@
           <input type="text" id="checkout-name" placeholder="Acme Corporation Ltd." autocomplete="name">
         </div>
 
+        <div class="form-group">
+          <label for="checkout-currency">Select Payment Asset / Method</label>
+          <select id="checkout-currency" style="width: 100%; background: #030712; border: 1px solid #374151; border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; cursor: pointer;">
+            <option value="usdttrc20" selected>USDT (TRC-20) — Recommended (Fastest &amp; Lowest Fees)</option>
+            <option value="usdterc20">USDT (ERC-20)</option>
+            <option value="usdc">USDC (USD Coin)</option>
+            <option value="btc">Bitcoin (BTC)</option>
+            <option value="eth">Ethereum (ETH)</option>
+            <option value="sol">Solana (SOL)</option>
+            <option value="bnb">BNB (Binance Coin)</option>
+            <option value="">Other Assets / Select on Gateway</option>
+          </select>
+          <div class="form-hint">Selected currency will be pre-filled automatically on the payment gateway.</div>
+        </div>
+
         <div class="payment-methods-badge">
           <span>🔒</span>
           <span><b>Accepted Payments:</b> Cards (Visa/Mastercard), Apple Pay, Google Pay &amp; 300+ Crypto Assets</span>
@@ -789,6 +804,7 @@
       const checkoutForm = document.getElementById('checkout-form');
       const modalEmailInput = document.getElementById('checkout-email');
       const modalNameInput = document.getElementById('checkout-name');
+      const modalCurrencySelect = document.getElementById('checkout-currency');
       const modalSummaryTier = document.getElementById('modal-summary-tier');
       const modalSummaryPrice = document.getElementById('modal-summary-price');
       const modalErrorBox = document.getElementById('modal-error-box');
@@ -842,6 +858,7 @@
           e.preventDefault();
           const email = modalEmailInput.value.trim();
           const name = modalNameInput.value.trim();
+          const currency = modalCurrencySelect ? modalCurrencySelect.value : 'usdttrc20';
 
           if (!email || !email.includes('@')) {
             modalErrorBox.textContent = 'Please enter a valid work email address.';
@@ -853,7 +870,7 @@
           modalSubmitBtn.disabled = true;
           modalBtnText.textContent = '⚡ Initializing Secure Session...';
 
-          const res = await controller.createCheckoutSession(activeTierId, email, name);
+          const res = await controller.createCheckoutSession(activeTierId, email, name, currency);
           if (res.success && res.checkoutUrl) {
             modalBtnText.textContent = 'Redirecting to NOWPayments...';
             window.location.href = res.checkoutUrl;
