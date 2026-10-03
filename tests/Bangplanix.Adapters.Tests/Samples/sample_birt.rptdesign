@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.23">
+  <text-property name="title">Eclipse BIRT Financial Review</text-property>
+  <page-setup>
+    <simple-master-page name="Simple MasterPage" orientation="portrait" type="a4" />
+  </page-setup>
+  <parameters>
+    <scalar-parameter name="FiscalYear" dataType="integer">
+      <text-property name="promptText">Select Fiscal Year</text-property>
+    </scalar-parameter>
+  </parameters>
+  <data-sets>
+    <oda-data-set name="FinancialData">
+      <property name="queryText">SELECT * FROM financial_records</property>
+    </oda-data-set>
+  </data-sets>
+  <body>
+    <table name="MainTable">
+      <header>
+        <row>
+          <cell>
+            <label name="lblHeader">
+              <text-property name="text">Department Financials</text-property>
+            </label>
+          </cell>
+        </row>
+      </header>
+      <detail>
+        <row>
+          <cell>
+            <data name="deptName">
+              <expression name="resultSetColumn">dataSetRow["Department"]</expression>
+            </data>
+          </cell>
+        </row>
+      </detail>
+    </table>
+  </body>
+</report>

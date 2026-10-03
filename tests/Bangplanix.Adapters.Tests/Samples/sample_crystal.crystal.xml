@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CrystalReport Title="CrystalSalesLedger">
+  <SummaryInfo>
+    <Title>Crystal Sales Ledger</Title>
+    <Author>Crystal Reports Enterprise</Author>
+  </SummaryInfo>
+  <PageSetup PaperWidth="16840" PaperHeight="11900" Orientation="Portrait" />
+  <ParameterFields>
+    <ParameterField Name="?BranchCode" ValueType="String">
+      <PromptText>Enter Branch Code</PromptText>
+    </ParameterField>
+  </ParameterFields>
+  <DataSources>
+    <Table Name="SalesLedger">
+      <SelectQuery>SELECT * FROM tbl_sales</SelectQuery>
+    </Table>
+  </DataSources>
+  <Section Kind="PageHeaderSection" Height="800">
+    <TextObject Name="txtTitle" Left="200" Top="100" Width="4000" Height="400">
+      <Text>Monthly Sales Ledger 2026</Text>
+      <Font Size="14" Bold="true" />
+    </TextObject>
+  </Section>
+  <Section Kind="DetailSection" Height="400">
+    <FieldObject Name="fldCust" Left="200" Top="50" Width="2000" Height="300">
+      <Text>{SalesLedger.CustomerName}</Text>
+    </FieldObject>
+  </Section>
+</CrystalReport>

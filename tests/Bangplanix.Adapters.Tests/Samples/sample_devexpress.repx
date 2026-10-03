@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="23.2.3.0" Name="DevExpressRegionalSales">
+  <Parameters>
+    <Item1 Name="Region" Description="Sales Region" Value="APAC"/>
+  </Parameters>
+  <Bands>
+    <Item1 ControlType="TopMarginBand" Name="TopMargin" HeightF="50">
+      <Controls>
+        <Item1 ControlType="XRLabel" Name="xrLabel1" Text="Regional Sales Summary" LocationFloat="0, 10" SizeF="500, 30"/>
+      </Controls>
+    </Item1>
+    <Item2 ControlType="DetailBand" Name="Detail" HeightF="30">
+      <Controls>
+        <Item1 ControlType="XRLabel" Name="xrLabel2" LocationFloat="0, 0" SizeF="300, 20">
+          <ExpressionBindings>
+            <Item1 PropertyName="Text" Expression="[Region] + ' - ' + [TotalSales]"/>
+          </ExpressionBindings>
+        </Item1>
+      </Controls>
+    </Item2>
+  </Bands>
+</XtraReportsLayoutSerializer>

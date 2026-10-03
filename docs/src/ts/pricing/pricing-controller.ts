@@ -99,6 +99,20 @@ export const PRICING_TIERS: PricingTierData[] = [
 
 export type SupportedLanguage = 'en' | 'th' | 'zh' | 'ja' | 'es';
 
+export interface CheckoutResult {
+  success: boolean;
+  checkoutUrl?: string;
+  invoiceId?: string;
+  paymentId?: string | number;
+  paymentRecordId?: string;
+  payAddress?: string;
+  payAmount?: number;
+  payCurrency?: string;
+  amountUSD?: number;
+  currency?: string;
+  error?: string;
+}
+
 export class BangplanixPricingController {
   private billingCycle: 'annual' | 'monthly' = 'annual';
   private currentLanguage: SupportedLanguage = 'en';
@@ -153,7 +167,7 @@ export class BangplanixPricingController {
     customerName: string = '',
     payCurrency: string = 'usdttrc20',
     apiBase: string = 'https://bangplanix.95459654.xyz'
-  ): Promise<{ success: boolean; checkoutUrl?: string; invoiceId?: string; error?: string }> {
+  ): Promise<CheckoutResult> {
     const cleanEmail = customerEmail.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes('@')) {
       return { success: false, error: 'Please enter a valid customer email address.' };
@@ -186,7 +200,14 @@ export class BangplanixPricingController {
       return {
         success: true,
         checkoutUrl: data.checkoutUrl,
-        invoiceId: data.invoiceId
+        invoiceId: data.invoiceId,
+        paymentId: data.paymentId,
+        paymentRecordId: data.paymentRecordId,
+        payAddress: data.payAddress,
+        payAmount: data.payAmount,
+        payCurrency: data.payCurrency,
+        amountUSD: data.amountUSD,
+        currency: data.currency
       };
     } catch (err: any) {
       return { success: false, error: err.message || 'Network error connecting to payment gateway.' };

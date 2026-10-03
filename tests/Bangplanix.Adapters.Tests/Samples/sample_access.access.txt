@@ -1,0 +1,33 @@
+Version =20
+VersionRequired =20
+Begin Report
+    Caption ="Sales Invoice Report"
+    RecordSource ="SELECT OrderID, CustomerName, TotalAmount FROM qryInvoices"
+    Begin Section
+        Section =1
+        Height =1440
+        Begin Label
+            Name ="lblTitle"
+            Left =1440
+            Top =288
+            Width =5760
+            Height =576
+            Caption ="OFFICIAL TAX INVOICE"
+            FontName ="Segoe UI"
+            FontSize =16
+            FontWeight =700
+        End
+    End
+    Begin Section
+        Section =0
+        Height =720
+        Begin TextBox
+            Name ="txtCustomer"
+            ControlSource ="=[FirstName] & " " & [LastName]"
+            Left =720
+            Top =144
+            Width =2880
+            Height =360
+        End
+    End
+End

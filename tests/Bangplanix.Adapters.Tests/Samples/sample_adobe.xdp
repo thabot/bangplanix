@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/">
+  <template xmlns="http://www.xfa.org/schema/xfa-template/3.0/" name="PurchaseOrder">
+    <pageSet>
+      <pageArea name="Page1" id="Page1" w="210mm" h="297mm">
+        <medium stock="a4" short="210mm" long="297mm"/>
+        <margin topInset="15mm" bottomInset="15mm" leftInset="10mm" rightInset="10mm"/>
+      </pageArea>
+    </pageSet>
+    <subform name="form1" layout="tb">
+      <subform name="Header" layout="position" h="40mm">
+        <draw name="lblTitle" x="10mm" y="5mm" w="100mm" h="10mm">
+          <value><text>PURCHASE ORDER</text></value>
+        </draw>
+      </subform>
+      <subform name="Detail" layout="position" h="15mm">
+        <occur min="0" max="-1"/>
+        <field name="ItemCode" x="10mm" y="2mm" w="40mm" h="8mm">
+          <bind match="dataRef" ref="$.Items.Code"/>
+        </field>
+      </subform>
+    </subform>
+  </template>
+</xdp:xdp>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="PentahoSalesAnalysis">
+  <report-header height="40">
+    <label x="10" y="5" width="300" height="25" value="Pentaho Sales Analysis"/>
+  </report-header>
+  <items height="25">
+    <string-field x="10" y="0" width="150" height="20" field="CustomerName"/>
+    <number-field x="170" y="0" width="100" height="20" field="TotalRevenue" format="$#,##0.00"/>
+  </items>
+</report>

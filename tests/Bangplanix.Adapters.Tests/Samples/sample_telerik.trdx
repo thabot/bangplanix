@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.telerik.com/reporting/2021/1.0" Name="TelerikWarehouseInventory">
+  <PageSettings>
+    <PageSize Width="8.5in" Height="11in"/>
+  </PageSettings>
+  <ReportParameters>
+    <ReportParameter Name="WarehouseCode" Type="String" Text="Select Warehouse"/>
+  </ReportParameters>
+  <Items>
+    <PageHeaderSection Height="0.8in" Name="pageHeaderSection1">
+      <Items>
+        <TextBox Location="0in, 0.1in" Size="8.5in, 0.4in" Value="Warehouse Stock Balance" Name="titleBox"/>
+      </Items>
+    </PageHeaderSection>
+    <DetailSection Height="0.5in" Name="detailSection1">
+      <Items>
+        <TextBox Location="0in, 0in" Size="4in, 0.3in" Value="=Fields.ItemName" Name="itemBox"/>
+      </Items>
+    </DetailSection>
+  </Items>
+</Report>

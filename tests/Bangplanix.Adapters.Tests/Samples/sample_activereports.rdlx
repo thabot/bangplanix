@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActiveReportsLayout Version="3.5" PrintWidth="11520">
+  <Sections>
+    <Section Type="PageHeader" Name="PageHeader" Height="1440">
+      <Control Type="AR.Label" Name="lblTitle" Left="0" Top="100" Width="10000" Height="500" Caption="ActiveReports Invoice" Font-Bold="True" Font-Size="16" />
+    </Section>
+    <Section Type="Detail" Name="Detail" Height="720">
+      <Control Type="AR.Field" Name="txtDescription" Left="100" Top="100" Width="4000" Height="400" DataField="ItemDescription" />
+    </Section>
+  </Sections>
+</ActiveReportsLayout>

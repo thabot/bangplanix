@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report ReportName="FastReportCommercialInvoice">
+  <ReportPage Name="Page1" PaperWidth="210" PaperHeight="297" LeftMargin="10" RightMargin="10" TopMargin="10" BottomMargin="10">
+    <ReportTitleBand Name="ReportTitle1" Height="30">
+      <TextObject Name="Text1" Left="0" Top="5" Width="190" Height="20" Text="Commercial Tax Invoice" Font="Arial, 14pt, style=Bold" HorzAlign="Center"/>
+    </ReportTitleBand>
+    <DataBand Name="Data1" Height="20" DataSource="LineItems">
+      <TextObject Name="Text2" Left="10" Top="0" Width="80" Height="18" Text="[LineItems.Description]"/>
+      <BarcodeObject Name="Barcode1" Left="100" Top="0" Width="50" Height="18" Text="[LineItems.Barcode]"/>
+    </DataBand>
+  </ReportPage>
+</Report>

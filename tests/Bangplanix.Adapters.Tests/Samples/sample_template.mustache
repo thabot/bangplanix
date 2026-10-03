@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head><title>Payroll Summary</title></head>
+<body>
+  <h1>Monthly Payroll: {{ MonthYear }}</h1>
+  {{#each Employees}}
+  <div>{{ FullName }} - {{ Salary }}</div>
+  {{/each}}
+</body>
+</html>

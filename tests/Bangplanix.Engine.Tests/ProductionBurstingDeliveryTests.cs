@@ -160,7 +160,7 @@ public class ProductionBurstingDeliveryTests
         var result = await channel.DeliverAsync(doc, "Inv.pdf", config, metadata);
 
         result.Success.Should().BeTrue();
-        result.Destination.Should().Be("https://myteststorage.blob.core.windows.net/invoices/2026/09/Inv.pdf");
+        result.Destination.Should().Be($"https://myteststorage.blob.core.windows.net/invoices/{DateTime.UtcNow:yyyy}/{DateTime.UtcNow:MM}/Inv.pdf");
     }
 
     [Fact]

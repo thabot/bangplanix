@@ -1,0 +1,49 @@
+{
+  "ReportVersion": "2024.1.1",
+  "ReportName": "StimulsoftExecutiveSummary",
+  "Pages": {
+    "0": {
+      "Ident": "StiPage",
+      "Name": "Page1",
+      "PageWidth": 21.0,
+      "PageHeight": 29.7,
+      "Components": {
+        "0": {
+          "Ident": "StiHeaderBand",
+          "Name": "HeaderBand1",
+          "ClientRectangle": "0,0.4,19,1.0",
+          "Components": {
+            "0": {
+              "Ident": "StiText",
+              "Name": "TextHeader",
+              "ClientRectangle": "0,0,19,0.8",
+              "Text": { "Value": "Executive Performance KPI" }
+            }
+          }
+        },
+        "1": {
+          "Ident": "StiDataBand",
+          "Name": "DataBand1",
+          "ClientRectangle": "0,1.8,19,0.8",
+          "Components": {
+            "0": {
+              "Ident": "StiText",
+              "Name": "TextRow",
+              "ClientRectangle": "0,0,10,0.6",
+              "Text": { "Value": "{Financials.Revenue}" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "Dictionary": {
+    "DataSources": {
+      "0": {
+        "Ident": "StiSqlSource",
+        "Name": "Financials",
+        "SqlCommand": "SELECT * FROM Financials"
+      }
+    }
+  }
+}

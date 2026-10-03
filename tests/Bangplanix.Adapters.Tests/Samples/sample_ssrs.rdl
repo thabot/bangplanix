@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition">
+  <Description>SSRS Standard Sales Report</Description>
+  <Author>Bangplanix QA</Author>
+  <Page>
+    <PageWidth>8.5in</PageWidth>
+    <PageHeight>11in</PageHeight>
+    <PageHeader>
+      <Height>1in</Height>
+      <ReportItems>
+        <Textbox Name="HeaderTitle">
+          <Top>0.2in</Top>
+          <Left>0.5in</Left>
+          <Width>7.5in</Width>
+          <Height>0.5in</Height>
+          <Value>Enterprise Sales Performance</Value>
+        </Textbox>
+      </ReportItems>
+    </PageHeader>
+  </Page>
+  <ReportParameters>
+    <ReportParameter Name="FiscalYear">
+      <DataType>Integer</DataType>
+      <Prompt>Select Fiscal Year</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <DataSets>
+    <DataSet Name="SalesSummary">
+      <Query>
+        <CommandText>SELECT * FROM SalesData</CommandText>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Body>
+    <Height>4in</Height>
+    <ReportItems>
+      <Textbox Name="RevenueItem">
+        <Value>=Fields!TotalAmount.Value</Value>
+      </Textbox>
+    </ReportItems>
+  </Body>
+</Report>

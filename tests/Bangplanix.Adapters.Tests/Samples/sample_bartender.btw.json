@@ -1,0 +1,27 @@
+{
+  "name": "ShippingLabel_100x50",
+  "labelSetup": {
+    "width": "100mm",
+    "height": "50mm"
+  },
+  "objects": [
+    {
+      "type": "text",
+      "x": "5mm",
+      "y": "5mm",
+      "width": "90mm",
+      "height": "10mm",
+      "value": "BANGPLANIX LOGISTICS",
+      "font": { "family": "Arial", "size": 12, "bold": true }
+    },
+    {
+      "type": "barcode",
+      "symbology": "code128",
+      "x": "5mm",
+      "y": "18mm",
+      "width": "60mm",
+      "height": "20mm",
+      "dataSource": "%TrackingNumber%"
+    }
+  ]
+}

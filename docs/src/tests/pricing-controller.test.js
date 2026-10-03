@@ -92,13 +92,16 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.ok(res.error?.includes('valid customer email'));
   });
 
-  test('createCheckoutSession should successfully connect to gateway and return invoice URL', async () => {
+  test('createCheckoutSession should successfully connect to gateway and return invoice URL and deposit details', async () => {
     const ctrl = new BangplanixPricingController();
-    const res = await ctrl.createCheckoutSession('professional', 'unit-test@bangplanix.io', 'Unit Tester');
+    const res = await ctrl.createCheckoutSession('professional', 'unit-test@bangplanix.io', 'Unit Tester', 'usdttrc20');
     assert.strictEqual(res.success, true);
     assert.ok(res.checkoutUrl);
     assert.match(res.checkoutUrl, /^https:\/\/nowpayments\.io\/payment\/\?iid=/);
     assert.ok(res.invoiceId);
+    assert.ok(res.payAddress, 'Direct deposit payAddress should be present');
+    assert.ok(res.payAmount, 'Deposit payAmount should be present');
+    assert.strictEqual(res.payCurrency, 'usdttrc20');
   });
 });
 
