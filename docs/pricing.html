@@ -761,18 +761,19 @@
         </div>
 
         <div class="form-group">
-          <label for="checkout-currency">Select Payment Asset / Method</label>
+          <label for="checkout-currency">Select Payment Method</label>
           <select id="checkout-currency" style="width: 100%; background: #030712; border: 1px solid #374151; border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; cursor: pointer;">
-            <option value="usdttrc20" selected>USDT (TRC-20) — Recommended (Fastest &amp; Lowest Fees)</option>
-            <option value="usdterc20">USDT (ERC-20)</option>
-            <option value="usdc">USDC (USD Coin)</option>
-            <option value="btc">Bitcoin (BTC)</option>
-            <option value="eth">Ethereum (ETH)</option>
-            <option value="sol">Solana (SOL)</option>
-            <option value="bnb">BNB (Binance Coin)</option>
-            <option value="">Other Assets / Select on Gateway</option>
+            <option value="card" selected>💳 Credit / Debit Card (Visa, Mastercard, Apple Pay, Google Pay)</option>
+            <option value="usdttrc20">⚡ USDT (TRC-20) — Instant Crypto Wallet Deposit</option>
+            <option value="usdterc20">⚡ USDT (ERC-20)</option>
+            <option value="usdc">⚡ USDC</option>
+            <option value="btc">⚡ Bitcoin (BTC)</option>
+            <option value="eth">⚡ Ethereum (ETH)</option>
+            <option value="sol">⚡ Solana (SOL)</option>
+            <option value="bnb">⚡ BNB</option>
+            <option value="">🌐 Full Gateway (Select on NOWPayments)</option>
           </select>
-          <div class="form-hint">Selected currency will be pre-filled automatically on the payment gateway.</div>
+          <div class="form-hint" id="currency-hint">Selected method will open the secure payment gateway to complete checkout.</div>
         </div>
 
         <div class="payment-methods-badge">
@@ -823,8 +824,8 @@
 
         <div style="display: flex; gap: 10px;">
           <button type="button" id="deposit-back-btn" style="flex: 1; background: #1e293b; color: #cbd5e1; border: 1px solid #334155; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">← Change Method</button>
-          <a id="deposit-external-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex: 2; background: #334155; color: #fff; text-decoration: none; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <span>🌐 Open Gateway Page</span>
+          <a id="deposit-external-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex: 2; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span>💳 Pay with Card on Gateway</span>
             <span>↗</span>
           </a>
         </div>
@@ -963,7 +964,7 @@
           e.preventDefault();
           const email = modalEmailInput.value.trim();
           const name = modalNameInput.value.trim();
-          const currency = modalCurrencySelect ? modalCurrencySelect.value : 'usdttrc20';
+          const currency = modalCurrencySelect ? modalCurrencySelect.value : 'card';
 
           if (!email || !email.includes('@')) {
             modalErrorBox.textContent = 'Please enter a valid work email address.';
@@ -973,10 +974,20 @@
 
           modalErrorBox.style.display = 'none';
           modalSubmitBtn.disabled = true;
-          modalBtnText.textContent = '⚡ Initializing Direct Deposit...';
+          modalBtnText.textContent = '⚡ Initializing Secure Session...';
 
-          const res = await controller.createCheckoutSession(activeTierId, email, name, currency);
-          if (res.success && res.payAddress) {
+          const reqCurrency = (currency === 'card') ? '' : currency;
+          const res = await controller.createCheckoutSession(activeTierId, email, name, reqCurrency);
+          
+          if (res.success) {
+            // If paying with card / full gateway, redirect directly to NOWPayments destination page
+            if (currency === 'card' || currency === '' || !res.payAddress) {
+              modalBtnText.textContent = 'Redirecting to Secure Gateway...';
+              window.location.href = res.checkoutUrl;
+              return;
+            }
+
+            // Direct crypto deposit view
             currentPayAddress = res.payAddress;
             currentPayAmount = String(res.payAmount || res.amountUSD || '');
 
@@ -989,9 +1000,6 @@
 
             checkoutForm.style.display = 'none';
             checkoutDepositView.style.display = 'block';
-          } else if (res.success && res.checkoutUrl) {
-            modalBtnText.textContent = 'Redirecting to Payment Gateway...';
-            window.location.href = res.checkoutUrl;
           } else {
             modalSubmitBtn.disabled = false;
             modalBtnText.textContent = 'Proceed to Secure Checkout';
