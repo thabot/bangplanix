@@ -200,4 +200,43 @@ public class ClientTests
         var isHealthy = await client.IsHealthyAsync();
         isHealthy.Should().BeTrue();
     }
+
+    [Theory]
+    [InlineData("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    [InlineData("csv", "text/csv; charset=utf-8")]
+    [InlineData("json", "application/json; charset=utf-8")]
+    [InlineData("html", "text/html; charset=utf-8")]
+    [InlineData("svg", "image/svg+xml; charset=utf-8")]
+    public async Task RenderReportAsync_MultiFormats_ShouldReceiveCorrectContentType(string format, string expectedContentType)
+    {
+        var mockBytes = Encoding.UTF8.GetBytes($"mock content for {format}");
+
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            req.RequestUri!.PathAndQuery.Should().Be("/api/v1/report/render");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(mockBytes)
+                {
+                    Headers = { ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(expectedContentType.Split(';')[0]) }
+                }
+            };
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new BangplanixClient("http://localhost:9545", httpClient);
+
+        var result = await client.RenderReportAsync(new RenderClientRequest
+        {
+            TemplateJson = """{"version":"1.0","metadata":{"title":"Test"}}""",
+            DataJson = """[{"id":1,"name":"Item 1"}]""",
+            Format = format
+        });
+
+        result.Should().NotBeNull();
+        result.Format.Should().Be(format);
+        result.Data.Should().Equal(mockBytes);
+    }
 }

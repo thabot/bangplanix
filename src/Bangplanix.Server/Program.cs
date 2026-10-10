@@ -473,7 +473,194 @@ app.MapGet("/api/v1/tools/environment", () =>
     });
 });
 
-// --- 10. Existing Render to PDF & XLSX Endpoints ---
+// --- 10. Unified REST Report Render Endpoint (SDKs, Web Viewer & Direct API) ---
+app.MapPost("/api/v1/report/render", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync(context.RequestAborted);
+
+    if (string.IsNullOrWhiteSpace(body))
+    {
+        return Results.BadRequest(new { error = "Request body cannot be empty." });
+    }
+
+    try
+    {
+        using var doc = JsonDocument.Parse(body);
+        var root = doc.RootElement;
+
+        string? templatePath = root.TryGetProperty("templatePath", out var tp) ? tp.GetString() : null;
+        string? templateJson = root.TryGetProperty("templateJson", out var tj) ? tj.GetString() : null;
+        string? dataJson = root.TryGetProperty("dataJson", out var dj) ? dj.GetString() : null;
+        string format = root.TryGetProperty("format", out var fmt) ? (fmt.GetString() ?? "pdf").ToLowerInvariant() : "pdf";
+
+        string bpxContent;
+        if (!string.IsNullOrWhiteSpace(templateJson))
+        {
+            bpxContent = templateJson;
+        }
+        else if (!string.IsNullOrWhiteSpace(templatePath))
+        {
+            string fullPath = Path.IsPathRooted(templatePath)
+                ? templatePath
+                : Path.Combine(Directory.GetCurrentDirectory(), templatePath);
+
+            if (!File.Exists(fullPath))
+            {
+                try
+                {
+                    fullPath = ResolveSafeVolumePath("templates", Path.GetFileName(templatePath));
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                return Results.NotFound(new { error = $"Template file '{templatePath}' not found." });
+            }
+
+            bpxContent = await File.ReadAllTextAsync(fullPath, context.RequestAborted);
+        }
+        else
+        {
+            return Results.BadRequest(new { error = "Either templatePath or templateJson must be provided." });
+        }
+
+        var report = BpxParser.Parse(bpxContent);
+
+        // Parameters parsing
+        Dictionary<string, object?>? parameters = null;
+        if (root.TryGetProperty("parameters", out var pElem) && pElem.ValueKind == JsonValueKind.Object)
+        {
+            parameters = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var prop in pElem.EnumerateObject())
+            {
+                parameters[prop.Name] = prop.Value.ValueKind switch
+                {
+                    JsonValueKind.String => prop.Value.GetString(),
+                    JsonValueKind.Number => prop.Value.TryGetInt64(out var l) ? l : prop.Value.GetDouble(),
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    _ => prop.Value.GetRawText()
+                };
+            }
+        }
+
+        // Data rows resolution
+        IReadOnlyList<IDictionary<string, object?>> rows;
+        if (!string.IsNullOrWhiteSpace(dataJson) && dataJson.Trim() != "{}" && dataJson.Trim() != "[]")
+        {
+            rows = JsonPushStreamConnector.ParseObjectToRows(dataJson);
+        }
+        else if (report.Datasets?.FirstOrDefault()?.StaticData != null)
+        {
+            rows = JsonPushStreamConnector.ParseObjectToRows(report.Datasets[0].StaticData!);
+        }
+        else
+        {
+            rows = Array.Empty<IDictionary<string, object?>>();
+        }
+
+        string reportTitle = report.Metadata?.Title ?? "Report";
+
+        switch (format)
+        {
+            case "pdf":
+            {
+                var renderer = new SkiaPdfRenderer();
+                var pdfBytes = await renderer.RenderToPdfAsync(report, parameters, rows, cancellationToken: context.RequestAborted);
+                LogEntry($"[INFO] Rendered Report PDF: {reportTitle}");
+                return Results.File(pdfBytes, "application/pdf", $"{reportTitle}.pdf");
+            }
+
+            case "xlsx":
+            {
+                using var ms = new MemoryStream();
+                await MiniExcelReportExporter.ExportReportToExcelAsync(report, rows, ms, cancellationToken: context.RequestAborted);
+                LogEntry($"[INFO] Exported Report Excel: {reportTitle}");
+                return Results.File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{reportTitle}.xlsx");
+            }
+
+            case "csv":
+            {
+                var sb = new StringBuilder();
+                if (rows.Count > 0)
+                {
+                    var keys = rows[0].Keys.ToList();
+                    sb.AppendLine(string.Join(",", keys.Select(k => $"\"{k.Replace("\"", "\"\"")}\"")));
+                    foreach (var row in rows)
+                    {
+                        var line = string.Join(",", keys.Select(k =>
+                        {
+                            var val = row.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
+                            return $"\"{val.Replace("\"", "\"\"")}\"";
+                        }));
+                        sb.AppendLine(line);
+                    }
+                }
+                var csvBytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+                LogEntry($"[INFO] Exported Report CSV: {reportTitle}");
+                return Results.File(csvBytes, "text/csv; charset=utf-8", $"{reportTitle}.csv");
+            }
+
+            case "json":
+            {
+                var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(rows, new JsonSerializerOptions { WriteIndented = true });
+                LogEntry($"[INFO] Exported Report JSON: {reportTitle}");
+                return Results.File(jsonBytes, "application/json; charset=utf-8", $"{reportTitle}.json");
+            }
+
+            case "html":
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>" + System.Net.WebUtility.HtmlEncode(reportTitle) + "</title>");
+                sb.AppendLine("<style>body{font-family:system-ui,sans-serif;padding:2rem;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f4f4f4;}</style></head><body>");
+                sb.AppendLine("<h2>" + System.Net.WebUtility.HtmlEncode(reportTitle) + "</h2>");
+                if (rows.Count > 0)
+                {
+                    sb.AppendLine("<table><thead><tr>");
+                    var keys = rows[0].Keys.ToList();
+                    foreach (var k in keys) sb.AppendLine("<th>" + System.Net.WebUtility.HtmlEncode(k) + "</th>");
+                    sb.AppendLine("</tr></thead><tbody>");
+                    foreach (var row in rows)
+                    {
+                        sb.AppendLine("<tr>");
+                        foreach (var k in keys)
+                        {
+                            var val = row.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
+                            sb.AppendLine("<td>" + System.Net.WebUtility.HtmlEncode(val) + "</td>");
+                        }
+                        sb.AppendLine("</tr>");
+                    }
+                    sb.AppendLine("</tbody></table>");
+                }
+                sb.AppendLine("</body></html>");
+                var htmlBytes = Encoding.UTF8.GetBytes(sb.ToString());
+                return Results.File(htmlBytes, "text/html; charset=utf-8", $"{reportTitle}.html");
+            }
+
+            case "svg":
+            {
+                var svg = $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"600\"><text x=\"20\" y=\"40\" font-family=\"sans-serif\" font-size=\"20\">{System.Net.WebUtility.HtmlEncode(reportTitle)}</text></svg>";
+                return Results.File(Encoding.UTF8.GetBytes(svg), "image/svg+xml; charset=utf-8", $"{reportTitle}.svg");
+            }
+
+            default:
+                return Results.BadRequest(new { error = $"Unsupported format '{format}'. Supported formats: pdf, xlsx, csv, json, html, svg." });
+        }
+    }
+    catch (Exception ex)
+    {
+        LogEntry($"[ERROR] Report Render failed: {ex.Message}");
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
+
+// --- 11. Existing Render to PDF & XLSX Endpoints ---
 app.MapPost("/api/v1/render/pdf", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);

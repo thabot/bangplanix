@@ -236,6 +236,11 @@
       <button id="sdk-export-btn" class="ribbon-btn" title="Export ready-to-run code in 5 languages">📋 Copy Code (5 SDKs)</button>
       <button id="mock-data-btn" class="ribbon-btn" title="Switch between single and multi-page scenarios">🎲 Mock Data</button>
       <button id="export-pdf-btn" class="ribbon-btn success" title="Export real vector PDF directly from WASM (Ctrl+P)">📥 Export PDF</button>
+      <button id="export-xlsx-btn" class="ribbon-btn" title="Export data to Excel XLSX">📊 Export XLSX</button>
+      <button id="export-csv-btn" class="ribbon-btn" title="Export data to CSV">📑 Export CSV</button>
+      <button id="export-json-btn" class="ribbon-btn" title="Export .bpx schema and data JSON">📦 Export JSON</button>
+      <button id="export-html-btn" class="ribbon-btn" title="Export HTML Web Page">🌐 Export HTML</button>
+      <button id="export-svg-btn" class="ribbon-btn" title="Export Vector SVG">🖼️ Export SVG</button>
       <button id="shortcuts-hud-btn" class="ribbon-btn" title="View Keyboard Shortcuts">⌨️ Shortcuts</button>
     </div>
   </div>
@@ -312,6 +317,7 @@
     import { TemplateGalleryManager } from './src/dist/designer/template-gallery.js';
     import { SdkCodeGenerator } from './src/dist/designer/sdk-code-generator.js';
     import { CodeSyncBridge } from './src/dist/designer/code-sync-bridge.js';
+    import { BangplanixPlayground } from './src/playground.js';
     import './src/dist/designer/bangplanix-designer.js';
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -443,6 +449,101 @@
 
       saveBtn.addEventListener('click', () => app.saveDraft());
       exportPdfBtn.addEventListener('click', () => app.exportPdf());
+
+      function getDesignerDataRows() {
+        const rep = app.getReport();
+        if (rep && rep.datasets && rep.datasets.length > 0) {
+          const ds = rep.datasets[0];
+          if (Array.isArray(ds.data) && ds.data.length > 0) return ds.data;
+          if (Array.isArray(ds.staticData) && ds.staticData.length > 0) return ds.staticData;
+        }
+        return [
+          { item: 'Consulting Services', quantity: 1, unitPrice: 1200.00, amount: 1200.00 },
+          { item: 'Software License Pro', quantity: 2, unitPrice: 499.00, amount: 998.00 },
+          { item: 'Maintenance Support', quantity: 12, unitPrice: 50.00, amount: 600.00 }
+        ];
+      }
+
+      function downloadBlob(bytes, mimeType, filename) {
+        const blob = new Blob([bytes], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      document.getElementById('export-xlsx-btn')?.addEventListener('click', () => {
+        try {
+          const rep = app.getReport();
+          const title = rep?.metadata?.title || 'Report';
+          const rows = getDesignerDataRows();
+          const headers = rows.length > 0 ? Object.keys(rows[0]) : ['Item', 'Quantity', 'Amount'];
+          const bytes = BangplanixPlayground.generateXlsxDocument(title, headers, rows);
+          downloadBlob(bytes, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', `${title.replace(/[/\\?%*:|"<>]/g, '_')}.xlsx`);
+          app.showToast('Exported Excel (.xlsx) successfully');
+        } catch (err) {
+          alert('Export XLSX Error: ' + err.message);
+        }
+      });
+
+      document.getElementById('export-csv-btn')?.addEventListener('click', () => {
+        try {
+          const rep = app.getReport();
+          const title = rep?.metadata?.title || 'Report';
+          const rows = getDesignerDataRows();
+          const headers = rows.length > 0 ? Object.keys(rows[0]) : ['Item', 'Quantity', 'Amount'];
+          const bytes = BangplanixPlayground.generateCsvDocument(headers, rows);
+          downloadBlob(bytes, 'text/csv;charset=utf-8', `${title.replace(/[/\\?%*:|"<>]/g, '_')}.csv`);
+          app.showToast('Exported CSV successfully');
+        } catch (err) {
+          alert('Export CSV Error: ' + err.message);
+        }
+      });
+
+      document.getElementById('export-json-btn')?.addEventListener('click', () => {
+        try {
+          const rep = app.getReport();
+          const title = rep?.metadata?.title || 'Report';
+          const rows = getDesignerDataRows();
+          const bytes = BangplanixPlayground.generateJsonDocument(title, rep, rows);
+          downloadBlob(bytes, 'application/json;charset=utf-8', `${title.replace(/[/\\?%*:|"<>]/g, '_')}.json`);
+          app.showToast('Exported JSON successfully');
+        } catch (err) {
+          alert('Export JSON Error: ' + err.message);
+        }
+      });
+
+      document.getElementById('export-html-btn')?.addEventListener('click', () => {
+        try {
+          const rep = app.getReport();
+          const title = rep?.metadata?.title || 'Report';
+          const rows = getDesignerDataRows();
+          const headers = rows.length > 0 ? Object.keys(rows[0]) : ['Item', 'Quantity', 'Amount'];
+          const bytes = BangplanixPlayground.generateHtmlDocument(title, headers, rows);
+          downloadBlob(bytes, 'text/html;charset=utf-8', `${title.replace(/[/\\?%*:|"<>]/g, '_')}.html`);
+          app.showToast('Exported HTML successfully');
+        } catch (err) {
+          alert('Export HTML Error: ' + err.message);
+        }
+      });
+
+      document.getElementById('export-svg-btn')?.addEventListener('click', () => {
+        try {
+          const rep = app.getReport();
+          const title = rep?.metadata?.title || 'Report';
+          const w = rep?.pageSetup?.width || 595.28;
+          const h = rep?.pageSetup?.height || 841.89;
+          const bytes = BangplanixPlayground.generateSvgDocument(title, w, h, []);
+          downloadBlob(bytes, 'image/svg+xml;charset=utf-8', `${title.replace(/[/\\?%*:|"<>]/g, '_')}.svg`);
+          app.showToast('Exported SVG successfully');
+        } catch (err) {
+          alert('Export SVG Error: ' + err.message);
+        }
+      });
 
       // Mock Data Scenario Toggle (Single Page vs Multi-Page Data Table)
       const mockDataBtn = document.getElementById('mock-data-btn');

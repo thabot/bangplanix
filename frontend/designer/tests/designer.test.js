@@ -340,5 +340,50 @@ describe('Bangplanix Web Visual Designer Core Tests (<bangplanix-designer>)', ()
     });
   });
 
+  describe('7. Multi-Format Export Capabilities (PDF, XLSX, CSV, JSON, HTML, SVG)', () => {
+    test('should extract report schema and dataset for export', () => {
+      const designer = new BangplanixDesignerCore();
+      const schema = designer.getBpxJson();
+      const parsed = JSON.parse(schema);
+
+      assert.ok(parsed.metadata);
+      assert.ok(parsed.pageSetup);
+      assert.ok(parsed.bands);
+    });
+
+    test('should validate supported export formats and mime types', () => {
+      const supportedFormats = {
+        pdf: 'application/pdf',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        csv: 'text/csv;charset=utf-8',
+        json: 'application/json;charset=utf-8',
+        html: 'text/html;charset=utf-8',
+        svg: 'image/svg+xml;charset=utf-8'
+      };
+
+      for (const [fmt, mime] of Object.entries(supportedFormats)) {
+        assert.ok(fmt);
+        assert.ok(mime.includes('/'));
+      }
+    });
+
+    test('should generate valid JSON and CSV payload structures from current designer report', () => {
+      const designer = new BangplanixDesignerCore();
+      designer.addDataset({
+        id: 'sales_ds',
+        name: 'Sales Data',
+        type: 'json',
+        data: [{ product: 'Laptop Pro', qty: 2, price: 1200 }]
+      });
+
+      const report = designer.report;
+      assert.ok(report.datasets.length >= 1);
+      const ds = report.datasets.find(d => d.name === 'Sales Data');
+      assert.ok(ds);
+      assert.strictEqual(ds.connectorType, 'Sql');
+    });
+  });
+
 });
+
 

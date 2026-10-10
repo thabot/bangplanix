@@ -46,7 +46,7 @@ jobs:
           java-version: '21'
 
       - name: JavaScript Syntax Verification
-        run: node -c frontend/playground/src/playground.js frontend/playground/src/wasm-engine.js frontend/viewer/viewer-core.js sdk/node/src/index.js
+        run: node -c frontend/playground/src/playground.js frontend/playground/src/wasm-engine.js frontend/viewer/viewer-core.js frontend/designer/designer-core.js sdk/node/src/index.js
 
       - name: Restore Dependencies
         run: dotnet restore Bangplanix.slnx
@@ -71,6 +71,9 @@ jobs:
 
       - name: Run Frontend Playground Unit Tests (Node --test)
         run: node --test frontend/playground/tests/*.test.js
+
+      - name: Run Web Visual Designer Unit Tests (Node --test)
+        run: node --test frontend/designer/tests/*.test.js
 
       - name: Run Node.js SDK Unit Tests
         run: node --test sdk/node/tests/*.test.js
