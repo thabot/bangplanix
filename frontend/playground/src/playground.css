@@ -220,6 +220,21 @@ header {
   color: white;
 }
 
+.viewer-btn-primary,
+.viewer-btn.primary {
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.viewer-btn-primary:hover,
+.viewer-btn.primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
 .viewer-select {
   background-color: var(--bg-surface);
   color: var(--text-main);

@@ -219,6 +219,46 @@ const SAMPLES = {
   }
 };
 
+// Binary packing and checksum utilities for in-browser PDF & XLSX generation
+const textEncoder = new TextEncoder();
+function encodeUtf8(str) { return textEncoder.encode(str); }
+
+function concatByteArrays(arrays) {
+  let totalLen = 0;
+  for (const arr of arrays) totalLen += arr.length;
+  const res = new Uint8Array(totalLen);
+  let offset = 0;
+  for (const arr of arrays) {
+    res.set(arr, offset);
+    offset += arr.length;
+  }
+  return res;
+}
+
+function writeUInt32LE(arr, val, offset) {
+  arr[offset] = val & 0xff;
+  arr[offset + 1] = (val >>> 8) & 0xff;
+  arr[offset + 2] = (val >>> 16) & 0xff;
+  arr[offset + 3] = (val >>> 24) & 0xff;
+}
+
+function writeUInt16LE(arr, val, offset) {
+  arr[offset] = val & 0xff;
+  arr[offset + 1] = (val >>> 8) & 0xff;
+}
+
+function computeCrc32(buf) {
+  let table = new Int32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+    table[i] = c;
+  }
+  let crc = 0 ^ (-1);
+  for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
+  return (crc ^ (-1)) >>> 0;
+}
+
 export class BangplanixPlayground {
   constructor() {
     this.engine = new BangplanixWasmEngine();
@@ -326,6 +366,16 @@ export class BangplanixPlayground {
 
     if (printBtn) {
       printBtn.addEventListener('click', () => window.print());
+    }
+
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    if (downloadPdfBtn) {
+      downloadPdfBtn.addEventListener('click', () => this.downloadPdf());
+    }
+
+    const exportExcelBtn = document.getElementById('export-excel-btn');
+    if (exportExcelBtn) {
+      exportExcelBtn.addEventListener('click', () => this.exportExcel());
     }
 
     if (searchBtn) {
@@ -554,7 +604,253 @@ export class BangplanixPlayground {
     const a = document.createElement('a');
     a.href = url;
     a.download = `${this.currentSample}-preview.svg`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  downloadPdf() {
+    try {
+      const editor = document.getElementById('bpx-editor');
+      let title = 'Bangplanix-Report';
+      let width = 595.28;
+      let height = 841.89;
+      if (editor && editor.value) {
+        try {
+          const tpl = JSON.parse(editor.value);
+          if (tpl.metadata && tpl.metadata.title) title = tpl.metadata.title;
+          if (tpl.pageSetup) {
+            if (tpl.pageSetup.width && tpl.pageSetup.height) {
+              width = Number(tpl.pageSetup.width) || 595.28;
+              height = Number(tpl.pageSetup.height) || 841.89;
+            } else if (tpl.pageSetup.paperKind === 'A5') {
+              width = tpl.pageSetup.orientation === 'Landscape' ? 595.28 : 419.53;
+              height = tpl.pageSetup.orientation === 'Landscape' ? 419.53 : 595.28;
+            } else if (tpl.pageSetup.paperKind === 'A4') {
+              width = tpl.pageSetup.orientation === 'Landscape' ? 841.89 : 595.28;
+              height = tpl.pageSetup.orientation === 'Landscape' ? 595.28 : 841.89;
+            }
+          }
+        } catch (_) {}
+      }
+
+      const svgEl = document.querySelector('#preview-canvas-wrapper svg');
+      const textLines = [];
+      if (svgEl) {
+        const textElements = svgEl.querySelectorAll('text');
+        textElements.forEach(el => {
+          const text = (el.textContent || '').trim();
+          if (text) textLines.push(text);
+        });
+      }
+
+      const pdfBytes = BangplanixPlayground.generatePdfDocument(title, textLines, width, height);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Download PDF Error: ${err.message}`);
+    }
+  }
+
+  exportExcel() {
+    try {
+      const editor = document.getElementById('bpx-editor');
+      let title = 'Report';
+      if (editor && editor.value) {
+        try {
+          const tpl = JSON.parse(editor.value);
+          if (tpl.metadata && tpl.metadata.title) title = tpl.metadata.title;
+        } catch (_) {}
+      }
+
+      const sampleData = (SAMPLES[this.currentSample] && SAMPLES[this.currentSample].data) ? SAMPLES[this.currentSample].data : {};
+      const rows = sampleData.items || (Object.keys(sampleData).length > 0 ? sampleData[Object.keys(sampleData)[0]] : []) || [];
+      const headers = rows.length > 0 ? Object.keys(rows[0]) : ['Item', 'Quantity', 'Amount'];
+
+      const xlsxBytes = BangplanixPlayground.generateXlsxDocument(title, headers, rows);
+      const blob = new Blob([xlsxBytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Export XLSX Error: ${err.message}`);
+    }
+  }
+
+  static generateXlsxDocument(sheetName, headers = [], rows = []) {
+    const files = [];
+    function addFile(name, content) {
+      const data = typeof content === 'string' ? encodeUtf8(content) : content;
+      files.push({ name, data, crc: computeCrc32(data), size: data.length });
+    }
+
+    addFile('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+    addFile('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+    addFile('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
+    addFile('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + (sheetName || 'Sheet1').replace(/[/\\?*:[\]]/g, '_') + '" sheetId="1" r:id="rId1"/></sheets></workbook>');
+
+    let sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+    sheetXml += '<row r="1">';
+    headers.forEach((h, colIdx) => {
+      const colName = String.fromCharCode(65 + (colIdx % 26));
+      sheetXml += '<c r="' + colName + '1" t="inlineStr"><is><t>' + String(h).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</t></is></c>';
+    });
+    sheetXml += '</row>';
+    rows.forEach((row, rIdx) => {
+      const rowNum = rIdx + 2;
+      sheetXml += '<row r="' + rowNum + '">';
+      headers.forEach((h, colIdx) => {
+        const colName = String.fromCharCode(65 + (colIdx % 26));
+        const val = row[h] !== undefined ? row[h] : '';
+        const num = Number(val);
+        if (!isNaN(num) && val !== '' && typeof val !== 'boolean') {
+          sheetXml += '<c r="' + colName + rowNum + '"><v>' + num + '</v></c>';
+        } else {
+          const cleanVal = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          sheetXml += '<c r="' + colName + rowNum + '" t="inlineStr"><is><t>' + cleanVal + '</t></is></c>';
+        }
+      });
+      sheetXml += '</row>';
+    });
+    sheetXml += '</sheetData></worksheet>';
+    addFile('xl/worksheets/sheet1.xml', sheetXml);
+
+    const parts = [];
+    const centralDir = [];
+    let offset = 0;
+
+    files.forEach(f => {
+      const nameBuf = encodeUtf8(f.name);
+      const lh = new Uint8Array(30);
+      writeUInt32LE(lh, 0x04034b50, 0);
+      writeUInt16LE(lh, 20, 4);
+      writeUInt16LE(lh, 0, 6);
+      writeUInt16LE(lh, 0, 8);
+      writeUInt16LE(lh, 0, 10);
+      writeUInt16LE(lh, 0, 12);
+      writeUInt32LE(lh, f.crc, 14);
+      writeUInt32LE(lh, f.size, 18);
+      writeUInt32LE(lh, f.size, 22);
+      writeUInt16LE(lh, nameBuf.length, 26);
+      writeUInt16LE(lh, 0, 28);
+
+      parts.push(lh, nameBuf, f.data);
+
+      const cd = new Uint8Array(46);
+      writeUInt32LE(cd, 0x02014b50, 0);
+      writeUInt16LE(cd, 20, 4);
+      writeUInt16LE(cd, 20, 6);
+      writeUInt16LE(cd, 0, 8);
+      writeUInt16LE(cd, 0, 10);
+      writeUInt16LE(cd, 0, 12);
+      writeUInt32LE(cd, f.crc, 14);
+      writeUInt32LE(cd, f.size, 20);
+      writeUInt32LE(cd, f.size, 24);
+      writeUInt16LE(cd, nameBuf.length, 28);
+      writeUInt16LE(cd, 0, 30);
+      writeUInt16LE(cd, 0, 32);
+      writeUInt16LE(cd, 0, 34);
+      writeUInt16LE(cd, 0, 36);
+      writeUInt32LE(cd, 0, 38);
+      writeUInt32LE(cd, offset, 42);
+
+      centralDir.push(cd, nameBuf);
+      offset += lh.length + nameBuf.length + f.size;
+    });
+
+    const cdBuf = concatByteArrays(centralDir);
+    const eocd = new Uint8Array(22);
+    writeUInt32LE(eocd, 0x06054b50, 0);
+    writeUInt16LE(eocd, 0, 4);
+    writeUInt16LE(eocd, 0, 6);
+    writeUInt16LE(eocd, files.length, 8);
+    writeUInt16LE(eocd, files.length, 10);
+    writeUInt32LE(eocd, cdBuf.length, 12);
+    writeUInt32LE(eocd, offset, 16);
+    writeUInt16LE(eocd, 0, 20);
+
+    return concatByteArrays([...parts, cdBuf, eocd]);
+  }
+
+  static generatePdfDocument(title, textLines = [], width = 595.28, height = 841.89) {
+    let contentStream = 'BT\n/F1 16 Tf\n50 ' + (height - 60).toFixed(1) + ' Td\n(' + (title || 'Report').replace(/[()\\]/g, '\\$&') + ') Tj\nET\n';
+    let y = height - 90;
+    textLines.forEach(line => {
+      if (y > 50) {
+        const cleanLine = String(line).replace(/[()\\]/g, '\\$&');
+        contentStream += 'BT\n/F1 10 Tf\n50 ' + y.toFixed(1) + ' Td\n(' + cleanLine + ') Tj\nET\n';
+        y -= 18;
+      }
+    });
+
+    const streamBuf = encodeUtf8(contentStream);
+    const objects = [
+      '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
+      '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
+      '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + width + ' ' + height + '] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n',
+      '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n'
+    ];
+
+    const header5 = '5 0 obj\n<< /Length ' + streamBuf.length + ' >>\nstream\n';
+    const footer5 = '\nendstream\nendobj\n';
+
+    const headerBytes = encodeUtf8('%PDF-1.4\n');
+    const obj1Bytes = encodeUtf8(objects[0]);
+    const obj2Bytes = encodeUtf8(objects[1]);
+    const obj3Bytes = encodeUtf8(objects[2]);
+    const obj4Bytes = encodeUtf8(objects[3]);
+    const obj5HdrBytes = encodeUtf8(header5);
+    const obj5FtrBytes = encodeUtf8(footer5);
+
+    const offsets = [];
+    let currentOffset = headerBytes.length;
+
+    offsets.push(currentOffset);
+    currentOffset += obj1Bytes.length;
+
+    offsets.push(currentOffset);
+    currentOffset += obj2Bytes.length;
+
+    offsets.push(currentOffset);
+    currentOffset += obj3Bytes.length;
+
+    offsets.push(currentOffset);
+    currentOffset += obj4Bytes.length;
+
+    offsets.push(currentOffset);
+    currentOffset += obj5HdrBytes.length + streamBuf.length + obj5FtrBytes.length;
+
+    const startXref = currentOffset;
+
+    let xref = 'xref\n0 6\n0000000000 65535 f \n';
+    offsets.forEach(off => {
+      xref += String(off).padStart(10, '0') + ' 00000 n \n';
+    });
+    xref += 'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + startXref + '\n%%EOF\n';
+
+    return concatByteArrays([
+      headerBytes,
+      obj1Bytes,
+      obj2Bytes,
+      obj3Bytes,
+      obj4Bytes,
+      obj5HdrBytes,
+      streamBuf,
+      obj5FtrBytes,
+      encodeUtf8(xref)
+    ]);
   }
 }

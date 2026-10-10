@@ -1,6 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { BangplanixWasmEngine } from '../src/wasm-engine.js';
+import { BangplanixPlayground } from '../src/playground.js';
 
 describe('Bangplanix WASM In-Browser Engine Tests', () => {
   const engine = new BangplanixWasmEngine();
@@ -93,4 +94,64 @@ describe('Bangplanix WASM In-Browser Engine Tests', () => {
     assert.ok(svg.includes('TAX INVOICE'));
     assert.ok(svg.includes('12345678'));
   });
+
+  describe('Bangplanix Playground Client-Side Document Exporters', () => {
+    test('generateXlsxDocument should produce a valid OpenXML spreadsheet ZIP archive', () => {
+      const headers = ['Item Description', 'Qty', 'Unit Price', 'Total'];
+      const rows = [
+        { 'Item Description': 'Cloud License', 'Qty': 2, 'Unit Price': 15000, 'Total': 30000 },
+        { 'Item Description': 'Support SLA', 'Qty': 1, 'Unit Price': 5000, 'Total': 5000 }
+      ];
+
+      const xlsxBytes = BangplanixPlayground.generateXlsxDocument('Tax Invoice', headers, rows);
+
+      assert.ok(xlsxBytes instanceof Uint8Array);
+      assert.ok(xlsxBytes.length > 500);
+
+      // Verify ZIP standard signature 0x50 0x4B 0x03 0x04 ('PK\x03\x04')
+      assert.equal(xlsxBytes[0], 0x50);
+      assert.equal(xlsxBytes[1], 0x4B);
+      assert.equal(xlsxBytes[2], 0x03);
+      assert.equal(xlsxBytes[3], 0x04);
+
+      // Convert to string to check OpenXML contents
+      const decoded = new TextDecoder().decode(xlsxBytes);
+      assert.ok(decoded.includes('[Content_Types].xml'));
+      assert.ok(decoded.includes('xl/workbook.xml'));
+      assert.ok(decoded.includes('xl/worksheets/sheet1.xml'));
+      assert.ok(decoded.includes('Cloud License'));
+      assert.ok(decoded.includes('30000'));
+    });
+
+    test('generatePdfDocument should produce a compliant PDF 1.4 binary stream', () => {
+      const title = 'Commercial Tax Invoice';
+      const textLines = [
+        'Customer: Acme Enterprise Ltd.',
+        'Invoice No: INV-2026-0901',
+        'Total Amount: 35,000.00 THB'
+      ];
+
+      const pdfBytes = BangplanixPlayground.generatePdfDocument(title, textLines, 595.28, 841.89);
+
+      assert.ok(pdfBytes instanceof Uint8Array);
+      assert.ok(pdfBytes.length > 200);
+
+      const decoded = new TextDecoder().decode(pdfBytes);
+      // Verify PDF 1.4 header
+      assert.ok(decoded.startsWith('%PDF-1.4'));
+      // Verify PDF structure elements
+      assert.ok(decoded.includes('/Type /Catalog'));
+      assert.ok(decoded.includes('/Type /Pages'));
+      assert.ok(decoded.includes('/Type /Page'));
+      assert.ok(decoded.includes('/Type /Font'));
+      assert.ok(decoded.includes('/BaseFont /Helvetica'));
+      assert.ok(decoded.includes('Commercial Tax Invoice'));
+      assert.ok(decoded.includes('INV-2026-0901'));
+      assert.ok(decoded.includes('xref'));
+      assert.ok(decoded.includes('trailer'));
+      assert.ok(decoded.includes('startxref'));
+      assert.ok(decoded.endsWith('%%EOF\n') || decoded.includes('%%EOF'));
+    });
+  });
 });
+
