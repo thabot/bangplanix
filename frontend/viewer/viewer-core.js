@@ -21,6 +21,7 @@ export class BangplanixViewerCore {
 
     // Mobile Actions Menu State
     this.mobileActionsOpen = false;
+    this.exportMenuOpen = false;
 
     // Parameter & Cascading Filter State
     this.parameterPanelOpen = false;
@@ -28,6 +29,11 @@ export class BangplanixViewerCore {
     this.parameters = { ...(options.parameters || {}) };
     this.parameterOptionsMap = {}; // paramName -> list of {label, value}
     this.validationErrors = [];
+  }
+
+  toggleExportMenu(open = null) {
+    this.exportMenuOpen = open !== null ? open : !this.exportMenuOpen;
+    return this.exportMenuOpen;
   }
 
   // Mobile Action Menu Operations

@@ -44,6 +44,7 @@ export class BangplanixViewer extends LitElement {
 
   // Mobile State
   @state() private mobileActionsOpen: boolean = false;
+  @state() private exportMenuOpen: boolean = false;
 
   // Parameters
   @state() private parameterPanelOpen: boolean = false;
@@ -173,6 +174,47 @@ export class BangplanixViewer extends LitElement {
       cursor: pointer;
       outline: none;
       min-height: 32px;
+    }
+
+    .export-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .export-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      box-shadow: 0 10px 15px rgba(0,0,0,0.4);
+      z-index: 100;
+      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      padding: 4px;
+    }
+
+    .export-menu button {
+      text-align: left;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: #f8fafc;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .export-menu button:hover {
+      background: #0284c7;
+      color: #ffffff;
     }
 
     /* Main Container & Parameter Drawer */
@@ -609,6 +651,7 @@ export class BangplanixViewer extends LitElement {
 
   downloadPdf() {
     this.closeMobileActions();
+    this.closeExportMenu();
     if (!this.pdfUrl) return;
     const a = document.createElement('a');
     a.href = this.pdfUrl;
@@ -616,6 +659,148 @@ export class BangplanixViewer extends LitElement {
     document.body.appendChild(a);
     a.click();
     a.remove();
+  }
+
+  toggleExportMenu() {
+    this.closeMobileActions();
+    this.exportMenuOpen = !this.exportMenuOpen;
+  }
+
+  closeExportMenu() {
+    this.exportMenuOpen = false;
+  }
+
+  async exportCsv() {
+    this.closeMobileActions();
+    this.closeExportMenu();
+    try {
+      let csvText = '';
+      try {
+        const response = await fetch(`${this.serverUrl}/api/v1/report/render`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templatePath: this.template,
+            dataJson: this.data || '{}',
+            parameters: this.parameters,
+            format: 'csv'
+          })
+        });
+        if (response.ok) {
+          csvText = await response.text();
+        }
+      } catch (_) {}
+
+      if (!csvText) {
+        let parsedData: any = {};
+        try { parsedData = JSON.parse(this.data || '{}'); } catch (_) {}
+        const rows = parsedData.items || (Object.keys(parsedData).length > 0 ? parsedData[Object.keys(parsedData)[0]] : []) || [];
+        if (Array.isArray(rows) && rows.length > 0) {
+          const headers = Object.keys(rows[0]);
+          csvText = headers.join(',') + '\r\n' + rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        } else {
+          csvText = 'Field,Value\r\n' + Object.entries(this.parameters).map(([k, v]) => `"${k}","${v}"`).join('\r\n');
+        }
+      }
+
+      const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${this.template.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      this.dispatchEvent(new CustomEvent('export-completed', { detail: { format: 'csv' } }));
+    } catch (err: any) {
+      alert(`Export CSV Error: ${err.message}`);
+    }
+  }
+
+  exportJson() {
+    this.closeMobileActions();
+    this.closeExportMenu();
+    try {
+      let parsedData: any = {};
+      try { parsedData = JSON.parse(this.data || '{}'); } catch (_) {}
+      const exportPayload = {
+        template: this.template,
+        parameters: this.parameters,
+        data: parsedData,
+        exportedAt: new Date().toISOString()
+      };
+      const jsonStr = JSON.stringify(exportPayload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${this.template.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      this.dispatchEvent(new CustomEvent('export-completed', { detail: { format: 'json' } }));
+    } catch (err: any) {
+      alert(`Export JSON Error: ${err.message}`);
+    }
+  }
+
+  exportHtml() {
+    this.closeMobileActions();
+    this.closeExportMenu();
+    try {
+      const htmlDoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${this.template || 'Bangplanix Report'}</title>
+  <style>
+    body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #0b0f19; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; }
+    .report-card { background: #ffffff; color: #000; border-radius: 8px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="report-card">
+    <h2>${this.template || 'Bangplanix Report'}</h2>
+    <p>Exported: ${new Date().toLocaleString()}</p>
+    ${this.pdfUrl ? `<iframe src="${this.pdfUrl}" width="800" height="1000" frameborder="0"></iframe>` : '<p>Report document preview.</p>'}
+  </div>
+</body>
+</html>`;
+      const blob = new Blob([htmlDoc], { type: 'text/html;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${this.template.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      this.dispatchEvent(new CustomEvent('export-completed', { detail: { format: 'html' } }));
+    } catch (err: any) {
+      alert(`Export HTML Error: ${err.message}`);
+    }
+  }
+
+  exportSvg() {
+    this.closeMobileActions();
+    this.closeExportMenu();
+    try {
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="595" height="842" viewBox="0 0 595 842"><text x="40" y="60" font-family="system-ui, sans-serif" font-size="16" fill="#0f172a">${this.template || 'Bangplanix Report'}</text></svg>`;
+      const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${this.template.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      this.dispatchEvent(new CustomEvent('export-completed', { detail: { format: 'svg' } }));
+    } catch (err: any) {
+      alert(`Export SVG Error: ${err.message}`);
+    }
   }
 
   // Parameter Handling
@@ -795,6 +980,21 @@ export class BangplanixViewer extends LitElement {
           <button @click=${this.exportExcel} class="primary" title="Export to Excel XLSX">
             Export XLSX
           </button>
+          <div class="export-dropdown">
+            <button @click=${this.toggleExportMenu} class="primary" title="Export in Other Formats">
+              Export As ▼
+            </button>
+            ${this.exportMenuOpen ? html`
+              <div class="export-menu">
+                <button @click=${() => { this.closeExportMenu(); this.downloadPdf(); }}>📄 PDF Document (.pdf)</button>
+                <button @click=${() => { this.closeExportMenu(); this.exportExcel(); }}>📊 Excel Spreadsheet (.xlsx)</button>
+                <button @click=${this.exportCsv}>📑 CSV Data (.csv)</button>
+                <button @click=${this.exportJson}>📦 JSON Data Stream (.json)</button>
+                <button @click=${this.exportHtml}>🌐 Standalone Web Page (.html)</button>
+                <button @click=${this.exportSvg}>🖼️ Vector Graphics (.svg)</button>
+              </div>
+            ` : ''}
+          </div>
           <button @click=${this.toggleFullscreen} title="Toggle Fullscreen">
             ${this.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           </button>
@@ -816,6 +1016,10 @@ export class BangplanixViewer extends LitElement {
         <div class="mobile-actions-menu">
           <button @click=${this.downloadPdf} ?disabled=${!this.pdfUrl}>📥 Download PDF</button>
           <button @click=${this.exportExcel} class="primary">📊 Export XLSX</button>
+          <button @click=${this.exportCsv}>📑 Export CSV</button>
+          <button @click=${this.exportJson}>📦 Export JSON</button>
+          <button @click=${this.exportHtml}>🌐 Export HTML</button>
+          <button @click=${this.exportSvg}>🖼️ Export SVG</button>
           <button @click=${this.handlePrint} ?disabled=${!this.pdfUrl}>🖨️ Print</button>
           <button @click=${this.handleFitWidth}>↔️ Fit to Width</button>
           <button @click=${this.handleFitPage}>↕️ Fit to Page</button>

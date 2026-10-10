@@ -378,6 +378,26 @@ export class BangplanixPlayground {
       exportExcelBtn.addEventListener('click', () => this.exportExcel());
     }
 
+    const exportCsvBtn = document.getElementById('export-csv-btn');
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener('click', () => this.exportCsv());
+    }
+
+    const exportJsonBtn = document.getElementById('export-json-btn');
+    if (exportJsonBtn) {
+      exportJsonBtn.addEventListener('click', () => this.exportJson());
+    }
+
+    const exportHtmlBtn = document.getElementById('export-html-btn');
+    if (exportHtmlBtn) {
+      exportHtmlBtn.addEventListener('click', () => this.exportHtml());
+    }
+
+    const exportSvgToolbarBtn = document.getElementById('export-svg-toolbar-btn');
+    if (exportSvgToolbarBtn) {
+      exportSvgToolbarBtn.addEventListener('click', () => this.downloadSvg());
+    }
+
     if (searchBtn) {
       searchBtn.addEventListener('click', () => this.toggleSearch());
     }
@@ -688,6 +708,139 @@ export class BangplanixPlayground {
     } catch (err) {
       alert(`Export XLSX Error: ${err.message}`);
     }
+  }
+
+  exportCsv() {
+    try {
+      const editor = document.getElementById('bpx-editor');
+      let title = 'Report';
+      if (editor && editor.value) {
+        try {
+          const tpl = JSON.parse(editor.value);
+          if (tpl.metadata && tpl.metadata.title) title = tpl.metadata.title;
+        } catch (_) {}
+      }
+
+      const sampleData = (SAMPLES[this.currentSample] && SAMPLES[this.currentSample].data) ? SAMPLES[this.currentSample].data : {};
+      const rows = sampleData.items || (Object.keys(sampleData).length > 0 ? sampleData[Object.keys(sampleData)[0]] : []) || [];
+      const headers = rows.length > 0 ? Object.keys(rows[0]) : ['Item', 'Quantity', 'Amount'];
+
+      const csvBytes = BangplanixPlayground.generateCsvDocument(headers, rows);
+      const blob = new Blob([csvBytes], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Export CSV Error: ${err.message}`);
+    }
+  }
+
+  exportJson() {
+    try {
+      const editor = document.getElementById('bpx-editor');
+      let title = 'Report';
+      let templateObj = {};
+      if (editor && editor.value) {
+        try {
+          templateObj = JSON.parse(editor.value);
+          if (templateObj.metadata && templateObj.metadata.title) title = templateObj.metadata.title;
+        } catch (_) {}
+      }
+
+      const sampleData = (SAMPLES[this.currentSample] && SAMPLES[this.currentSample].data) ? SAMPLES[this.currentSample].data : {};
+      const rows = sampleData.items || (Object.keys(sampleData).length > 0 ? sampleData[Object.keys(sampleData)[0]] : []) || [];
+
+      const jsonBytes = BangplanixPlayground.generateJsonDocument(title, templateObj, rows);
+      const blob = new Blob([jsonBytes], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Export JSON Error: ${err.message}`);
+    }
+  }
+
+  exportHtml() {
+    try {
+      const editor = document.getElementById('bpx-editor');
+      let title = 'Report';
+      if (editor && editor.value) {
+        try {
+          const tpl = JSON.parse(editor.value);
+          if (tpl.metadata && tpl.metadata.title) title = tpl.metadata.title;
+        } catch (_) {}
+      }
+
+      const svgEl = document.querySelector('#preview-canvas-wrapper svg');
+      const svgContent = svgEl ? svgEl.outerHTML : '';
+
+      const htmlBytes = BangplanixPlayground.generateHtmlDocument(title, svgContent);
+      const blob = new Blob([htmlBytes], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Export HTML Error: ${err.message}`);
+    }
+  }
+
+  static generateCsvDocument(headers = [], rows = []) {
+    let csv = headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(',') + '\r\n';
+    rows.forEach(row => {
+      csv += headers.map(h => {
+        const val = row[h] !== undefined ? row[h] : '';
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',') + '\r\n';
+    });
+    return encodeUtf8(csv);
+  }
+
+  static generateJsonDocument(title = 'Report', templateObj = {}, rows = []) {
+    const payload = {
+      title: title || 'Report',
+      metadata: templateObj.metadata || {},
+      datasets: {
+        items: rows
+      },
+      parameters: templateObj.parameters || [],
+      exportedAt: new Date().toISOString()
+    };
+    return encodeUtf8(JSON.stringify(payload, null, 2));
+  }
+
+  static generateHtmlDocument(title = 'Report', svgContent = '') {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${title || 'Bangplanix Report'}</title>
+  <style>
+    body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; align-items: center; }
+    .report-card { background: #ffffff; color: #000; border-radius: 8px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 100%; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="report-card">
+    ${svgContent || '<p>Report Preview</p>'}
+  </div>
+</body>
+</html>`;
+    return encodeUtf8(html);
   }
 
   static generateXlsxDocument(sheetName, headers = [], rows = []) {

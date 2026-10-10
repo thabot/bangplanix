@@ -152,6 +152,50 @@ describe('Bangplanix WASM In-Browser Engine Tests', () => {
       assert.ok(decoded.includes('startxref'));
       assert.ok(decoded.endsWith('%%EOF\n') || decoded.includes('%%EOF'));
     });
+
+    test('generateCsvDocument should format tabular data into standard quoted CSV', () => {
+      const headers = ['SKU', 'Product Name', 'Price'];
+      const rows = [
+        { SKU: 'PROD-01', 'Product Name': 'High-Speed Engine "Pro"', Price: 45000 },
+        { SKU: 'PROD-02', 'Product Name': 'Support SLA', Price: 5000 }
+      ];
+
+      const csvBytes = BangplanixPlayground.generateCsvDocument(headers, rows);
+      assert.ok(csvBytes instanceof Uint8Array);
+
+      const decoded = new TextDecoder().decode(csvBytes);
+      assert.ok(decoded.includes('"SKU","Product Name","Price"'));
+      assert.ok(decoded.includes('"PROD-01","High-Speed Engine ""Pro""","45000"'));
+      assert.ok(decoded.includes('"PROD-02","Support SLA","5000"'));
+    });
+
+    test('generateJsonDocument should format clean JSON data stream with metadata and timestamps', () => {
+      const template = { metadata: { title: 'POS Receipt' }, parameters: [{ name: 'Store', defaultValue: 'Main' }] };
+      const rows = [{ item: 'Espresso', qty: 2, total: 180 }];
+
+      const jsonBytes = BangplanixPlayground.generateJsonDocument('POS Receipt', template, rows);
+      assert.ok(jsonBytes instanceof Uint8Array);
+
+      const parsed = JSON.parse(new TextDecoder().decode(jsonBytes));
+      assert.equal(parsed.title, 'POS Receipt');
+      assert.equal(parsed.metadata.title, 'POS Receipt');
+      assert.equal(parsed.datasets.items[0].item, 'Espresso');
+      assert.ok(parsed.exportedAt);
+    });
+
+    test('generateHtmlDocument should wrap report SVG in a valid standalone HTML5 shell', () => {
+      const title = 'Commercial Invoice Report';
+      const svg = '<svg><text>Sample Invoice Output</text></svg>';
+
+      const htmlBytes = BangplanixPlayground.generateHtmlDocument(title, svg);
+      assert.ok(htmlBytes instanceof Uint8Array);
+
+      const decoded = new TextDecoder().decode(htmlBytes);
+      assert.ok(decoded.includes('<!DOCTYPE html>'));
+      assert.ok(decoded.includes('<title>Commercial Invoice Report</title>'));
+      assert.ok(decoded.includes('<svg><text>Sample Invoice Output</text></svg>'));
+    });
   });
 });
+
 

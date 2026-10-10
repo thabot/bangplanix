@@ -99,6 +99,16 @@ describe('Bangplanix Viewer Core & State Tests', () => {
       assert.equal(viewer.toggleMobileActionsMenu(true), true);
       assert.equal(viewer.mobileActionsOpen, true);
     });
+
+    test('toggleExportMenu should toggle export menu open/close state', () => {
+      assert.equal(viewer.exportMenuOpen, false);
+      assert.equal(viewer.toggleExportMenu(), true);
+      assert.equal(viewer.exportMenuOpen, true);
+      assert.equal(viewer.toggleExportMenu(false), false);
+      assert.equal(viewer.exportMenuOpen, false);
+      assert.equal(viewer.toggleExportMenu(true), true);
+      assert.equal(viewer.exportMenuOpen, true);
+    });
   });
 
   describe('Interactive Parameter Panel & Cascading Filters', () => {
