@@ -191,6 +191,7 @@ export class BangplanixPricingController {
     }
 
     try {
+      const apiPayCurrency = (normalizedCurrency === 'nowpayments_full') ? '' : normalizedCurrency;
       const res = await fetch(`${apiBase}/api/v1/checkout/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,7 +200,7 @@ export class BangplanixPricingController {
           customerEmail: cleanEmail,
           customerName: customerName.trim(),
           durationDays,
-          payCurrency: payCurrency.trim().toLowerCase(),
+          payCurrency: apiPayCurrency,
           successUrl: typeof window !== 'undefined' ? `${window.location.origin}/lookup?payment=success` : undefined,
           cancelUrl: typeof window !== 'undefined' ? `${window.location.origin}/pricing.html` : undefined
         })

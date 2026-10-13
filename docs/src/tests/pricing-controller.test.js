@@ -102,6 +102,15 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.strictEqual(res.amountUSD, 699);
   });
 
+  test('createCheckoutSession with full crypto gateway should route to NOWPayments with empty payCurrency', async () => {
+    const ctrl = new BangplanixPricingController();
+    const res = await ctrl.createCheckoutSession('professional', 'crypto-fan@bangplanix.io', 'Crypto User', 'nowpayments_full');
+    assert.strictEqual(res.success, true);
+    assert.ok(res.checkoutUrl);
+    assert.match(res.checkoutUrl, /^https:\/\/nowpayments\.io\/payment\/\?iid=/);
+    assert.ok(res.invoiceId);
+  });
+
   test('createCheckoutSession should successfully connect to gateway and return invoice URL and deposit details', async () => {
     const ctrl = new BangplanixPricingController();
     const res = await ctrl.createCheckoutSession('professional', 'unit-test@bangplanix.io', 'Unit Tester', 'usdttrc20');
