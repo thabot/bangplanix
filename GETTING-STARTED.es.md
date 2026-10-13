@@ -68,6 +68,138 @@ await File.WriteAllBytesAsync("output/invoice.pdf", renderResult.ToByteArray());
 
 ---
 
+#### 🌟 1.1.2 Creación de Documentos C# Code-First (API Fluent al estilo QuestPDF)
+
+Para aquellos desarrolladores que prefieren construir sus documentos directamente mediante código C# puro (Type-Safe Code-First) sin necesidad de editar plantillas JSON, **Bangplanix Fluent API** (`Bangplanix.Fluent`) está disponible de forma nativa:
+
+```csharp
+using Bangplanix.Core.Models;
+using Bangplanix.Fluent;
+
+var pdfBytes = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        // 1. Configuración de página y márgenes
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.DefaultTextStyle(t => t.FontFamily("Sarabun").FontSize(11));
+
+        // 2. Encabezado de página (Header)
+        page.Header().Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("FACTURA / RECIBO (TAX INVOICE)").Bold().FontSize(18).Color("#1E3A8A");
+                col.Item().Text("Bangplanix Global Innovations S.A.").FontSize(10);
+                col.Item().Text("NIF / RFC: 0105550000000");
+            });
+
+            // Código QR PromptPay dinámico de cobro
+            row.ConstantItem(90, UnitType.Mm).AlignRight().QrPromptPay("0812345678", 22500.00, 35);
+        });
+
+        // 3. Contenido y Tabla Dinámica (Content & Table)
+        page.Content().PaddingVertical(10, UnitType.Mm).Column(col =>
+        {
+            col.Item().Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(30); // N°
+                    c.RelativeColumn(3);  // Descripción
+                    c.RelativeColumn(1);  // Cantidad
+                    c.RelativeColumn(1);  // Precio Unitario
+                    c.RelativeColumn(1);  // Total
+                });
+
+                table.AlternatingRowBackground("#F9FAFB");
+
+                table.Header(h =>
+                {
+                    h.BackgroundColor("#1E3A8A");
+                    h.Cell().Color("#FFFFFF").Bold().Text("N°");
+                    h.Cell().Color("#FFFFFF").Bold().Text("Descripción del Producto o Servicio");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Cant.");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Precio");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Total");
+                });
+
+                table.Row(r =>
+                {
+                    r.Cell().Text("1");
+                    r.Cell().Text("Licencia Comercial Bangplanix Enterprise (Suscripción 1 año)");
+                    r.Cell().AlignRight().Text("1");
+                    r.Cell().AlignRight().Text("22,500.00");
+                    r.Cell().AlignRight().Text("22,500.00");
+                });
+
+                table.Footer(f =>
+                {
+                    f.Cell().ColumnSpan(4).Text("Total a Pagar (Total Amount)").Bold();
+                    f.Cell().AlignRight().Text("22,500.00").Bold();
+                });
+            });
+
+            // Formato de moneda en letras
+            col.Item().PaddingTop(10, UnitType.Mm).Text(t =>
+            {
+                t.Span("Importe en letras: ");
+                t.BahtText(22500.00);
+            }).Bold();
+        });
+
+        // 4. Pie de página y numeración dinámica (Footer)
+        page.Footer().Row(r =>
+        {
+            r.RelativeItem().Text("Documento generado automáticamente").FontSize(9).Color("#6B7280");
+            r.ConstantItem(60, UnitType.Mm).AlignRight().Text(t =>
+            {
+                t.Span("Página ");
+                t.CurrentPageNumber();
+                t.Span(" de ");
+                t.TotalPages();
+            });
+        });
+    });
+})
+.GeneratePdfAsync();
+
+await File.WriteAllBytesAsync("invoice.pdf", pdfBytes);
+```
+
+##### 🧩 Componentes Reutilizables (`IReportComponent`):
+```csharp
+public class CompanyHeaderComponent : IReportComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("Bangplanix Global Innovations S.A.").Bold().FontSize(16);
+                col.Item().Text("Paseo de la Castellana 100, Madrid");
+            });
+        });
+    }
+}
+
+// Uso en su reporte:
+page.Header().Component(new CompanyHeaderComponent());
+```
+
+##### 🔄 Exportación Bidireccional al Diseñador Web Visual:
+```csharp
+var doc = BangplanixDocument.Create(container => { /* ... */ });
+
+// Exportar a formato .bpx / JSON para editarlo en el diseñador web:
+string bpxJson = doc.ToJson();
+await File.WriteAllTextAsync("template.bpx", bpxJson);
+```
+
+---
+
 ### 💻 Modo 2: CLI Nativo Autónomo (Standalone Local CLI & Native AOT)
 Ideal para pipelines de CI/CD y scripts sin requerir Docker ni runtime de .NET:
 

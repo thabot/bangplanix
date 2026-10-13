@@ -68,6 +68,139 @@ await File.WriteAllBytesAsync("output/invoice.pdf", renderResult.ToByteArray());
 
 ---
 
+#### 🌟 1.1.2 C# Code-First 代码优先编排 (对标 QuestPDF 的 Fluent API)
+
+对于偏好纯 C# 代码 (Type-Safe Code-First) 编排文档而无需手动编写 JSON 模板的开发者，可直接使用 **Bangplanix Fluent API** (`Bangplanix.Fluent`)：
+
+```csharp
+using Bangplanix.Core.Models;
+using Bangplanix.Fluent;
+
+var pdfBytes = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        // 1. 页面设置与页边距
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.DefaultTextStyle(t => t.FontFamily("Sarabun").FontSize(11));
+
+        // 2. 页眉 (Header)
+        page.Header().Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("发票 / 收据 (TAX INVOICE)").Bold().FontSize(18).Color("#1E3A8A");
+                col.Item().Text("Bangplanix 创新科技有限公司 (总部)").FontSize(10);
+                col.Item().Text("纳税人识别号: 0105550000000");
+            });
+
+            // PromptPay 动态二维码收银支付
+            row.ConstantItem(90, UnitType.Mm).AlignRight().QrPromptPay("0812345678", 22500.00, 35);
+        });
+
+        // 3. 正文内容与动态表格 (Content & Table)
+        page.Content().PaddingVertical(10, UnitType.Mm).Column(col =>
+        {
+            col.Item().Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(30); // 序号
+                    c.RelativeColumn(3);  // 商品名称
+                    c.RelativeColumn(1);  // 数量
+                    c.RelativeColumn(1);  // 单价
+                    c.RelativeColumn(1);  // 总计
+                });
+
+                table.AlternatingRowBackground("#F9FAFB");
+
+                table.Header(h =>
+                {
+                    h.BackgroundColor("#1E3A8A");
+                    h.Cell().Color("#FFFFFF").Bold().Text("序号");
+                    h.Cell().Color("#FFFFFF").Bold().Text("产品与服务名称");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("数量");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("单价");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("金额");
+                });
+
+                table.Row(r =>
+                {
+                    r.Cell().Text("1");
+                    r.Cell().Text("Bangplanix 企业版商业许可 (1 年订阅)");
+                    r.Cell().AlignRight().Text("1");
+                    r.Cell().AlignRight().Text("22,500.00");
+                    r.Cell().AlignRight().Text("22,500.00");
+                });
+
+                table.Footer(f =>
+                {
+                    f.Cell().ColumnSpan(4).Text("应付总额 (Total Amount)").Bold();
+                    f.Cell().AlignRight().Text("22,500.00").Bold();
+                });
+            });
+
+            // 内置泰铢大写转换或文字格式化
+            col.Item().PaddingTop(10, UnitType.Mm).Text(t =>
+            {
+                t.Span("大写金额: ");
+                t.BahtText(22500.00);
+            }).Bold();
+        });
+
+        // 4. 页脚与动态页码 (Footer)
+        page.Footer().Row(r =>
+        {
+            r.RelativeItem().Text("本文件由系统自动生成").FontSize(9).Color("#6B7280");
+            r.ConstantItem(60, UnitType.Mm).AlignRight().Text(t =>
+            {
+                t.Span("第 ");
+                t.CurrentPageNumber();
+                t.Span(" 页，共 ");
+                t.TotalPages();
+                t.Span(" 页");
+            });
+        });
+    });
+})
+.GeneratePdfAsync();
+
+await File.WriteAllBytesAsync("invoice.pdf", pdfBytes);
+```
+
+##### 🧩 可复用组件封装 (`IReportComponent`):
+```csharp
+public class CompanyHeaderComponent : IReportComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("Bangplanix 创新科技股份有限公司").Bold().FontSize(16);
+                col.Item().Text("北京市朝阳区科技创新大厦 10 层");
+            });
+        });
+    }
+}
+
+// 在报表中使用:
+page.Header().Component(new CompanyHeaderComponent());
+```
+
+##### 🔄 双向导出到 Web 可视化设计器:
+```csharp
+var doc = BangplanixDocument.Create(container => { /* ... */ });
+
+// 导出为 .bpx / JSON 格式，可直接在 Web 可视化设计器中打开与编辑:
+string bpxJson = doc.ToJson();
+await File.WriteAllTextAsync("template.bpx", bpxJson);
+```
+
+---
+
 ### 💻 模式 2: 独立原生 CLI 命令行 (Standalone Local CLI & Native AOT)
 适合自动化脚本或 CI/CD 流水线，无需安装 Docker 或配置 .NET 运行时：
 

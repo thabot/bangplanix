@@ -68,6 +68,138 @@ await File.WriteAllBytesAsync("output/invoice.pdf", renderResult.ToByteArray());
 
 ---
 
+#### 🌟 1.1.2 C# Code-First コード優先オーサリング (QuestPDF スタイルの Fluent API)
+
+JSON テンプレートを手動で編集することなく、純粋な C# コード (Type-Safe Code-First) だけでドキュメントを構築したいエンジニア向けに、**Bangplanix Fluent API** (`Bangplanix.Fluent`) が標準提供されています：
+
+```csharp
+using Bangplanix.Core.Models;
+using Bangplanix.Fluent;
+
+var pdfBytes = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        // 1. ページ設定とマージン
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.DefaultTextStyle(t => t.FontFamily("Sarabun").FontSize(11));
+
+        // 2. ページヘッダー (Header)
+        page.Header().Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("請求書 / 領収書 (TAX INVOICE)").Bold().FontSize(18).Color("#1E3A8A");
+                col.Item().Text("Bangplanix イノベーション株式会社 (本社)").FontSize(10);
+                col.Item().Text("適格請求書発行事業者登録番号: T105550000000");
+            });
+
+            // PromptPay ダイナミック決済 QR コード
+            row.ConstantItem(90, UnitType.Mm).AlignRight().QrPromptPay("0812345678", 22500.00, 35);
+        });
+
+        // 3. コンテンツとダイナミックテーブル (Content & Table)
+        page.Content().PaddingVertical(10, UnitType.Mm).Column(col =>
+        {
+            col.Item().Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(30); // 連番
+                    c.RelativeColumn(3);  // 品名・項目
+                    c.RelativeColumn(1);  // 数量
+                    c.RelativeColumn(1);  // 単価
+                    c.RelativeColumn(1);  // 金額
+                });
+
+                table.AlternatingRowBackground("#F9FAFB");
+
+                table.Header(h =>
+                {
+                    h.BackgroundColor("#1E3A8A");
+                    h.Cell().Color("#FFFFFF").Bold().Text("No.");
+                    h.Cell().Color("#FFFFFF").Bold().Text("品名 / サービス内容");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("数量");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("単価");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("金額");
+                });
+
+                table.Row(r =>
+                {
+                    r.Cell().Text("1");
+                    r.Cell().Text("Bangplanix Enterprise Commercial License (1年サブスクリプション)");
+                    r.Cell().AlignRight().Text("1");
+                    r.Cell().AlignRight().Text("22,500.00");
+                    r.Cell().AlignRight().Text("22,500.00");
+                });
+
+                table.Footer(f =>
+                {
+                    f.Cell().ColumnSpan(4).Text("ご請求合計額 (Total Amount)").Bold();
+                    f.Cell().AlignRight().Text("22,500.00").Bold();
+                });
+            });
+
+            // 金額の文字列表記 (タイバーツ文字化等)
+            col.Item().PaddingTop(10, UnitType.Mm).Text(t =>
+            {
+                t.Span("金額表記: ");
+                t.BahtText(22500.00);
+            }).Bold();
+        });
+
+        // 4. ページフッターと動的ページ番号 (Footer)
+        page.Footer().Row(r =>
+        {
+            r.RelativeItem().Text("本ドキュメントはシステムにより自動発行されました").FontSize(9).Color("#6B7280");
+            r.ConstantItem(60, UnitType.Mm).AlignRight().Text(t =>
+            {
+                t.Span("ページ ");
+                t.CurrentPageNumber();
+                t.Span(" / ");
+                t.TotalPages();
+            });
+        });
+    });
+})
+.GeneratePdfAsync();
+
+await File.WriteAllBytesAsync("invoice.pdf", pdfBytes);
+```
+
+##### 🧩 再利用可能コンポーネントの作成 (`IReportComponent`):
+```csharp
+public class CompanyHeaderComponent : IReportComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("Bangplanix イノベーション株式会社").Bold().FontSize(16);
+                col.Item().Text("東京都千代田区大手町1-1-1 イノベーションタワー 10F");
+            });
+        });
+    }
+}
+
+// 帳票定義での呼び出し:
+page.Header().Component(new CompanyHeaderComponent());
+```
+
+##### 🔄 Web ビジュアルデザイナーとの双方向連携:
+```csharp
+var doc = BangplanixDocument.Create(container => { /* ... */ });
+
+// .bpx / JSON 形式でエクスポートし、Web ビジュアルデザイナーでそのまま開いて編集可能:
+string bpxJson = doc.ToJson();
+await File.WriteAllTextAsync("template.bpx", bpxJson);
+```
+
+---
+
 ### 💻 モード 2: スタンドアロン ネイティブ CLI (Standalone Local CLI & Native AOT)
 Docker や .NET ランタイムをインストールすることなく、単体バイナリで実行可能です：
 
