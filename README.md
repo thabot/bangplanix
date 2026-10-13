@@ -19,18 +19,45 @@
 
 ---
 
-### 🆚 Why Bangplanix? (Comparison with Other Engines)
+### 🆚 Why Bangplanix? (Enterprise & Global Architecture Benchmark)
 
-| Feature / Capability | **Bangplanix** 🚀 | **QuestPDF** 📄 | **Crystal Reports / SSRS** 🏛️ | **FastReport / Stimulsoft** 📊 |
-| :--- | :---: | :---: | :---: | :---: |
-| **Execution Speed** | **Sub-10ms (Native AOT)** | ~30–80ms | 200–1,500ms (Heavy) | 50–150ms |
-| **Visual WYSIWYG Web Designer** | ✅ **Built-in Web Component** | ❌ None (Code-Only) | ⚠️ Desktop Windows only | ⚠️ Heavy Desktop / Paid Add-on |
-| **Memory Architecture** | **Zero-GC (`ArrayPool`/SIMD)** | Standard Managed Heap | High Garbage Collection | Managed GC |
-| **Thai Typography & Shaping** | ✅ **HarfBuzz Complex Shaping**<br>*(สระ/วรรณยุกต์ไม่ลอย)* | ⚠️ Requires manual setup | ⚠️ Prone to tone mark float | ⚠️ Font-dependent |
-| **Currency In-Words (`=BahtText()`)**| ✅ **Zero-allocation native** | ❌ Requires custom code | ⚠️ Complex VBScript | ❌ Custom function |
-| **Legacy RDL / Crystal Importer** | ✅ **18+ Migration Adapters** | ❌ None | N/A | ⚠️ Partial |
-| **Polyglot SDKs** | **C#, TS/Node, Python, Go, Java** | C# only | .NET / COM only | .NET primarily |
-| **Free / Community Tier** | ✅ **Full Features Available** | ⚠️ Revenue limits ($1M+) | ❌ High License Cost | ❌ Expensive licenses |
+Engineers across Fortune 500 enterprises, fintech platforms, and cloud-native startups are replacing legacy reporting suites and code-only libraries with Bangplanix:
+
+| Feature & Enterprise Requirement | **Bangplanix** 🚀 | **QuestPDF** 📄 | **Crystal Reports / SSRS** 🏛️ | **Jaspersoft / BIRT** ☕ | **FastReport / Stimulsoft** 📊 |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Engine Runtime & Startup** | **.NET 10 Native AOT**<br>(Sub-10ms, <30MB RAM) | JIT Managed Runtime<br>(30–80ms) | Heavy Windows Framework<br>(200–1,500ms, >500MB) | JVM Overhead<br>(500–2,000ms, >1GB) | JIT Managed Runtime<br>(50–150ms) |
+| **Visual Web Designer** | ✅ **Web Component**<br>(Embed in React/Vue/Angular) | ❌ None<br>(100% Code-Only) | ⚠️ WinForms Desktop Only<br>(No Web Embed) | ⚠️ Heavy Java Eclipse IDE | ⚠️ Desktop / Expensive Web Add-on |
+| **Memory Allocation** | **Zero-GC Architecture**<br>(`ArrayPool<T>`, SIMD) | Standard GC Heap | High GC Pauses & Spikes | JVM Stop-The-World GC | Standard Managed Heap |
+| **Polyglot Ecosystem** | **C#, TypeScript, Python, Go, Java** | C# only | .NET / COM only | Java primarily | .NET / JavaScript |
+| **Global Typography & Shaping** | ✅ **HarfBuzz Complex Shaping**<br>(Arabic, Thai, Devanagari, CJK) | ⚠️ Basic FreeType / Skia | ⚠️ Legacy GDI (Prone to text clipping) | ⚠️ Java AWT limitations | ⚠️ Font-dependent |
+| **Air-Gapped & Offline Security** | ✅ **Ed25519 & ML-DSA-65**<br>(Zero Phone-Home / Offline) | ⚠️ Commercial license checks | ❌ Proprietary Server lock-in | ❌ Proprietary license manager | ❌ Phone-home license check |
+| **Defense-Grade Redaction** | ✅ **True Vector Redaction**<br>(Permanent byte-level removal) | ❌ None (Black rectangles only) | ❌ None | ❌ None | ❌ None |
+| **Hardware & POS Printing** | ✅ **Direct Network Socket**<br>(TCP 9100, ESC/POS, Zebra ZPL) | ❌ PDF only | ⚠️ Windows Print Spooler only | ⚠️ Cups/Java print service | ⚠️ Limited thermal |
+| **Legacy Report Migration** | ✅ **18+ Automated Importers**<br>(RDL, Crystal, Jasper, FastReport) | ❌ None (Manual rewrite) | N/A | N/A | ⚠️ Partial |
+| **E-Invoicing Compliance** | ✅ **UBL 2.1, Factur-X, ZUGFeRD, ETDA** | ❌ Manual XML construction | ❌ Unsupported | ❌ Unsupported | ⚠️ Custom plugins |
+| **Pricing Transparency** | ✅ **Free Community Tier**<br>(Predictable Flat Commercial) | ⚠️ Revenue & Employee limits | ❌ Prohibitive Per-Core Pricing | ❌ Enterprise Subscription | ❌ High per-seat pricing |
+
+---
+
+### 💡 6 Killer Advantages That Set Bangplanix Apart Globally
+
+1. ⚡ **Hyper-Performance Native AOT Execution:**
+   Compiled directly to native machine code without JIT warmup or runtime overhead. Microservices boot in **< 15 milliseconds** and consume under **30 MB of RAM**, making Bangplanix ideal for serverless containers (AWS Lambda, Google Cloud Run, Cloudflare Workers, Kubernetes auto-scaling).
+
+2. 🎨 **Empower Both Developers and Business Analysts:**
+   Unlike code-only PDF libraries where developers must hardcode every coordinate and layout change in C#, Bangplanix provides a **modular browser-based WYSIWYG Designer**. Business users and designers can tweak report templates without requiring code rebuilds or CI/CD deployments.
+
+3. 🔒 **Defense & Banking-Grade Sovereign Security:**
+   Built for classified, healthcare (HIPAA), and banking environments. Features **True Vector Redaction** (scrubbing sensitive text, PII, and vector paths from the binary stream, preventing copy-paste data leaks) and **Offline Asymmetric Cryptographic Licensing** (Ed25519 & Post-Quantum NIST ML-DSA-65) with **Zero Phone-Home telemetry**.
+
+4. 🌍 **Global Complex Script & Multi-Currency Engine:**
+   Engineered with HarfBuzz complex text shaping for non-Latin typography—seamlessly handling bidirectional Arabic/Hebrew scripts, CJK vertical layout, Thai tone-mark stacking without floating accents, and built-in international currency in-words formatting (`=BahtText()`, `=NumberToWords()`).
+
+5. 🔄 **18+ Instant Legacy Migration Adapters:**
+   Eliminate decades of technical debt. Convert your legacy report templates from **Microsoft SSRS (.rdl)**, **SAP Crystal Reports (.rpt)**, **Jaspersoft (.jrxml)**, **ActiveReports**, and **FastReport (.frx)** into modern `.bpx` JSON schemas in seconds via our CLI converter.
+
+6. 🖨️ **Dual Digital Document & Industrial Hardware Pipeline:**
+   Generate both pixel-perfect digital publications (PDF/A-3b, Excel XLSX, SVG, HTML) and output directly to warehouse and retail hardware: network raw sockets (TCP 9100), thermal receipt slip printers (ESC/POS), and barcode label printers (Zebra ZPL II).
 
 ---
 
