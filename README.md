@@ -13,7 +13,33 @@
 [![PyPI](https://img.shields.io/badge/PyPI-bangplanix-3775A9?logo=pypi&logoColor=white)](https://pypi.org/project/bangplanix/)
 [![Go Reference](https://img.shields.io/badge/Go-pkg.go.dev-00ADD8?logo=go&logoColor=white)](https://pkg.go.dev/github.com/thabot/bangplanix/sdk/go)
 
-> **Bangplanix** is a high-performance, microsecond-level enterprise reporting engine and web middleware built on **.NET 10 (C# 14 / Native AOT)**. Designed as a modern, open-core replacement for legacy reporting suites (Crystal Reports, SSRS, Jaspersoft, FastReport, BIRT, DevExpress).
+> **Bangplanix** is a high-performance, microsecond-level enterprise reporting engine and web middleware built on **.NET 10 (C# 14 / Native AOT)**. Designed as a modern, high-speed alternative to legacy reporting suites (Crystal Reports, SSRS, FastReport, Jaspersoft) and code-only engines (QuestPDF).
+>
+> ⚡ **Try it immediately without installation:** [**Interactive Browser Playground & Visual Designer ➔**](https://thabot.github.io/bangplanix/)
+
+---
+
+### 🆚 Why Bangplanix? (Comparison with Other Engines)
+
+| Feature / Capability | **Bangplanix** 🚀 | **QuestPDF** 📄 | **Crystal Reports / SSRS** 🏛️ | **FastReport / Stimulsoft** 📊 |
+| :--- | :---: | :---: | :---: | :---: |
+| **Execution Speed** | **Sub-10ms (Native AOT)** | ~30–80ms | 200–1,500ms (Heavy) | 50–150ms |
+| **Visual WYSIWYG Web Designer** | ✅ **Built-in Web Component** | ❌ None (Code-Only) | ⚠️ Desktop Windows only | ⚠️ Heavy Desktop / Paid Add-on |
+| **Memory Architecture** | **Zero-GC (`ArrayPool`/SIMD)** | Standard Managed Heap | High Garbage Collection | Managed GC |
+| **Thai Typography & Shaping** | ✅ **HarfBuzz Complex Shaping**<br>*(สระ/วรรณยุกต์ไม่ลอย)* | ⚠️ Requires manual setup | ⚠️ Prone to tone mark float | ⚠️ Font-dependent |
+| **Currency In-Words (`=BahtText()`)**| ✅ **Zero-allocation native** | ❌ Requires custom code | ⚠️ Complex VBScript | ❌ Custom function |
+| **Legacy RDL / Crystal Importer** | ✅ **18+ Migration Adapters** | ❌ None | N/A | ⚠️ Partial |
+| **Polyglot SDKs** | **C#, TS/Node, Python, Go, Java** | C# only | .NET / COM only | .NET primarily |
+| **Free / Community Tier** | ✅ **Full Features Available** | ⚠️ Revenue limits ($1M+) | ❌ High License Cost | ❌ Expensive licenses |
+
+---
+
+### 🚀 Try in 10 Seconds (No Install Required)
+
+Experience the WYSIWYG report designer and live PDF renderer directly in your browser:
+
+* 🎨 **[Live Visual Web Designer](https://thabot.github.io/bangplanix/designer.html)** — Drag-and-drop bands, fields, barcodes, tables, and export instant PDF.
+* 🧪 **[Interactive Demo Playground](https://thabot.github.io/bangplanix/)** — Real-time 2-way JSON sync, live preview, and multi-format exports.
 
 ---
 
@@ -33,6 +59,7 @@
 ### 📚 Essential Quick Links
 
 * 🌐 **Live Interactive WASM Playground:** [Try in Browser (GitHub Pages)](https://thabot.github.io/bangplanix/)
+* 🎨 **Visual Web Component Designer:** [Open Visual Designer](https://thabot.github.io/bangplanix/designer.html)
 * ⚡ **Performance Benchmark Report:** [BENCHMARK.md](./BENCHMARK.md)
 * 📁 **Popular Starter Templates Pack:** [samples/templates/](./samples/templates/)
 * 🇬🇧 **Developer Guide (English):** [GETTING-STARTED.md](./GETTING-STARTED.md)
