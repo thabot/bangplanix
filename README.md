@@ -118,13 +118,27 @@ Bangplanix offers **3 flexible execution modes**:
 
 ### 📦 Mode 1: In-Process Embedded C# Library (.NET 8/9/10 Native)
 ```csharp
-using Bangplanix.Core;
-using Bangplanix.Rendering.SkiaSharp;
+using Bangplanix.Core.Parser;
+using Bangplanix.Engine.Pdf;
 
-var template = ReportTemplate.LoadFromJsonFile("templates/commercial-invoice-ubl.bpx");
-var engine = new ReportEngine();
-var result = await engine.RenderAsync(template, myDataJson, ExportFormat.Pdf);
-await File.WriteAllBytesAsync("invoice.pdf", result.ToByteArray());
+// Option A: Load from .bpx JSON template
+var template = BpxParser.Parse(await File.ReadAllTextAsync("templates/invoice.bpx"));
+var pdfBytes = await new SkiaPdfRenderer().RenderToPdfAsync(template);
+
+// Option B: QuestPDF-Style Fluent C# Code-First API (Zero JSON)
+using Bangplanix.Fluent;
+
+var pdf = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.Header().Text("TAX INVOICE / RECEIPT").Bold().FontSize(18).Color("#1E3A8A");
+        page.Content().Text("Generated via Bangplanix Fluent Code-First Engine");
+    });
+}).GeneratePdfAsync();
+await File.WriteAllBytesAsync("invoice.pdf", pdf);
 ```
 
 ### 💻 Mode 2: Standalone Local CLI & Native AOT Binary (Zero Docker)

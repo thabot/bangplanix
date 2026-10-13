@@ -97,6 +97,138 @@ app.Run();
 
 ---
 
+#### 🌟 1.1.2 C# Code-First Authoring (QuestPDF-Style Fluent API)
+
+For developers who love building documents directly in pure C# (Type-Safe Code-First) without touching JSON templates, you can use the **Bangplanix Fluent API** (`Bangplanix.Fluent`):
+
+```csharp
+using Bangplanix.Core.Models;
+using Bangplanix.Fluent;
+
+var pdfBytes = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        // 1. Page Setup & Margins
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.DefaultTextStyle(t => t.FontFamily("Sarabun").FontSize(11));
+
+        // 2. Page Header
+        page.Header().Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("TAX INVOICE / RECEIPT").Bold().FontSize(18).Color("#1E3A8A");
+                col.Item().Text("Bangplanix Global Innovations Ltd.").FontSize(10);
+                col.Item().Text("Tax ID: 0105550000000 (Headquarters)");
+            });
+
+            // PromptPay QR Code Payment
+            row.ConstantItem(90, UnitType.Mm).AlignRight().QrPromptPay("0812345678", 22500.00, 35);
+        });
+
+        // 3. Document Content & Dynamic Table
+        page.Content().PaddingVertical(10, UnitType.Mm).Column(col =>
+        {
+            col.Item().Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(30); // No.
+                    c.RelativeColumn(3);  // Description
+                    c.RelativeColumn(1);  // Qty
+                    c.RelativeColumn(1);  // Price
+                    c.RelativeColumn(1);  // Total
+                });
+
+                table.AlternatingRowBackground("#F9FAFB");
+
+                table.Header(h =>
+                {
+                    h.BackgroundColor("#1E3A8A");
+                    h.Cell().Color("#FFFFFF").Bold().Text("No.");
+                    h.Cell().Color("#FFFFFF").Bold().Text("Item Description");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Qty");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Unit Price");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("Total");
+                });
+
+                table.Row(r =>
+                {
+                    r.Cell().Text("1");
+                    r.Cell().Text("Bangplanix Enterprise License (1 Year)");
+                    r.Cell().AlignRight().Text("1");
+                    r.Cell().AlignRight().Text("22,500.00");
+                    r.Cell().AlignRight().Text("22,500.00");
+                });
+
+                table.Footer(f =>
+                {
+                    f.Cell().ColumnSpan(4).Text("Net Total (USD/THB)").Bold();
+                    f.Cell().AlignRight().Text("22,500.00").Bold();
+                });
+            });
+
+            // Native BahtText formatter
+            col.Item().PaddingTop(10, UnitType.Mm).Text(t =>
+            {
+                t.Span("Amount in words: ");
+                t.BahtText(22500.00);
+            }).Bold();
+        });
+
+        // 4. Page Footer with dynamic page numbers
+        page.Footer().Row(r =>
+        {
+            r.RelativeItem().Text("Generated automatically by Bangplanix").FontSize(9).Color("#6B7280");
+            r.ConstantItem(60, UnitType.Mm).AlignRight().Text(t =>
+            {
+                t.Span("Page ");
+                t.CurrentPageNumber();
+                t.Span(" of ");
+                t.TotalPages();
+            });
+        });
+    });
+})
+.GeneratePdfAsync();
+
+await File.WriteAllBytesAsync("invoice.pdf", pdfBytes);
+```
+
+##### 🧩 Reusable Component (`IReportComponent`):
+```csharp
+public class CompanyHeaderComponent : IReportComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("Acme Corporation Ltd.").Bold().FontSize(16);
+                col.Item().Text("123 Innovation Tower, Bangkok 10110");
+            });
+        });
+    }
+}
+
+// In your document:
+page.Header().Component(new CompanyHeaderComponent());
+```
+
+##### 🔄 Two-Way Export to Web Visual Designer:
+```csharp
+var doc = BangplanixDocument.Create(container => { /* ... */ });
+
+// Export to .bpx / JSON for the Web Visual Designer:
+string bpxJson = doc.ToJson();
+await File.WriteAllTextAsync("template.bpx", bpxJson);
+```
+
+---
+
 ### 1.2 Mode 2: Standalone Local CLI & Native AOT Binary (Zero Docker)
 
 Use the pre-compiled **Bangplanix CLI** for local scripts, CI/CD pipelines, or batch processing:

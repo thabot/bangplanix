@@ -97,6 +97,138 @@ app.Run();
 
 ---
 
+#### 🌟 1.1.2 การเขียนรายงานด้วย C# Code-First (Fluent API สไตล์ QuestPDF)
+
+สำหรับนักพัฒนาที่ชื่นชอบการสร้างเอกสารด้วยโค้ด C# ล้วนๆ (Type-Safe Code-First) โดยไม่จำเป็นต้องสร้างไฟล์ JSON หรือเทมเพลตแยก สามารถใช้ **Bangplanix Fluent API** (`Bangplanix.Fluent`) ได้ทันที:
+
+```csharp
+using Bangplanix.Core.Models;
+using Bangplanix.Fluent;
+
+var pdfBytes = await BangplanixDocument.Create(container =>
+{
+    container.Page(page =>
+    {
+        // 1. ตั้งค่าหน้ากระดาษและระยะขอบ
+        page.Size(PaperKind.A4);
+        page.Margin(15, UnitType.Mm);
+        page.DefaultTextStyle(t => t.FontFamily("Sarabun").FontSize(11));
+
+        // 2. ส่วนหัวกระดาษ (Header)
+        page.Header().Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("ใบเสร็จรับเงิน / ใบกำกับภาษี").Bold().FontSize(18).Color("#1E3A8A");
+                col.Item().Text("บริษัท ตัวอย่าง อินโนเวชั่น จำกัด (สำนักงานใหญ่)").FontSize(10);
+                col.Item().Text("เลขประจำตัวผู้เสียภาษี: 0105550000000");
+            });
+
+            // PromptPay QR Code รับชำระเงินอัตโนมัติ
+            row.ConstantItem(90, UnitType.Mm).AlignRight().QrPromptPay("0812345678", 22500.00, 35);
+        });
+
+        // 3. เนื้อหาหลัก (Content & Dynamic Table)
+        page.Content().PaddingVertical(10, UnitType.Mm).Column(col =>
+        {
+            col.Item().Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(30); // ลำดับ
+                    c.RelativeColumn(3);  // รายการ
+                    c.RelativeColumn(1);  // จำนวน
+                    c.RelativeColumn(1);  // ราคา/หน่วย
+                    c.RelativeColumn(1);  // ยอดรวม
+                });
+
+                table.AlternatingRowBackground("#F9FAFB");
+
+                table.Header(h =>
+                {
+                    h.BackgroundColor("#1E3A8A");
+                    h.Cell().Color("#FFFFFF").Bold().Text("ลำดับ");
+                    h.Cell().Color("#FFFFFF").Bold().Text("รายการสินค้า/บริการ");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("จำนวน");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("ราคา/หน่วย");
+                    h.Cell().Color("#FFFFFF").Bold().AlignRight().Text("ยอดรวม");
+                });
+
+                table.Row(r =>
+                {
+                    r.Cell().Text("1");
+                    r.Cell().Text("Bangplanix Enterprise License (1 Year Subscription)");
+                    r.Cell().AlignRight().Text("1");
+                    r.Cell().AlignRight().Text("22,500.00");
+                    r.Cell().AlignRight().Text("22,500.00");
+                });
+
+                table.Footer(f =>
+                {
+                    f.Cell().ColumnSpan(4).Text("ยอดชำระสุทธิ (Total Amount)").Bold();
+                    f.Cell().AlignRight().Text("22,500.00").Bold();
+                });
+            });
+
+            // แปลงตัวเลขเป็นตัวหนังสือภาษาไทยอัตโนมัติ (BahtText)
+            col.Item().PaddingTop(10, UnitType.Mm).Text(t =>
+            {
+                t.Span("จำนวนเงินตัวอักษร: ");
+                t.BahtText(22500.00);
+            }).Bold();
+        });
+
+        // 4. ท้ายกระดาษและเลขหน้าอัตโนมัติ (Footer)
+        page.Footer().Row(r =>
+        {
+            r.RelativeItem().Text("เอกสารนี้ออกโดยระบบอัตโนมัติ").FontSize(9).Color("#6B7280");
+            r.ConstantItem(60, UnitType.Mm).AlignRight().Text(t =>
+            {
+                t.Span("หน้า ");
+                t.CurrentPageNumber();
+                t.Span(" จาก ");
+                t.TotalPages();
+            });
+        });
+    });
+})
+.GeneratePdfAsync();
+
+await File.WriteAllBytesAsync("invoice.pdf", pdfBytes);
+```
+
+##### 🧩 การสร้าง Component เพื่อนำกลับมาใช้ซ้ำ (Reusable Component):
+```csharp
+public class CompanyHeaderComponent : IReportComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().Text("บริษัท ตัวอย่าง อินโนเวชั่น จำกัด").Bold().FontSize(16);
+                col.Item().Text("123 อาคารทาวเวอร์ กรุงเทพฯ 10110");
+            });
+        });
+    }
+}
+
+// นำไปประกอบในรายงาน:
+page.Header().Component(new CompanyHeaderComponent());
+```
+
+##### 🔄 แปลงโค้ดเป็น Template JSON หรือไฟล์ .bpx เพื่อนำไปเปิดใน Web Designer:
+```csharp
+var doc = BangplanixDocument.Create(container => { /* ... */ });
+
+// ส่งออกเป็น JSON / BPX ไปเปิดใน Web Visual Designer ได้ทันที
+string bpxJson = doc.ToJson();
+await File.WriteAllTextAsync("template.bpx", bpxJson);
+```
+
+---
+
 ### 1.2 วิธีที่ 2: รันผ่าน Standalone Local CLI หรือ Native AOT Binary (ไม่ต้องลง Docker)
 
 สำหรับการทำงานแบบ Batch Automation, CI/CD Pipeline หรือใช้งานบน Desktop สามารถใช้ **Bangplanix CLI** หรือไฟล์ Native AOT executable:

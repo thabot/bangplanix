@@ -22,6 +22,11 @@ public sealed class BandContext
     {
         if (!string.IsNullOrEmpty(text))
         {
+            if (text.Contains("{page}", StringComparison.OrdinalIgnoreCase) || text.Contains("{total}", StringComparison.OrdinalIgnoreCase))
+            {
+                return text.Replace("{page}", CurrentPageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase)
+                           .Replace("{total}", TotalPages.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
+            }
             return text;
         }
 
