@@ -976,11 +976,11 @@
           modalSubmitBtn.disabled = true;
           modalBtnText.textContent = '⚡ Initializing Secure Session...';
 
-          const reqCurrency = (currency === 'card') ? '' : currency;
+          const reqCurrency = currency;
           const res = await controller.createCheckoutSession(activeTierId, email, name, reqCurrency);
           
           if (res.success) {
-            // If paying with card / full gateway, redirect directly to NOWPayments destination page
+            // If paying with card or full gateway, redirect directly to checkout destination page
             if (currency === 'card' || currency === '' || !res.payAddress) {
               modalBtnText.textContent = 'Redirecting to Secure Gateway...';
               window.location.href = res.checkoutUrl;

@@ -176,6 +176,20 @@ export class BangplanixPricingController {
     const tierCode = tierId === 'enterprise' ? 'ENTERPRISE' : 'PRO';
     const durationDays = this.billingCycle === 'annual' ? 365 : 30;
 
+    // Direct Polar Checkout for Credit / Debit Card & Apple Pay
+    const normalizedCurrency = payCurrency.trim().toLowerCase();
+    if (normalizedCurrency === 'card') {
+      const polarBaseUrl = 'https://buy.polar.sh/polar_cl_n8PHJ8m7zUhDsCBUu1XeIxPmD8M8vQomdjBJL2fAuFw';
+      const checkoutUrl = `${polarBaseUrl}?customer_email=${encodeURIComponent(cleanEmail)}`;
+      return {
+        success: true,
+        checkoutUrl,
+        invoiceId: `polar_${Date.now()}`,
+        amountUSD: tierCode === 'ENTERPRISE' ? 1999 : 699,
+        currency: 'USD'
+      };
+    }
+
     try {
       const res = await fetch(`${apiBase}/api/v1/checkout/create`, {
         method: 'POST',

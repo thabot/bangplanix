@@ -92,6 +92,16 @@ describe('Bangplanix Pricing Controller & QuestPDF Parity Tests', () => {
     assert.ok(res.error?.includes('valid customer email'));
   });
 
+  test('createCheckoutSession with card payment should route to Polar.sh checkout', async () => {
+    const ctrl = new BangplanixPricingController();
+    const res = await ctrl.createCheckoutSession('professional', 'client@company.com', 'Client Name', 'card');
+    assert.strictEqual(res.success, true);
+    assert.ok(res.checkoutUrl);
+    assert.match(res.checkoutUrl, /^https:\/\/buy\.polar\.sh\/polar_cl_/);
+    assert.ok(res.checkoutUrl.includes('customer_email=client%40company.com'));
+    assert.strictEqual(res.amountUSD, 699);
+  });
+
   test('createCheckoutSession should successfully connect to gateway and return invoice URL and deposit details', async () => {
     const ctrl = new BangplanixPricingController();
     const res = await ctrl.createCheckoutSession('professional', 'unit-test@bangplanix.io', 'Unit Tester', 'usdttrc20');
