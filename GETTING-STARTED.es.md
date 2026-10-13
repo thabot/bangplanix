@@ -689,6 +689,80 @@ Bangplanix indexa el directorio al iniciar y genera una caché en memoria para b
 
 ---
 
+## 🔏 Capítulo 10: Firmas Digitales PDF (PAdES), Seguridad Post-Cuántica y Portal de Verificación
+
+Bangplanix incluye una canalización integral de seguridad y firma digital de grado militar integrada en el motor Native AOT.
+
+### 10.1 Capacidades Principales de Seguridad
+1. **Firmas Digitales PAdES (B-B, B-T, B-LT, B-LTA):** Conformidad con ETSI EN 319 142 y estándares de facturación electrónica con sellos de tiempo RFC 3161.
+2. **Envoltorio de Seguridad Post-Cuántica (NIST FIPS 204 ML-DSA-65):** Protección documental de vanguardia contra descifrado por computación cuántica futura.
+3. **Etiquetas de Texto de Anclaje Inteligente (`[[SIG:Signer]]`, `[[DATE]]`, `[[SEAL]]`):** Detección automática en plantillas y cálculo de cajas delimitadoras sin coordenadas fijas en píxeles.
+4. **Certificado Criptográfico de Auditoría (Audit Trail Certificate of Completion):** Añade al final del PDF una hoja legal con hash SHA-256 pre/post firma, IP, marcas temporales y código QR de validación.
+5. **Portal Web de Verificación de Autoservicio (`/verify`):** Portal sin dependencias externas para verificar en el navegador la integridad de firmas y descargar certificados de auditoría.
+6. **Marca de Agua Esteganográfica Forense:** Inserción invisible mediante microespaciado para rastreo de filtraciones por identificador de usuario/sesión.
+7. **Motor Cero Caída de Fuentes y Fallback Automático:** Prevención total de cuadros de texto faltantes (ToFu) en español, tailandés, japonés, chino, árabe y símbolos Unicode.
+8. **Protección con Contraseña en Excel y Sanitización CWE-123 en CSV:** Encriptación robusta de libros XLSX y mitigación automática contra inyección de fórmulas.
+
+### 10.2 Ejemplo REST API (Renderizado y Firma Digital)
+
+```bash
+curl -X POST http://localhost:9545/api/v1/report/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templatePath": "templates/invoice.bpx",
+    "format": "pdf",
+    "dataJson": "[{\"InvoiceNo\":\"INV-2026-001\",\"Amount\":15000}]",
+    "signingOptions": {
+      "signerName": "Carlos Mendoza",
+      "reason": "Aprobación Financiera Trimestral",
+      "location": "Madrid, España",
+      "enableQuantumSafeMldsa": true,
+      "appendAuditTrailCertificate": true,
+      "visualAppearance": {
+        "pageNumber": 1,
+        "x": 400,
+        "y": 700,
+        "width": 150,
+        "height": 60,
+        "title": "Director Financiero",
+        "showSignerDetails": true
+      },
+      "forensicWatermark": {
+        "enableTracking": true,
+        "trackingPayload": "USER:emp_9821|SESSION:sess_88192"
+      }
+    }
+  }' \
+  --output signed_invoice.pdf
+```
+
+### 10.3 Ejemplo con SDK de C# (.NET 10)
+
+```csharp
+using Bangplanix.Client;
+using Bangplanix.Core.Security;
+
+using var client = new BangplanixClient("http://localhost:9545");
+
+var result = await client.RenderAndSignReportAsync(
+    new RenderClientRequest
+    {
+        TemplatePath = "templates/invoice.bpx",
+        DataJson = "[{\"Customer\":\"Corporación Global Ibérica\"}]"
+    },
+    new DigitalSignatureOptions
+    {
+        SignerName = "Carlos Mendoza",
+        Reason = "Aprobación Ejecutiva",
+        EnableQuantumSafeMldsa = true,
+        AuditTrailOptions = new AuditTrailReportOptions { IncludeVerificationQrCode = true }
+    });
+
+await result.SaveToFileAsync("Invoice-Signed.pdf");
+```
+
+---
+
 ## 💬 Comunidad y Soporte
 
 * 🐞 **Reporte de Problemas:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)

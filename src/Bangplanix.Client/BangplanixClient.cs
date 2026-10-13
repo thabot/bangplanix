@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Bangplanix.Core.Security;
 
 namespace Bangplanix.Client;
 
@@ -51,7 +52,12 @@ public sealed class BangplanixClient : IDisposable
             TemplateJson = request.TemplateJson,
             DataJson = request.DataJson ?? "{}",
             Parameters = request.Parameters ?? new Dictionary<string, object?>(),
-            Format = (request.Format ?? "pdf").ToLowerInvariant()
+            Format = (request.Format ?? "pdf").ToLowerInvariant(),
+            SigningOptions = request.SigningOptions,
+            SecurityOptions = request.SecurityOptions,
+            XmlAttachments = request.XmlAttachments,
+            ExcelOptions = request.ExcelOptions,
+            CsvOptions = request.CsvOptions
         };
 
         var sw = Stopwatch.StartNew();
@@ -188,6 +194,56 @@ public sealed class BangplanixClient : IDisposable
         }
     }
 
+    public async Task<RenderResult> RenderAndSignReportAsync(
+        RenderClientRequest request,
+        DigitalSignatureOptions signingOptions,
+        PdfSecurityOptions? securityOptions = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(signingOptions);
+
+        var signedRequest = request with
+        {
+            Format = "pdf",
+            SigningOptions = signingOptions,
+            SecurityOptions = securityOptions ?? request.SecurityOptions
+        };
+
+        return await RenderReportAsync(signedRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<byte[]> SignExistingPdfAsync(
+        byte[] pdfBytes,
+        DigitalSignatureOptions signingOptions,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(pdfBytes);
+        ArgumentNullException.ThrowIfNull(signingOptions);
+
+        var endpoint = $"{_serverUrl}/api/v1/pdf/sign";
+        var payload = new
+        {
+            pdfBase64 = Convert.ToBase64String(pdfBytes),
+            options = signingOptions
+        };
+
+        using var response = await _httpClient.PostAsJsonAsync(endpoint, payload, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new HttpRequestException($"Bangplanix standalone signing failed [HTTP {response.StatusCode}]: {err}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<PdfSignResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (result == null || string.IsNullOrEmpty(result.SignedPdfBase64))
+        {
+            throw new InvalidOperationException("Failed to receive signed PDF content from server.");
+        }
+
+        return Convert.FromBase64String(result.SignedPdfBase64);
+    }
+
     public void Dispose()
     {
         if (_disposeClient)
@@ -213,6 +269,21 @@ public sealed class RenderServerPayload
 
     [JsonPropertyName("format")]
     public string Format { get; set; } = "pdf";
+
+    [JsonPropertyName("signingOptions")]
+    public DigitalSignatureOptions? SigningOptions { get; set; }
+
+    [JsonPropertyName("securityOptions")]
+    public PdfSecurityOptions? SecurityOptions { get; set; }
+
+    [JsonPropertyName("xmlAttachments")]
+    public List<PdfXmlAttachmentPayload>? XmlAttachments { get; set; }
+
+    [JsonPropertyName("excelOptions")]
+    public ExcelExportOptions? ExcelOptions { get; set; }
+
+    [JsonPropertyName("csvOptions")]
+    public CsvExportOptions? CsvOptions { get; set; }
 }
 
 public sealed class TemplateValidationPayload
@@ -232,6 +303,23 @@ public sealed record RenderClientRequest
     public IDictionary<string, object?>? Parameters { get; init; }
     public string Format { get; init; } = "pdf";
     public string? CorrelationId { get; init; }
+    public DigitalSignatureOptions? SigningOptions { get; init; }
+    public PdfSecurityOptions? SecurityOptions { get; init; }
+    public List<PdfXmlAttachmentPayload>? XmlAttachments { get; init; }
+    public ExcelExportOptions? ExcelOptions { get; init; }
+    public CsvExportOptions? CsvOptions { get; init; }
+}
+
+public sealed class PdfSignResponse
+{
+    [JsonPropertyName("signedPdfBase64")]
+    public string? SignedPdfBase64 { get; set; }
+
+    [JsonPropertyName("sha256Hex")]
+    public string? Sha256Hex { get; set; }
+
+    [JsonPropertyName("signatureFormat")]
+    public string? SignatureFormat { get; set; }
 }
 
 public sealed record RenderResult(byte[] Data, string Format, string ContentType, string CorrelationId, long DurationMs)

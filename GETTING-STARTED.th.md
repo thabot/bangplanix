@@ -929,6 +929,80 @@ Bangplanix จะสแกนค้นหาฟอนต์แบบอัตโ
 
 ---
 
+## 🔏 บทที่ 10: การลงนามดิจิทัลระดับสากล ความปลอดภัย Quantum-Safe & เว็บพอร์ทัลตรวจสอบเอกสาร
+
+Bangplanix มีระบบความปลอดภัยและลายมือชื่อดิจิทัลระดับองค์กรและหน่วยงานรัฐความมั่นคงสูงที่ทำงานบน Native AOT โดยตรง
+
+### 10.1 ฟีเจอร์ความปลอดภัยหลัก
+1. **ลายมือชื่อดิจิทัล PAdES (B-B, B-T, B-LT, B-LTA):** รองรับมาตรฐาน ETSI EN 319 142 และใบกำกับภาษีอิเล็กทรอนิกส์ e-Tax Invoice ของ สพธอ. (ETDA) พร้อมการประทับเวลารับรอง (RFC 3161 TSA)
+2. **Quantum-Safe Post-Quantum Envelope (NIST FIPS 204 ML-DSA-65):** ป้องกันการถอดรหัสและการปลอมแปลงเอกสารจากคอมพิวเตอร์ควอนตัมในอนาคต
+3. **Smart Anchor Text Tags (`[[SIG:Signer]]`, `[[DATE]]`, `[[SEAL]]`):** ตรวจจับตำแหน่งคำสำคัญในเทมเพลตและวางกรอบลายเซ็นดิจิทัลโดยอัตโนมัติ โดยไม่ต้องกำหนดพิกัด X/Y ล่วงหน้า
+4. **Cryptographic Audit Trail Certificate of Completion:** แนบหน้าหลักฐานการลงนามท้ายเอกสารอัตโนมัติ พร้อมค่าแฮช SHA-256 ก่อน/หลังลงนาม, ข้อมูลผู้ลงนาม/IP/เวลา, และ QR Code สแกนตรวจสอบความถูกต้อง
+5. **Self-Service Verification Web Portal (`/verify`):** พอร์ทัลตรวจสอบความสมบูรณ์ของเอกสารและดาวน์โหลดหลักฐานการลงนาม ทำงานแบบ Standalone ไม่มีภาระระบบภายนอก
+6. **Steganographic Forensic Watermark:** ฝังข้อมูลระบุตัวตนแบบมองไม่เห็นลงในโครงสร้าง PDF เพื่อสืบหาต้นตอการรั่วไหลของเอกสารตามตัวพนักงาน/เซสชัน
+7. **Zero-Font-Drop & Auto-Fallback Pipeline:** ป้องกันปัญหาตัวอักษรกล่องสี่เหลี่ยมต่างดาว (ToFu) ในทุกภาษา (ไทย, CJK, อาหรับ, สัญลักษณ์สากล)
+8. **Excel XLSX Password Protection & CSV CWE-123 Sanitization:** เข้ารหัสป้องกันสเปรดชีตและตัดอักขระอันตรายป้องกัน Formula Injection
+
+### 10.2 ตัวอย่างการเรียกใช้งาน REST API (Render & Sign PDF)
+
+```bash
+curl -X POST http://localhost:9545/api/v1/report/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templatePath": "templates/invoice.bpx",
+    "format": "pdf",
+    "dataJson": "[{\"InvoiceNo\":\"INV-2026-001\",\"Amount\":15000}]",
+    "signingOptions": {
+      "signerName": "ดร. ทศวรรษ นักวิเคราะห์",
+      "reason": "อนุมัติรายงานการเงินประจำไตรมาส",
+      "location": "กรุงเทพมหานคร",
+      "enableQuantumSafeMldsa": true,
+      "appendAuditTrailCertificate": true,
+      "visualAppearance": {
+        "pageNumber": 1,
+        "x": 400,
+        "y": 700,
+        "width": 150,
+        "height": 60,
+        "title": "ประธานเจ้าหน้าที่บริหารฝ่ายการเงิน",
+        "showSignerDetails": true
+      },
+      "forensicWatermark": {
+        "enableTracking": true,
+        "trackingPayload": "USER:emp_9821|SESSION:sess_88192"
+      }
+    }
+  }' \
+  --output signed_invoice.pdf
+```
+
+### 10.3 ตัวอย่างการใช้งานผ่าน C# SDK (.NET 10 Client)
+
+```csharp
+using Bangplanix.Client;
+using Bangplanix.Core.Security;
+
+using var client = new BangplanixClient("http://localhost:9545");
+
+var result = await client.RenderAndSignReportAsync(
+    new RenderClientRequest
+    {
+        TemplatePath = "templates/invoice.bpx",
+        DataJson = "[{\"Customer\":\"บริษัท สยามการค้า จำกัด\"}]"
+    },
+    new DigitalSignatureOptions
+    {
+        SignerName = "ดร. ทศวรรษ นักวิเคราะห์",
+        Reason = "ลงนามอนุมัติเอกสารทางการ",
+        EnableQuantumSafeMldsa = true,
+        AuditTrailOptions = new AuditTrailReportOptions { IncludeVerificationQrCode = true }
+    });
+
+await result.SaveToFileAsync("Invoice-Signed.pdf");
+```
+
+---
+
 ## 💬 การขอรับความช่วยเหลือและร่วมพัฒนา
 
 * 🐞 **แจ้งปัญหา / ข้อผิดพลาด:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)

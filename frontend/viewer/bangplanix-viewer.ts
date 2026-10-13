@@ -46,6 +46,14 @@ export class BangplanixViewer extends LitElement {
   @state() private mobileActionsOpen: boolean = false;
   @state() private exportMenuOpen: boolean = false;
 
+  // Digital Signature Modal
+  @state() private signModalOpen: boolean = false;
+  @state() private signSignerName: string = 'Authorized Signer';
+  @state() private signReason: string = 'Official Approval';
+  @state() private signTitle: string = 'Director';
+  @state() private signAuditTrail: boolean = true;
+  @state() private signQuantumSafe: boolean = true;
+
   // Parameters
   @state() private parameterPanelOpen: boolean = false;
   @state() private parameters: Record<string, any> = {};
@@ -496,6 +504,77 @@ export class BangplanixViewer extends LitElement {
         font-size: 12px;
       }
     }
+
+    /* 🔏 Digital Signature Modal */
+    .sign-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .sign-modal-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      width: 440px;
+      max-width: 90vw;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sign-modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sign-form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sign-form-row label {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .sign-input {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      color: #ffffff;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .sign-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .sign-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
   `;
 
   async connectedCallback() {
@@ -659,6 +738,64 @@ export class BangplanixViewer extends LitElement {
     document.body.appendChild(a);
     a.click();
     a.remove();
+  }
+
+  openSignDialog() {
+    this.closeMobileActions();
+    this.closeExportMenu();
+    this.signModalOpen = true;
+  }
+
+  closeSignDialog() {
+    this.signModalOpen = false;
+  }
+
+  async exportSignedPdf() {
+    this.signModalOpen = false;
+    this.isLoading = true;
+    try {
+      const response = await fetch(`${this.serverUrl}/api/v1/report/render`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templatePath: this.template,
+          dataJson: this.data || '{}',
+          parameters: this.parameters,
+          format: 'pdf',
+          signingOptions: {
+            signerName: this.signSignerName,
+            reason: this.signReason,
+            enableQuantumSafeMldsa: this.signQuantumSafe,
+            appendAuditTrailCertificate: this.signAuditTrail,
+            visualAppearance: {
+              signerName: this.signSignerName,
+              title: this.signTitle,
+              reason: this.signReason,
+              showSignerDetails: true
+            }
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Signed PDF export failed: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${this.template.replace(/[/\\?%*:|"<>]/g, '_') || 'report'}-signed.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      this.dispatchEvent(new CustomEvent('export-completed', { detail: { format: 'signed-pdf' } }));
+    } catch (err: any) {
+      alert(`Export Signed PDF Error: ${err.message}`);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   toggleExportMenu() {
@@ -987,6 +1124,7 @@ export class BangplanixViewer extends LitElement {
             ${this.exportMenuOpen ? html`
               <div class="export-menu">
                 <button @click=${() => { this.closeExportMenu(); this.downloadPdf(); }}>📄 PDF Document (.pdf)</button>
+                <button @click=${() => { this.closeExportMenu(); this.openSignDialog(); }}>🔏 Signed PDF (PAdES / e-Tax)...</button>
                 <button @click=${() => { this.closeExportMenu(); this.exportExcel(); }}>📊 Excel Spreadsheet (.xlsx)</button>
                 <button @click=${this.exportCsv}>📑 CSV Data (.csv)</button>
                 <button @click=${this.exportJson}>📦 JSON Data Stream (.json)</button>
@@ -1015,6 +1153,7 @@ export class BangplanixViewer extends LitElement {
       ${this.mobileActionsOpen ? html`
         <div class="mobile-actions-menu">
           <button @click=${this.downloadPdf} ?disabled=${!this.pdfUrl}>📥 Download PDF</button>
+          <button @click=${() => { this.closeMobileActions(); this.openSignDialog(); }}>🔏 Export Signed PDF</button>
           <button @click=${this.exportExcel} class="primary">📊 Export XLSX</button>
           <button @click=${this.exportCsv}>📑 Export CSV</button>
           <button @click=${this.exportJson}>📦 Export JSON</button>
@@ -1137,6 +1276,68 @@ export class BangplanixViewer extends LitElement {
           ` : '')}
         </div>
       </div>
+
+      <!-- 🔏 Digital Signature & Verification Modal -->
+      ${this.signModalOpen ? html`
+        <div class="sign-modal-backdrop" @click=${this.closeSignDialog}>
+          <div class="sign-modal-card" @click=${(e: Event) => e.stopPropagation()}>
+            <div class="sign-modal-title">
+              <span>🔏</span>
+              <span>Export Signed PDF (PAdES / e-Tax)</span>
+            </div>
+            <div class="sign-form-row">
+              <label>Signer Name</label>
+              <input
+                type="text"
+                class="sign-input"
+                .value=${this.signSignerName}
+                @input=${(e: any) => this.signSignerName = e.target.value}
+                placeholder="Full Name / Officer Title"
+              />
+            </div>
+            <div class="sign-form-row">
+              <label>Signer Role / Title</label>
+              <input
+                type="text"
+                class="sign-input"
+                .value=${this.signTitle}
+                @input=${(e: any) => this.signTitle = e.target.value}
+                placeholder="e.g. Director, Chief Auditor"
+              />
+            </div>
+            <div class="sign-form-row">
+              <label>Signing Reason / Purpose</label>
+              <input
+                type="text"
+                class="sign-input"
+                .value=${this.signReason}
+                @input=${(e: any) => this.signReason = e.target.value}
+                placeholder="e.g. Official Approval & Issuance"
+              />
+            </div>
+            <label class="sign-checkbox-row">
+              <input
+                type="checkbox"
+                .checked=${this.signAuditTrail}
+                @change=${(e: any) => this.signAuditTrail = e.target.checked}
+              />
+              <span>Append Cryptographic Audit Trail Certificate & Verification QR</span>
+            </label>
+            <label class="sign-checkbox-row">
+              <input
+                type="checkbox"
+                .checked=${this.signQuantumSafe}
+                @change=${(e: any) => this.signQuantumSafe = e.target.checked}
+              />
+              <span>Enable Quantum-Safe (NIST FIPS 204 ML-DSA-65) Envelope</span>
+            </label>
+            <div class="sign-modal-actions">
+              <button @click=${this.closeSignDialog}>Cancel</button>
+              <button class="primary" @click=${this.exportSignedPdf}>🔏 Sign & Download PDF</button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
     `;
   }
 }

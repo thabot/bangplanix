@@ -689,6 +689,80 @@ Bangplanix は起動時にフォントを自動スキャンしてキャッシュ
 
 ---
 
+## 🔏 第 10 章: PDF 電子署名 (PAdES)、耐量子セキュリティ & 検証ポータル
+
+Bangplanix は、軍用レベルのドキュメントセキュリティと電子署名パイプラインを Native AOT エンジンに直接組み込んでいます。
+
+### 10.1 主なセキュリティ機能
+1. **PAdES 電子署名 (B-B, B-T, B-LT, B-LTA):** ETSI EN 319 142 および各国の電子インボイス標準に準拠した分離型署名（タイムスタンプ RFC 3161 対応）。
+2. **耐量子署名エンベロープ (NIST FIPS 204 ML-DSA-65):** 将来の量子コンピュータによる解読・偽造から帳票を保護します。
+3. **スマートアンカーテキストタグ (`[[SIG:Signer]]`, `[[DATE]]`, `[[SEAL]]`):** テンプレート内のアンカー文字列を自動検出し、X/Y 座標の固定指定なしに署名枠を自動配置します。
+4. **暗号化監査証跡完了証明書 (Audit Trail Certificate of Completion):** 署名前後の SHA-256 ハッシュ値、署名者の IP/タイムスタンプ、即時検証用 QR コードを含む法的前提の証跡ページを末尾に自動付与します。
+5. **セルフサービス検証ポータル (`/verify`):** 外部依存ゼロの軽量 Web ポータルで、監査人がブラウザ上で署名の真正性を検証できます。
+6. **ステガノグラフィ電子透かし (Forensic Watermark):** 不可視のマイクロスペーシング技術で PDF バイト内に職員 ID やセッション情報を埋め込み、情報漏洩を追跡します。
+7. **ゼロフォントドロップ＆自動フォールバック:** 日本語、タイ語、中国語、アラビア語など世界各国の文字の豆腐（ToFu）化を 100% 防止します。
+8. **Excel パスワード保護 & CSV CWE-123 脆弱性サニタイズ:** スプレッドシートの暗号化および数式インジェクション攻撃からの自動保護。
+
+### 10.2 REST API 実行例 (帳票出力＆電子署名)
+
+```bash
+curl -X POST http://localhost:9545/api/v1/report/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templatePath": "templates/invoice.bpx",
+    "format": "pdf",
+    "dataJson": "[{\"InvoiceNo\":\"INV-2026-001\",\"Amount\":15000}]",
+    "signingOptions": {
+      "signerName": "山田 太郎",
+      "reason": "四半期財務諸表の承認",
+      "location": "東京都千代田区",
+      "enableQuantumSafeMldsa": true,
+      "appendAuditTrailCertificate": true,
+      "visualAppearance": {
+        "pageNumber": 1,
+        "x": 400,
+        "y": 700,
+        "width": 150,
+        "height": 60,
+        "title": "最高財務責任者 (CFO)",
+        "showSignerDetails": true
+      },
+      "forensicWatermark": {
+        "enableTracking": true,
+        "trackingPayload": "USER:emp_9821|SESSION:sess_88192"
+      }
+    }
+  }' \
+  --output signed_invoice.pdf
+```
+
+### 10.3 C# SDK (.NET 10 Client) の利用例
+
+```csharp
+using Bangplanix.Client;
+using Bangplanix.Core.Security;
+
+using var client = new BangplanixClient("http://localhost:9545");
+
+var result = await client.RenderAndSignReportAsync(
+    new RenderClientRequest
+    {
+        TemplatePath = "templates/invoice.bpx",
+        DataJson = "[{\"Customer\":\"日本グローバル株式会社\"}]"
+    },
+    new DigitalSignatureOptions
+    {
+        SignerName = "山田 太郎",
+        Reason = "公式承認",
+        EnableQuantumSafeMldsa = true,
+        AuditTrailOptions = new AuditTrailReportOptions { IncludeVerificationQrCode = true }
+    });
+
+await result.SaveToFileAsync("Invoice-Signed.pdf");
+```
+
+---
+
 ## 💬 コミュニティ＆サポート
 
 * 🐞 **問題報告 / バグ報告:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)

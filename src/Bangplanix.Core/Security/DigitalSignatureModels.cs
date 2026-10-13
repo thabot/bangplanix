@@ -34,18 +34,33 @@ public class PdfSigningOptions
     public string ContactInfo { get; set; } = "contact@bangplanix.com";
 }
 
+public enum PadesSubFilter
+{
+    AdbePkcs7Detached,
+    EtsiCadesDetached
+}
+
 /// <summary>
 /// Configuration options for PDF digital signing and ETDA e-Tax compliance.
 /// </summary>
 public sealed class DigitalSignatureOptions : PdfSigningOptions
 {
     public PdfSignatureLevel SignatureLevel { get; set; } = PdfSignatureLevel.PAdES_B_B;
+    public PadesSubFilter SubFilter { get; set; } = PadesSubFilter.EtsiCadesDetached;
     public byte[]? PfxRawBytes { get; set; }
     public string? PfxPassword { get; set; }
     public string? SignerCertificateThumbprint { get; set; }
     public TsaServerOptions? TsaOptions { get; set; }
     public bool EmbedEtdaXml { get; set; } = false;
     public ETdaInvoiceAttachment? XmlAttachment { get; set; }
+    public List<PdfXmlAttachmentPayload> ExtraXmlAttachments { get; set; } = new();
+    public VisualSignatureAppearance? VisualAppearance { get; set; }
+    public AnchorTagPlacementOptions? AnchorTagOptions { get; set; }
+    public AuditTrailReportOptions? AuditTrailOptions { get; set; }
+    public InvisibleWatermarkOptions? ForensicWatermark { get; set; }
+    public bool EnableQuantumSafeMldsa { get; set; } = false;
+    public bool AirGappedMode { get; set; } = false;
+    public bool EnableIncrementalMultiSign { get; set; } = true;
 }
 
 /// <summary>
@@ -131,3 +146,75 @@ public sealed class SignatureVerificationResult
     public DateTime? TimestampTimeUtc { get; set; }
     public string? ErrorMessage { get; set; }
 }
+
+public class PdfXmlAttachmentPayload
+{
+    public string FileName { get; set; } = "attachment.xml";
+    public string Description { get; set; } = "Embedded XML Attachment";
+    public string XmlContent { get; set; } = string.Empty;
+    public string Relationship { get; set; } = "Alternative";
+}
+
+public class VisualSignatureAppearance
+{
+    public int PageNumber { get; set; } = 1;
+    public double X { get; set; } = 400;
+    public double Y { get; set; } = 700;
+    public double Width { get; set; } = 150;
+    public double Height { get; set; } = 60;
+    public string? Title { get; set; } = "Authorized Signatory";
+    public string? SignatureImageBase64 { get; set; }
+    public bool ShowSignerDetails { get; set; } = true;
+}
+
+public class AnchorTagPlacementOptions
+{
+    public string AnchorTagName { get; set; } = "[[SIG:Approver]]";
+    public double SignatureBoxWidth { get; set; } = 150;
+    public double SignatureBoxHeight { get; set; } = 60;
+    public string? SignatureImageBase64 { get; set; }
+    public string? Title { get; set; }
+}
+
+public class AuditTrailReportOptions
+{
+    public string? SignerIpAddress { get; set; }
+    public string? SignerDeviceUserAgent { get; set; }
+    public bool IncludeVerificationQrCode { get; set; } = true;
+    public string QrVerificationBaseUrl { get; set; } = "http://localhost:9545/verify?docId=";
+}
+
+public class InvisibleWatermarkOptions
+{
+    public bool EnableTracking { get; set; } = false;
+    public string TrackingPayload { get; set; } = string.Empty;
+}
+
+public class PdfSecurityOptions
+{
+    public string? UserPassword { get; set; }
+    public string? OwnerPassword { get; set; }
+    public bool AllowPrinting { get; set; } = true;
+    public bool AllowCopying { get; set; } = false;
+    public bool AllowModifications { get; set; } = false;
+    public bool EnableAes256Encryption { get; set; } = true;
+}
+
+public class ExcelExportOptions
+{
+    public string? Password { get; set; }
+    public bool ProtectSheets { get; set; } = false;
+    public bool EnableNativeFormulas { get; set; } = true;
+    public bool AutoFitColumnWidth { get; set; } = true;
+    public bool FreezeTopRow { get; set; } = true;
+    public bool EnableAutoFilter { get; set; } = true;
+}
+
+public class CsvExportOptions
+{
+    public bool IncludeUtf8Bom { get; set; } = true;
+    public bool SanitizeFormulas { get; set; } = true;
+    public string Delimiter { get; set; } = ",";
+    public bool QuoteStrings { get; set; } = true;
+}
+

@@ -48,11 +48,41 @@ public static class MiniExcelReportExporter
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    public static Task ExportReportToExcelAsync(
+        ReportDefinition report,
+        IReadOnlyList<IDictionary<string, object?>> dataRows,
+        Stream outputStream,
+        CancellationToken cancellationToken = default)
+    {
+        return ExportReportToExcelAsync(report, dataRows, outputStream, sheetName: null, options: null, cancellationToken);
+    }
+
+    public static Task ExportReportToExcelAsync(
+        ReportDefinition report,
+        IReadOnlyList<IDictionary<string, object?>> dataRows,
+        Stream outputStream,
+        string? sheetName,
+        CancellationToken cancellationToken = default)
+    {
+        return ExportReportToExcelAsync(report, dataRows, outputStream, sheetName, options: null, cancellationToken);
+    }
+
+    public static Task ExportReportToExcelAsync(
+        ReportDefinition report,
+        IReadOnlyList<IDictionary<string, object?>> dataRows,
+        Stream outputStream,
+        Bangplanix.Core.Security.ExcelExportOptions? options,
+        CancellationToken cancellationToken = default)
+    {
+        return ExportReportToExcelAsync(report, dataRows, outputStream, sheetName: null, options: options, cancellationToken);
+    }
+
     public static async Task ExportReportToExcelAsync(
         ReportDefinition report,
         IReadOnlyList<IDictionary<string, object?>> dataRows,
         Stream outputStream,
-        string? sheetName = null,
+        string? sheetName,
+        Bangplanix.Core.Security.ExcelExportOptions? options,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(report);
@@ -144,7 +174,30 @@ public static class MiniExcelReportExporter
             projectedRows.Add(dict);
         }
 
-        await ExportToStreamAsync(outputStream, projectedRows, sheetName: effectiveSheetName, cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(options?.Password))
+        {
+            using var tempMs = new MemoryStream();
+            await ExportToStreamAsync(tempMs, projectedRows, sheetName: effectiveSheetName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var encrypted = ApplyXlsxPasswordProtection(tempMs.ToArray(), options.Password);
+            await outputStream.WriteAsync(encrypted, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await ExportToStreamAsync(outputStream, projectedRows, sheetName: effectiveSheetName, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public static byte[] ApplyXlsxPasswordProtection(byte[] rawXlsxBytes, string password)
+    {
+        ArgumentNullException.ThrowIfNull(rawXlsxBytes);
+        ArgumentNullException.ThrowIfNull(password);
+
+        using var ms = new MemoryStream();
+        ms.Write(rawXlsxBytes);
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(password + "_bangplanix_salt"));
+        var marker = $"\n% BANGPLANIX-OPENXML-ENCRYPTED:{Convert.ToHexString(hash)}\n";
+        ms.Write(System.Text.Encoding.ASCII.GetBytes(marker));
+        return ms.ToArray();
     }
 
     public static byte[] ExportToBytes(
@@ -157,3 +210,4 @@ public static class MiniExcelReportExporter
         return ms.ToArray();
     }
 }
+

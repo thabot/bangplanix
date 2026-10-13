@@ -69,7 +69,8 @@ public enum ElementType
     Table,
     Container,
     Chart,
-    Sparkline
+    Sparkline,
+    Signature
 }
 
 public enum ChartType

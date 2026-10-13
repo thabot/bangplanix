@@ -228,4 +228,19 @@ public sealed class ElementDefinition
 
     [JsonPropertyName("table")]
     public TableDefinition? Table { get; set; }
+
+    [JsonPropertyName("signatureSignerName")]
+    public string? SignatureSignerName { get; set; }
+
+    [JsonPropertyName("signatureTitle")]
+    public string? SignatureTitle { get; set; }
+
+    [JsonPropertyName("signatureReason")]
+    public string? SignatureReason { get; set; }
+
+    [JsonPropertyName("signatureImageSource")]
+    public string? SignatureImageSource { get; set; }
+
+    [JsonPropertyName("showSignatureDate")]
+    public bool ShowSignatureDate { get; set; } = true;
 }

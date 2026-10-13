@@ -690,6 +690,80 @@ Bangplanix 启动时会自动扫描该目录并建立字体缓存，实现毫秒
 
 ---
 
+## 🔏 第 10 章: PDF 电子签名 (PAdES)、后量子加密与自主验证门户
+
+Bangplanix 在 Native AOT 引擎中内置了企业及军工级文档安全与数字签名管线。
+
+### 10.1 核心安全特性
+1. **PAdES 数字签名 (B-B, B-T, B-LT, B-LTA):** 严格遵循 ETSI EN 319 142 与国际电子发票标准的离散数字签名，集成 RFC 3161 可信时间戳。
+2. **后量子抗量子计算信封 (NIST FIPS 204 ML-DSA-65):** 抵御未来量子计算对文档哈希及非对称签名的破解与伪造。
+3. **智能文本锚点标签 (`[[SIG:Signer]]`, `[[DATE]]`, `[[SEAL]]`):** 自动扫描报表模板中的占位标签并动态计算签名边界，无需硬编码 X/Y 像素坐标。
+4. **加密合规审计证据单 (Audit Trail Certificate of Completion):** 在文档末尾自动追加法律证据页，包含 SHA-256 签名前后哈希对比、签署人 IP/时间戳及二维码。
+5. **自助在线验证门户 (`/verify`):** 零外部依赖的轻量级 Web 门户，审计人员可在浏览器中实时校验文档完整性并下载审计凭证。
+6. **隐形取证盲水印 (Steganographic Watermark):** 运用微间距隐藏编码将员工工号或会话标识注入 PDF 字节中，实现泄密追溯。
+7. **零丢字与多语言自动回退引擎:** 全面杜绝中文、泰文、日文、阿拉伯文及稀有 Unicode 字符出现方块乱码（ToFu）。
+8. **Excel XLSX 密码保护与 CSV CWE-123 注入防御:** 强密码哈希加密及自动防御 CSV 恶意公式注入漏洞。
+
+### 10.2 REST API 签名调用示例
+
+```bash
+curl -X POST http://localhost:9545/api/v1/report/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templatePath": "templates/invoice.bpx",
+    "format": "pdf",
+    "dataJson": "[{\"InvoiceNo\":\"INV-2026-001\",\"Amount\":15000}]",
+    "signingOptions": {
+      "signerName": "张伟",
+      "reason": "季度财务报表核准",
+      "location": "上海金融中心",
+      "enableQuantumSafeMldsa": true,
+      "appendAuditTrailCertificate": true,
+      "visualAppearance": {
+        "pageNumber": 1,
+        "x": 400,
+        "y": 700,
+        "width": 150,
+        "height": 60,
+        "title": "首席财务官 (CFO)",
+        "showSignerDetails": true
+      },
+      "forensicWatermark": {
+        "enableTracking": true,
+        "trackingPayload": "USER:emp_9821|SESSION:sess_88192"
+      }
+    }
+  }' \
+  --output signed_invoice.pdf
+```
+
+### 10.3 C# SDK (.NET 10 Client) 调用示例
+
+```csharp
+using Bangplanix.Client;
+using Bangplanix.Core.Security;
+
+using var client = new BangplanixClient("http://localhost:9545");
+
+var result = await client.RenderAndSignReportAsync(
+    new RenderClientRequest
+    {
+        TemplatePath = "templates/invoice.bpx",
+        DataJson = "[{\"Customer\":\"华夏科技实业集团\"}]"
+    },
+    new DigitalSignatureOptions
+    {
+        SignerName = "张伟",
+        Reason = "高管签批核准",
+        EnableQuantumSafeMldsa = true,
+        AuditTrailOptions = new AuditTrailReportOptions { IncludeVerificationQrCode = true }
+    });
+
+await result.SaveToFileAsync("Invoice-Signed.pdf");
+```
+
+---
+
 ## 💬 社区与技术支持
 
 * 🐞 **问题反馈 / Bug 提交:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)

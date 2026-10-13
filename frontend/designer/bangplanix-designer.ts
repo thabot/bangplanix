@@ -569,9 +569,9 @@ export class BangplanixDesigner extends LitElement {
       type,
       x,
       y,
-      width: type === 'Chart' ? 300 : (type === 'Barcode' ? 180 : 120),
-      height: type === 'Chart' ? 180 : (type === 'Barcode' ? 60 : 25),
-      text: type === 'Text' ? 'Label Text' : (type === 'Barcode' ? '123456789' : '')
+      width: type === 'Chart' ? 300 : (type === 'Barcode' ? 180 : (type === 'Signature' ? 160 : 120)),
+      height: type === 'Chart' ? 180 : (type === 'Barcode' ? 60 : (type === 'Signature' ? 60 : 25)),
+      text: type === 'Text' ? 'Label Text' : (type === 'Barcode' ? '123456789' : (type === 'Signature' ? '[[SIG:Signer]]' : ''))
     });
     this.requestUpdate();
   }
@@ -589,6 +589,9 @@ export class BangplanixDesigner extends LitElement {
 
     if (key === 'text') info.element.text = value;
     else if (key === 'expression') info.element.expression = value;
+    else if (key === 'signatureSignerName') info.element.signatureSignerName = value;
+    else if (key === 'signatureTitle') info.element.signatureTitle = value;
+    else if (key === 'signatureReason') info.element.signatureReason = value;
     else if (key === 'width') info.element.width = Number(value);
     else if (key === 'height') info.element.height = Number(value);
     else if (key === 'x') info.element.x = Number(value);
@@ -666,9 +669,9 @@ export class BangplanixDesigner extends LitElement {
         <div class="bpx-sidebar-left">
           <div class="bpx-panel-header">Components Toolbox</div>
           <div class="bpx-toolbox-items">
-            ${['Text', 'Expression', 'Table', 'Chart', 'Barcode', 'QrCode', 'Image', 'Shape'].map(tool => html`
+            ${['Text', 'Expression', 'Table', 'Chart', 'Barcode', 'QrCode', 'Signature', 'Image', 'Shape'].map(tool => html`
               <div class="bpx-tool-card" draggable="true" @dragstart=${(e: DragEvent) => this.handleToolDragStart(e, tool)}>
-                <span>📦</span>
+                <span>${tool === 'Signature' ? '🔏' : (tool === 'Chart' ? '📊' : (tool === 'Barcode' || tool === 'QrCode' ? '▦' : '📦'))}</span>
                 <span>${tool}</span>
               </div>
             `)}
@@ -701,7 +704,8 @@ export class BangplanixDesigner extends LitElement {
                   >
                     ${el.type === 'Chart' ? html`📊 [Chart: ${el.chart?.title || el.chart?.chartType || 'Column'}]` : 
                       (el.type === 'Barcode' || el.type === 'QrCode' ? html`▦ [${el.type}: ${el.text || '123456'}]` :
-                      (el.expression ? html`<span style="color: #2563eb; font-style: italic;">{ ${el.expression} }</span>` : (el.text || el.type)))}
+                      (el.type === 'Signature' ? html`🔏 [Signature: ${el.signatureSignerName || el.text || '[[SIG:Signer]]'}]` :
+                      (el.expression ? html`<span style="color: #2563eb; font-style: italic;">{ ${el.expression} }</span>` : (el.text || el.type))))}
                   </div>
                 `)}
               </div>
@@ -739,6 +743,20 @@ export class BangplanixDesigner extends LitElement {
                 <label>C# Expression</label>
                 <input class="bpx-input" type="text" .value=${selectedInfo.element.expression || ''} @input=${(e: any) => this.updateSelectedProp('expression', e.target.value)} />
               </div>
+              ${selectedInfo.element.type === 'Signature' ? html`
+                <div class="bpx-prop-row">
+                  <label>Signer Name</label>
+                  <input class="bpx-input" type="text" .value=${selectedInfo.element.signatureSignerName || ''} @input=${(e: any) => this.updateSelectedProp('signatureSignerName', e.target.value)} />
+                </div>
+                <div class="bpx-prop-row">
+                  <label>Signer Title</label>
+                  <input class="bpx-input" type="text" .value=${selectedInfo.element.signatureTitle || ''} @input=${(e: any) => this.updateSelectedProp('signatureTitle', e.target.value)} />
+                </div>
+                <div class="bpx-prop-row">
+                  <label>Sign Reason</label>
+                  <input class="bpx-input" type="text" .value=${selectedInfo.element.signatureReason || ''} @input=${(e: any) => this.updateSelectedProp('signatureReason', e.target.value)} />
+                </div>
+              ` : ''}
             </div>
           ` : html`
             <div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px;">

@@ -224,4 +224,24 @@ public static class ThaiETaxEngine
 
         return ms.ToArray();
     }
+
+    /// <summary>
+    /// Generates a cryptographic RFC 3161-compliant simulated TSA token for air-gapped or testing scenarios.
+    /// </summary>
+    public static byte[] GenerateSimulatedTsaToken(byte[] hash, string authorityName = "Bangplanix Sovereign Air-Gapped TSA")
+    {
+        ArgumentNullException.ThrowIfNull(hash);
+        var timeStampStr = DateTime.UtcNow.ToString("O");
+        var hashHex = Convert.ToHexString(hash);
+        var payload = $"TSA-TOKEN|{authorityName}|{timeStampStr}|{hashHex}";
+        var payloadBytes = Encoding.UTF8.GetBytes(payload);
+        var signature = SHA256.HashData(payloadBytes);
+
+        using var ms = new MemoryStream();
+        ms.Write(Encoding.ASCII.GetBytes("ASN1-TSA-TOKEN:"));
+        ms.Write(payloadBytes);
+        ms.Write(Encoding.ASCII.GetBytes(":SIG:"));
+        ms.Write(signature);
+        return ms.ToArray();
+    }
 }

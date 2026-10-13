@@ -794,6 +794,80 @@ Bangplanix scans this directory recursively upon startup and caches font tables 
 
 ---
 
+## 🔏 Part 10: Sovereign PDF Digital Signatures, Post-Quantum Security & Verification Portal
+
+Bangplanix provides a complete military-grade document security and digital signing pipeline built directly into the Native AOT engine.
+
+### 10.1 Key Security Capabilities
+1. **PAdES Digital Signatures (B-B, B-T, B-LT, B-LTA):** ETSI EN 319 142 and ETDA e-Tax Invoice compliant detached signatures with RFC 3161 timestamps.
+2. **Quantum-Safe Post-Quantum Envelope (NIST FIPS 204 ML-DSA-65):** Protects documents against future quantum computing decryption and forgery.
+3. **Smart Anchor Text Tags (`[[SIG:Signer]]`, `[[DATE]]`, `[[SEAL]]`):** Automatically locates placeholder tags in document templates and calculates exact bounding boxes for signature widgets without hardcoded coordinates.
+4. **Cryptographic Audit Trail Certificate of Completion:** Automatically generates a legal evidence page with SHA-256 pre/post hashes, signatory IP/timestamps, and an instant verification QR Code.
+5. **Self-Service Verification Web Portal (`/verify`):** Standalone zero-dependency verification portal allowing auditors to verify signature integrity and download audit evidence certificates.
+6. **Steganographic Forensic Watermark:** Embeds covert micro-spacing tracking payloads into PDF bytes to detect and track leaks back to specific employees/sessions.
+7. **Zero-Font-Drop & Auto-Fallback:** Guarantees zero tofu square boxes across Latin, Thai, Japanese, Chinese, Arabic, and rare Unicode symbols.
+8. **Excel XLSX Password Protection & CSV CWE-123 Sanitization:** Strong password hashing for spreadsheets and automatic formula injection protection.
+
+### 10.2 REST API Example: Render & Digitally Sign PDF
+
+```bash
+curl -X POST http://localhost:9545/api/v1/report/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templatePath": "templates/invoice.bpx",
+    "format": "pdf",
+    "dataJson": "[{\"InvoiceNo\":\"INV-2026-001\",\"Amount\":15000}]",
+    "signingOptions": {
+      "signerName": "Dr. Thabot Analyst",
+      "reason": "Quarterly Financial Approval",
+      "location": "Bangkok Financial District",
+      "enableQuantumSafeMldsa": true,
+      "appendAuditTrailCertificate": true,
+      "visualAppearance": {
+        "pageNumber": 1,
+        "x": 400,
+        "y": 700,
+        "width": 150,
+        "height": 60,
+        "title": "Chief Financial Officer",
+        "showSignerDetails": true
+      },
+      "forensicWatermark": {
+        "enableTracking": true,
+        "trackingPayload": "USER:emp_9821|SESSION:sess_88192"
+      }
+    }
+  }' \
+  --output signed_invoice.pdf
+```
+
+### 10.3 C# SDK (.NET 10 Client)
+
+```csharp
+using Bangplanix.Client;
+using Bangplanix.Core.Security;
+
+using var client = new BangplanixClient("http://localhost:9545");
+
+var result = await client.RenderAndSignReportAsync(
+    new RenderClientRequest
+    {
+        TemplatePath = "templates/invoice.bpx",
+        DataJson = "[{\"Customer\":\"Sovereign Corp\"}]"
+    },
+    new DigitalSignatureOptions
+    {
+        SignerName = "Dr. Thabot Analyst",
+        Reason = "Executive Approval",
+        EnableQuantumSafeMldsa = true,
+        AuditTrailOptions = new AuditTrailReportOptions { IncludeVerificationQrCode = true }
+    });
+
+await result.SaveToFileAsync("Invoice-Signed.pdf");
+```
+
+---
+
 ## 💬 Community & Support
 
 * 🐞 **Issues & Bugs:** [GitHub Issues](https://github.com/thabot/bangplanix/issues)

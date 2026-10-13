@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Bangplanix.Core.Models;
+using Bangplanix.Core.Security;
 using Bangplanix.Engine.Bands;
 using Bangplanix.Engine.Canvas;
 using Bangplanix.Engine.Pagination;
+using Bangplanix.Engine.Security;
 using SkiaSharp;
 
 namespace Bangplanix.Engine.Pdf;
@@ -18,6 +20,55 @@ public sealed class SkiaPdfRenderer : IReportRenderer
         using var memoryStream = new MemoryStream();
         await RenderToStreamAsync(report, memoryStream, parameters, mainDataRows, cancellationToken).ConfigureAwait(false);
         return memoryStream.ToArray();
+    }
+
+    public async Task<byte[]> RenderToSecuredPdfAsync(
+        ReportDefinition report,
+        IDictionary<string, object?>? parameters = null,
+        IReadOnlyList<IDictionary<string, object?>>? mainDataRows = null,
+        DigitalSignatureOptions? signingOptions = null,
+        PdfSecurityOptions? securityOptions = null,
+        CancellationToken cancellationToken = default)
+    {
+        // 1. Resolve Anchor Tags if requested
+        if (signingOptions?.AnchorTagOptions != null && signingOptions.VisualAppearance == null)
+        {
+            var resolved = SmartAnchorTagScanner.ResolveAppearanceFromAnchor(report, signingOptions.AnchorTagOptions);
+            if (resolved != null)
+            {
+                signingOptions.VisualAppearance = resolved;
+            }
+        }
+
+        // 2. Render base PDF
+        var pdfBytes = await RenderToPdfAsync(report, parameters, mainDataRows, cancellationToken).ConfigureAwait(false);
+
+        // 3. Encrypt with AES-256 passwords if requested
+        if (securityOptions != null && (!string.IsNullOrEmpty(securityOptions.UserPassword) || !string.IsNullOrEmpty(securityOptions.OwnerPassword)))
+        {
+            var permissions = PdfPermissions.None;
+            if (securityOptions.AllowPrinting) permissions |= PdfPermissions.PrintHighQuality;
+            if (securityOptions.AllowCopying) permissions |= PdfPermissions.CopyContent;
+            if (securityOptions.AllowModifications) permissions |= PdfPermissions.ModifyContents;
+
+            var policy = new PdfSecurityPolicy
+            {
+                UserPassword = securityOptions.UserPassword,
+                OwnerPassword = securityOptions.OwnerPassword,
+                EnableAes256Encryption = securityOptions.EnableAes256Encryption,
+                Permissions = permissions
+            };
+            pdfBytes = PdfSecurityEngine.ApplySecurityEnvelope(pdfBytes, policy);
+        }
+
+        // 4. Sign document if requested
+        if (signingOptions != null)
+        {
+            var signer = new PdfDigitalSigner();
+            pdfBytes = await signer.SignPdfAsync(pdfBytes, signingOptions, cancellationToken).ConfigureAwait(false);
+        }
+
+        return pdfBytes;
     }
 
     public Task RenderToStreamAsync(
